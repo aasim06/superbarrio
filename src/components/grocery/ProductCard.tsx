@@ -88,19 +88,19 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           handleCardClick();
         }
       }}
-      className="group relative flex flex-col justify-between rounded-3xl border border-gray-200/80 bg-white p-3.5 sm:p-4 shadow-[0_4px_16px_-4px_rgba(0,0,0,0.06)] transition-all duration-300 hover:border-emerald-300 hover:shadow-[0_16px_32px_-8px_rgba(22,163,74,0.2)] dark:border-emerald-950/60 dark:bg-[#071d12]/70 dark:hover:border-emerald-700/80 dark:hover:shadow-[0_16px_32px_-8px_rgba(34,197,94,0.15)] cursor-pointer select-none overflow-hidden focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:outline-none"
+      className="group relative flex h-full flex-col justify-between rounded-2xl sm:rounded-3xl border border-gray-200/80 bg-white p-2.5 sm:p-4 shadow-sm transition-all duration-300 hover:border-emerald-300 hover:shadow-[0_16px_32px_-8px_rgba(22,163,74,0.18)] dark:border-emerald-950/60 dark:bg-[#071d12]/70 dark:hover:border-emerald-700/80 dark:hover:shadow-[0_16px_32px_-8px_rgba(34,197,94,0.15)] cursor-pointer select-none overflow-hidden focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:outline-none"
     >
       {/* Cursor-follow Spotlight Soft Glow Effect */}
       <div
-        className="pointer-events-none absolute inset-0 rounded-3xl opacity-0 transition-opacity duration-300 group-hover:opacity-100 -z-0"
+        className="pointer-events-none absolute inset-0 rounded-2xl sm:rounded-3xl opacity-0 transition-opacity duration-300 group-hover:opacity-100 -z-0"
         style={{
           background: `radial-gradient(280px circle at ${mousePos.x}px ${mousePos.y}px, rgba(22, 163, 74, 0.16), transparent 70%)`,
         }}
       />
 
-      <div className="relative z-10">
-        {/* Product Visual Container with Skeleton Shimmer */}
-        <div className="relative flex h-36 sm:h-44 w-full items-center justify-center overflow-hidden rounded-2xl bg-gray-100/80 dark:bg-gray-800/60">
+      <div className="relative z-10 flex flex-1 flex-col justify-between">
+        {/* Product Visual Container with Skeleton Shimmer (aspect-square keeps all cards consistent) */}
+        <div className="relative flex aspect-square w-full items-center justify-center overflow-hidden rounded-xl sm:rounded-2xl bg-gray-50/80 dark:bg-gray-800/60">
           {/* Skeleton Shimmer Loader */}
           {!imageLoaded && (
             <div className="absolute inset-0 animate-pulse bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 dark:from-emerald-950/40 dark:via-gray-800 dark:to-emerald-950/40" />
@@ -120,8 +120,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
           {/* Offer / Category Badge with Subtle Pulsing glow */}
           {product.badge && (
-            <div className="absolute start-2.5 top-2.5 z-10">
-              <span className="inline-flex items-center rounded-full bg-gradient-to-r from-amber-500 to-orange-500 px-2.5 py-0.5 text-[10px] font-black tracking-wide text-white shadow-[0_2px_10px_rgba(245,158,11,0.45)] animate-[pulse_2.5s_infinite]">
+            <div className="absolute start-1.5 top-1.5 sm:start-2.5 sm:top-2.5 z-10 max-w-[65%]">
+              <span className="block truncate rounded-full bg-gradient-to-r from-amber-500 to-orange-500 px-2 py-0.5 text-[9px] sm:text-[10px] font-black tracking-wide text-white shadow-xs animate-[pulse_2.5s_infinite]">
                 {product.badge}
               </span>
             </div>
@@ -131,7 +131,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           <motion.button
             whileTap={{ scale: 0.8 }}
             onClick={handleWishlistClick}
-            className="absolute end-2.5 top-2.5 z-20 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 shadow-sm backdrop-blur-md transition-all hover:scale-110 active:scale-90 dark:bg-gray-900/90"
+            className="absolute end-1.5 top-1.5 sm:end-2.5 sm:top-2.5 z-20 flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-full bg-white/90 shadow-sm backdrop-blur-md transition-all hover:scale-110 active:scale-90 dark:bg-gray-900/90"
             title="Add to Wishlist"
           >
             <motion.span
@@ -145,7 +145,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               className="flex items-center justify-center select-none"
             >
               <HeartIcon
-                className={`h-4 w-4 transition-colors ${
+                className={`h-3.5 w-3.5 sm:h-4 sm:w-4 transition-colors ${
                   wishlisted
                     ? "fill-rose-500 text-rose-500"
                     : "text-gray-400 dark:text-gray-500 hover:text-rose-500"
@@ -155,7 +155,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           </motion.button>
 
           {/* Quick View Hover Eye Overlay */}
-          <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center bg-black/20 opacity-0 backdrop-blur-[1px] transition-opacity duration-200 group-hover:opacity-100">
+          <div className="pointer-events-none absolute inset-0 z-10 hidden sm:flex items-center justify-center bg-black/20 opacity-0 backdrop-blur-[1px] transition-opacity duration-200 group-hover:opacity-100">
             <span className="flex items-center gap-1.5 rounded-full bg-white/95 px-3 py-1 text-[11px] font-bold text-gray-800 shadow-md backdrop-blur-md dark:bg-gray-900/95 dark:text-white">
               <EyeIcon className="h-3.5 w-3.5 text-gray-700 dark:text-gray-300" />
               <span>Quick View</span>
@@ -163,50 +163,46 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           </div>
 
           {/* Bottom Floating Rating Tag */}
-          <div className="absolute end-2.5 bottom-2.5 z-10 flex items-center gap-1 rounded-full bg-white/95 px-2 py-0.5 text-[10px] font-black text-gray-800 shadow-sm backdrop-blur-md dark:bg-gray-900/95 dark:text-gray-100">
-            <StarIcon className="h-3 w-3 text-amber-500 fill-amber-500" />
+          <div className="absolute end-1.5 bottom-1.5 sm:end-2 sm:bottom-2 z-10 flex items-center gap-0.5 sm:gap-1 rounded-full bg-white/95 px-1.5 sm:px-2 py-0.5 text-[9px] sm:text-[10px] font-black text-gray-800 shadow-sm backdrop-blur-md dark:bg-gray-900/95 dark:text-gray-100">
+            <StarIcon className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-amber-500 fill-amber-500" />
             <span>{product.rating}</span>
           </div>
         </div>
 
-        {/* Product Info */}
-        <div className="mt-3.5">
-          <div className="flex items-center justify-between text-[11px] font-semibold text-gray-500 dark:text-emerald-300/70">
-            <span>{product.unit}</span>
-            {product.origin && (
-              <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-bold dark:bg-emerald-950/60 dark:text-emerald-300">
-                {product.origin}
-              </span>
-            )}
+        {/* Product Info with guaranteed consistent line clamping & min-height */}
+        <div className="mt-2 sm:mt-3 flex-1 flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between text-[10px] sm:text-[11px] font-semibold text-gray-500 dark:text-emerald-300/70">
+              <span className="truncate">{product.unit}</span>
+              {product.origin && (
+                <span className="ms-1 truncate rounded-md bg-gray-100 px-1.5 py-0.5 text-[9px] sm:text-[10px] font-bold text-gray-600 dark:bg-emerald-950/60 dark:text-emerald-300">
+                  {product.origin}
+                </span>
+              )}
+            </div>
+
+            <h4 className="mt-1 font-outfit line-clamp-2 min-h-[2.1rem] sm:min-h-[2.5rem] text-xs sm:text-sm font-black text-gray-900 transition-colors duration-200 group-hover:text-emerald-600 dark:text-white dark:group-hover:text-emerald-400 leading-snug">
+              {product.name}
+            </h4>
           </div>
-
-          <h4 className="mt-1 font-outfit line-clamp-1 text-sm sm:text-[15px] font-black text-gray-900 transition-colors duration-200 group-hover:text-emerald-600 dark:text-white dark:group-hover:text-emerald-400">
-            {product.name}
-          </h4>
-
-          <p className="mt-1 line-clamp-1 text-xs text-gray-500 dark:text-gray-400 font-medium">
-            {product.description}
-          </p>
         </div>
       </div>
 
       {/* Bottom Pricing & Dynamic Add Button / Stepper */}
-      <div className="mt-4 flex items-center justify-between border-t border-gray-100 pt-3 dark:border-emerald-950/60">
-        <div>
-          <div className="flex items-baseline gap-1.5">
-            <span className="font-outfit text-base font-black text-gray-900 dark:text-white">
-              {formatPrice(product.price, locale)}
+      <div className="mt-2.5 sm:mt-3 flex items-center justify-between gap-1.5 border-t border-gray-100 pt-2 sm:pt-2.5 dark:border-emerald-950/60">
+        <div className="flex flex-col min-w-0">
+          <span className="font-outfit text-xs sm:text-base font-black text-gray-900 dark:text-white truncate">
+            {formatPrice(product.price, locale)}
+          </span>
+          {product.originalPrice && (
+            <span className="text-[10px] sm:text-xs text-gray-400 line-through dark:text-gray-500 font-medium truncate">
+              {formatPrice(product.originalPrice, locale)}
             </span>
-            {product.originalPrice && (
-              <span className="text-xs text-gray-400 line-through dark:text-gray-500 font-medium">
-                {formatPrice(product.originalPrice, locale)}
-              </span>
-            )}
-          </div>
+          )}
         </div>
 
         {/* Stepper with Smooth Expand/Collapse Transition */}
-        <div className="flex items-center" onClick={(e) => e.stopPropagation()}>
+        <div className="shrink-0" onClick={(e) => e.stopPropagation()}>
           <AnimatePresence mode="wait">
             {quantity === 0 ? (
               <motion.button
@@ -219,9 +215,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.92 }}
                 onClick={handleAdd}
-                className="inline-flex items-center gap-1.5 rounded-xl border-2 border-emerald-500 bg-emerald-50/60 px-3 py-1.5 text-xs font-black text-emerald-700 shadow-xs transition-colors duration-200 hover:bg-emerald-600 hover:text-white dark:border-emerald-500/80 dark:bg-emerald-950/40 dark:text-emerald-300 dark:hover:bg-emerald-600 dark:hover:text-white"
+                className="inline-flex items-center gap-1 rounded-xl border border-emerald-500/60 bg-emerald-50/80 px-2 sm:px-3 py-1 sm:py-1.5 text-[11px] sm:text-xs font-black text-emerald-700 shadow-xs transition-colors duration-200 hover:bg-emerald-600 hover:text-white dark:border-emerald-500/80 dark:bg-emerald-950/40 dark:text-emerald-300 dark:hover:bg-emerald-600 dark:hover:text-white"
               >
-                <span className="text-sm font-black">+</span>
+                <span className="text-xs sm:text-sm font-black">+</span>
                 <span>{t("addToCart")}</span>
               </motion.button>
             ) : (
@@ -237,7 +233,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                 <motion.button
                   whileTap={{ scale: 0.85 }}
                   onClick={handleDecrement}
-                  className="flex h-7 w-7 items-center justify-center font-black hover:bg-emerald-700/60 transition-colors"
+                  className="flex h-6 w-6 sm:h-7 sm:w-7 items-center justify-center text-xs font-black hover:bg-emerald-700/60 transition-colors"
                   title="Decrease"
                 >
                   -
@@ -247,7 +243,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                   key={quantity}
                   initial={{ scale: 0.7 }}
                   animate={{ scale: 1 }}
-                  className="px-2 text-xs font-black min-w-5 text-center"
+                  className="px-1.5 sm:px-2 text-[11px] sm:text-xs font-black min-w-4 sm:min-w-5 text-center"
                 >
                   {quantity}
                 </motion.span>
@@ -255,7 +251,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                 <motion.button
                   whileTap={{ scale: 0.85 }}
                   onClick={handleIncrement}
-                  className="flex h-7 w-7 items-center justify-center font-black hover:bg-emerald-700/60 transition-colors"
+                  className="flex h-6 w-6 sm:h-7 sm:w-7 items-center justify-center text-xs font-black hover:bg-emerald-700/60 transition-colors"
                   title="Increase"
                 >
                   +

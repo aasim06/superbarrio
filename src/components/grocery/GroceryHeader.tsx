@@ -107,30 +107,30 @@ export const GroceryHeader: React.FC = () => {
       </div>
 
       {/* Main Header Row */}
-      <div className="mx-auto flex w-full max-w-[1920px] items-center justify-between gap-3 px-4 py-3 sm:px-6 md:gap-6 md:py-3.5 lg:px-8 xl:px-10">
+      <div className="mx-auto flex w-full max-w-[1920px] items-center justify-between gap-2 sm:gap-3 px-3 py-2 sm:px-6 md:gap-6 md:py-3.5 lg:px-8 xl:px-10">
         {/* Brand / Logo */}
         <Link
           href="/grocery"
-          className="group flex items-center gap-3 transition-transform duration-200 active:scale-95"
+          className="group flex items-center gap-2 sm:gap-3 transition-transform duration-200 active:scale-95"
         >
-          <div className="relative flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-green-600 text-white shadow-[0_6px_16px_-2px_rgba(22,163,74,0.4)] transition-all duration-300 group-hover:scale-105 group-hover:shadow-[0_8px_20px_-2px_rgba(22,163,74,0.5)]">
-            <LeafIcon className="h-6 w-6 transition-transform duration-300 group-hover:rotate-12" />
-            <span className="absolute -top-1 -end-1 flex h-3 w-3">
+          <div className="relative flex h-9 w-9 sm:h-11 sm:w-11 items-center justify-center rounded-xl sm:rounded-2xl bg-gradient-to-br from-emerald-500 to-green-600 text-white shadow-[0_6px_16px_-2px_rgba(22,163,74,0.4)] transition-all duration-300 group-hover:scale-105 group-hover:shadow-[0_8px_20px_-2px_rgba(22,163,74,0.5)]">
+            <LeafIcon className="h-5 w-5 sm:h-6 sm:w-6 transition-transform duration-300 group-hover:rotate-12" />
+            <span className="absolute -top-1 -end-1 flex h-2.5 w-2.5 sm:h-3 sm:w-3">
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-75" />
-              <span className="relative inline-flex h-3 w-3 rounded-full bg-amber-500 border border-white dark:border-gray-900" />
+              <span className="relative inline-flex h-2.5 w-2.5 sm:h-3 sm:w-3 rounded-full bg-amber-500 border border-white dark:border-gray-900" />
             </span>
           </div>
 
           <div>
-            <div className="flex items-center gap-2">
-              <span className="font-outfit text-2xl font-black tracking-tight text-gray-900 dark:text-white">
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <span className="font-outfit text-lg sm:text-2xl font-black tracking-tight text-gray-900 dark:text-white">
                 Super<span className="text-emerald-600 dark:text-emerald-400">Barrio</span>
               </span>
-              <span className="rounded-full bg-emerald-100/90 px-2.5 py-0.5 text-[10px] font-extrabold tracking-wider text-emerald-800 uppercase shadow-xs dark:bg-emerald-950/80 dark:text-emerald-300">
+              <span className="hidden sm:inline-block rounded-full bg-emerald-100/90 px-2.5 py-0.5 text-[10px] font-extrabold tracking-wider text-emerald-800 uppercase shadow-xs dark:bg-emerald-950/80 dark:text-emerald-300">
                 {t("badge")}
               </span>
             </div>
-            <p className="text-[11px] font-medium text-gray-500 dark:text-emerald-200/60">
+            <p className="hidden sm:block text-[11px] font-medium text-gray-500 dark:text-emerald-200/60">
               {t("tagline")}
             </p>
           </div>
@@ -248,7 +248,7 @@ export const GroceryHeader: React.FC = () => {
             transition={{ duration: 0.5, ease: "easeOut" }}
             whileHover={{ scale: 1.04 }}
             whileTap={{ scale: 0.96 }}
-            className="group relative inline-flex items-center gap-2.5 rounded-2xl bg-gradient-to-r from-emerald-600 via-green-600 to-emerald-700 px-4 py-2.5 text-xs font-bold text-white shadow-[0_8px_20px_-4px_rgba(22,163,74,0.45)] transition-all duration-300 hover:shadow-[0_12px_24px_-4px_rgba(22,163,74,0.55)] sm:text-sm"
+            className="group relative inline-flex items-center gap-1.5 sm:gap-2.5 rounded-xl sm:rounded-2xl bg-gradient-to-r from-emerald-600 via-green-600 to-emerald-700 px-3 py-2 sm:px-4 sm:py-2.5 text-xs font-bold text-white shadow-[0_8px_20px_-4px_rgba(22,163,74,0.45)] transition-all duration-300 hover:shadow-[0_12px_24px_-4px_rgba(22,163,74,0.55)] sm:text-sm"
           >
             <div className="relative">
               <CartIcon className="h-5 w-5 transition-transform duration-300 group-hover:scale-110" />
@@ -281,7 +281,7 @@ export const GroceryHeader: React.FC = () => {
       </div>
 
       {/* Mobile Search Bar */}
-      <div className="border-t border-gray-100 px-4 py-2.5 md:hidden dark:border-emerald-950/60 dark:bg-[#071910]/95">
+      <div className="border-t border-gray-100 px-3 py-2 md:hidden dark:border-emerald-950/60 dark:bg-[#071910]/95">
         <div className="relative">
           <input
             type="text"

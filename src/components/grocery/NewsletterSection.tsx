@@ -33,26 +33,26 @@ export const NewsletterSection: React.FC = () => {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-40px" }}
       transition={{ duration: 0.55 }}
-      className="mt-16 w-full"
+      className="mt-10 sm:mt-16 w-full"
     >
       {/* Animated Gradient Border Outer Wrapper */}
-      <div className="relative overflow-hidden rounded-3xl p-[2px] bg-gradient-to-r from-emerald-500 via-amber-400 to-green-600 shadow-[0_12px_36px_-6px_rgba(22,163,74,0.3)]">
-        <div className="relative rounded-[22px] bg-gradient-to-br from-[#062013] via-[#092d1c] to-[#04160d] p-8 sm:p-12 text-white">
+      <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl p-[2px] bg-gradient-to-r from-emerald-500 via-amber-400 to-green-600 shadow-[0_12px_36px_-6px_rgba(22,163,74,0.3)]">
+        <div className="relative rounded-[22px] bg-gradient-to-br from-[#062013] via-[#092d1c] to-[#04160d] p-5 sm:p-12 text-white">
           {/* Subtle Ambient Flares */}
           <div className="pointer-events-none absolute -end-20 -top-20 h-64 w-64 rounded-full bg-emerald-400/20 blur-3xl" />
           <div className="pointer-events-none absolute -start-20 -bottom-20 h-64 w-64 rounded-full bg-amber-400/15 blur-3xl" />
 
           <div className="relative z-10 flex flex-col items-center text-center max-w-2xl mx-auto">
             {/* Top Icon Badge */}
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500/20 text-emerald-300 ring-1 ring-emerald-400/30 mb-4">
-              <LeafIcon className="h-6 w-6" />
+            <div className="flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-xl sm:rounded-2xl bg-emerald-500/20 text-emerald-300 ring-1 ring-emerald-400/30 mb-3 sm:mb-4">
+              <LeafIcon className="h-5 w-5 sm:h-6 sm:w-6" />
             </div>
 
-            <span className="text-xs font-black tracking-widest uppercase text-amber-300">
+            <span className="text-[11px] sm:text-xs font-black tracking-widest uppercase text-amber-300">
               Join The SuperBarrio Neighborhood
             </span>
 
-            <h3 className="mt-2 font-outfit text-2xl sm:text-4xl font-black tracking-tight text-white leading-tight">
+            <h3 className="mt-2 font-outfit text-xl sm:text-3xl lg:text-4xl font-black tracking-tight text-white leading-tight">
               Get $10 Off Your First Farm-Fresh Order
             </h3>
 

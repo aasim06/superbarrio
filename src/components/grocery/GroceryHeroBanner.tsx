@@ -395,7 +395,7 @@ export const GroceryHeroBanner: React.FC = () => {
         />
 
         {/* Banner Content Container with AnimatePresence Crossfade */}
-        <div className="relative z-10 flex min-h-[470px] sm:min-h-[510px] lg:min-h-[530px] w-full flex-col justify-between p-6 sm:p-10 lg:p-14">
+        <div className="relative z-10 flex min-h-[380px] sm:min-h-[500px] lg:min-h-[530px] w-full flex-col justify-between p-5 sm:p-10 lg:p-14">
           <AnimatePresence mode="wait">
             <motion.div
               key={slide.id}
@@ -403,7 +403,7 @@ export const GroceryHeroBanner: React.FC = () => {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -12 }}
               transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-              className="flex flex-1 flex-col justify-between gap-8 lg:flex-row lg:items-center"
+              className="flex flex-1 flex-col justify-between gap-6 sm:gap-8 lg:flex-row lg:items-center"
             >
               {/* Left Column: Bold Typography & Magnetic Action Button */}
               <div className="max-w-xl flex-1 select-none">
@@ -412,13 +412,13 @@ export const GroceryHeroBanner: React.FC = () => {
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.1, duration: 0.4 }}
-                  className="text-xs sm:text-[13px] font-extrabold tracking-[0.25em] text-white/80 uppercase"
+                  className="text-[11px] sm:text-[13px] font-extrabold tracking-[0.25em] text-white/80 uppercase"
                 >
                   {t(slide.kickerKey)}
                 </motion.p>
 
-                {/* Massive Modern Headline with Vibrant Accent */}
-                <h1 className="mt-4 font-outfit text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-black tracking-tight text-white leading-[1.06]">
+                {/* Modern Headline with Responsive Scaling */}
+                <h1 className="mt-2 sm:mt-4 font-outfit text-2xl sm:text-5xl lg:text-6xl xl:text-7xl font-black tracking-tight text-white leading-[1.1] sm:leading-[1.06]">
                   <motion.span
                     initial={{ opacity: 0, y: 15 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -451,7 +451,7 @@ export const GroceryHeroBanner: React.FC = () => {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.35, duration: 0.5 }}
-                  className="mt-4 text-xs sm:text-sm lg:text-[15px] text-gray-200/90 leading-relaxed max-w-lg"
+                  className="mt-2 sm:mt-4 text-xs sm:text-sm lg:text-[15px] text-gray-200/90 leading-relaxed max-w-lg line-clamp-2 sm:line-clamp-none"
                 >
                   {t(slide.descKey)}
                 </motion.p>
@@ -461,7 +461,7 @@ export const GroceryHeroBanner: React.FC = () => {
                   initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.42, duration: 0.45 }}
-                  className="mt-7 flex flex-wrap items-center gap-4"
+                  className="mt-4 sm:mt-7 flex flex-wrap items-center gap-2.5 sm:gap-4"
                 >
                   <MagneticButton
                     onClick={() => scrollToCatalog(slide.category)}
@@ -471,7 +471,7 @@ export const GroceryHeroBanner: React.FC = () => {
                     <ArrowRightIcon className="h-4 w-4 rtl:rotate-180 transition-transform duration-300 group-hover/btn:translate-x-1" />
                   </MagneticButton>
 
-                  <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-950/40 px-3.5 py-1.5 text-xs font-semibold text-emerald-200 backdrop-blur-sm">
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-950/40 px-3 py-1 sm:px-3.5 sm:py-1.5 text-[11px] sm:text-xs font-semibold text-emerald-200 backdrop-blur-sm">
                     <BoltIcon className="h-3.5 w-3.5 text-amber-400 fill-current" />
                     <span>{t("expressDelivery")}</span>
                   </span>
@@ -512,7 +512,7 @@ export const GroceryHeroBanner: React.FC = () => {
                     }}
                     whileHover={{ scale: 1.05, y: -16 }}
                     onClick={() => scrollToCatalog(slide.category)}
-                    className="group/pouch relative flex flex-col justify-between h-56 sm:h-64 lg:h-72 w-28 sm:w-36 lg:w-40 rounded-2xl p-3 sm:p-4 text-white cursor-pointer select-none shadow-[0_20px_35px_rgba(0,0,0,0.6)]"
+                    className="hidden sm:flex group/pouch relative flex-col justify-between h-56 sm:h-64 lg:h-72 w-28 sm:w-36 lg:w-40 rounded-2xl p-3 sm:p-4 text-white cursor-pointer select-none shadow-[0_20px_35px_rgba(0,0,0,0.6)]"
                     style={{
                       background: `linear-gradient(175deg, ${slide.pouches[0].color} 0%, #0d3820 100%)`,
                     }}
@@ -577,7 +577,7 @@ export const GroceryHeroBanner: React.FC = () => {
                     }}
                     whileHover={{ scale: 1.08, y: -22 }}
                     onClick={() => scrollToCatalog(slide.category)}
-                    className="group/pouch relative z-10 flex flex-col justify-between h-64 sm:h-76 lg:h-84 w-32 sm:w-44 lg:w-48 rounded-2xl p-3.5 sm:p-5 text-white cursor-pointer scale-105 select-none shadow-[0_30px_50px_rgba(0,0,0,0.75)]"
+                    className="group/pouch relative z-10 flex flex-col justify-between h-56 sm:h-76 lg:h-84 w-36 sm:w-44 lg:w-48 rounded-2xl p-3 sm:p-5 text-white cursor-pointer scale-100 sm:scale-105 select-none shadow-[0_30px_50px_rgba(0,0,0,0.75)]"
                     style={{
                       background: `linear-gradient(175deg, ${slide.pouches[1].color} 0%, #7f1d1d 100%)`,
                     }}
@@ -649,7 +649,7 @@ export const GroceryHeroBanner: React.FC = () => {
                     }}
                     whileHover={{ scale: 1.05, y: -16 }}
                     onClick={() => scrollToCatalog(slide.category)}
-                    className="group/pouch relative flex flex-col justify-between h-56 sm:h-64 lg:h-72 w-28 sm:w-36 lg:w-40 rounded-2xl p-3 sm:p-4 text-white cursor-pointer select-none shadow-[0_20px_35px_rgba(0,0,0,0.6)]"
+                    className="hidden sm:flex group/pouch relative flex-col justify-between h-56 sm:h-64 lg:h-72 w-28 sm:w-36 lg:w-40 rounded-2xl p-3 sm:p-4 text-white cursor-pointer select-none shadow-[0_20px_35px_rgba(0,0,0,0.6)]"
                     style={{
                       background: `linear-gradient(175deg, ${slide.pouches[2].color} 0%, #713f12 100%)`,
                     }}
@@ -750,64 +750,64 @@ export const GroceryHeroBanner: React.FC = () => {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-40px" }}
         transition={{ duration: 0.5, ease: "easeOut" }}
-        className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4 rounded-3xl border border-gray-200/80 bg-white/80 p-4 shadow-[0_10px_25px_-5px_rgba(0,0,0,0.05)] backdrop-blur-sm sm:p-5 dark:border-emerald-950/60 dark:bg-[#071d12]/70 dark:shadow-[0_10px_30px_-5px_rgba(0,0,0,0.3)]"
+        className="grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-4 rounded-2xl sm:rounded-3xl border border-gray-200/80 bg-white/80 p-3 sm:p-5 shadow-[0_10px_25px_-5px_rgba(0,0,0,0.05)] backdrop-blur-sm dark:border-emerald-950/60 dark:bg-[#071d12]/70 dark:shadow-[0_10px_30px_-5px_rgba(0,0,0,0.3)]"
       >
         {/* Metric 1: Express 15 Min Delivery */}
-        <div className="flex items-center gap-3.5">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600 shadow-xs dark:bg-emerald-950/60 dark:text-emerald-400">
-            <BoltIcon className="h-5 w-5 fill-current" />
+        <div className="flex items-center gap-2 sm:gap-3.5 min-w-0">
+          <div className="flex h-9 w-9 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-xl sm:rounded-2xl bg-emerald-50 text-emerald-600 shadow-xs dark:bg-emerald-950/60 dark:text-emerald-400">
+            <BoltIcon className="h-4 w-4 sm:h-5 sm:w-5 fill-current" />
           </div>
-          <div>
-            <h4 className="font-outfit text-sm sm:text-base font-extrabold text-gray-900 dark:text-white">
+          <div className="min-w-0">
+            <h4 className="font-outfit text-xs sm:text-base font-extrabold text-gray-900 dark:text-white truncate">
               <AnimatedCounter to={15} suffix=" Mins" />
             </h4>
-            <p className="text-[11px] font-medium text-gray-500 dark:text-emerald-300/70">
+            <p className="text-[10px] sm:text-[11px] font-medium text-gray-500 dark:text-emerald-300/70 truncate">
               {t("trust1Desc")}
             </p>
           </div>
         </div>
 
         {/* Metric 2: 100% Farm Fresh Quality */}
-        <div className="flex items-center gap-3.5">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-green-50 text-green-600 shadow-xs dark:bg-green-950/60 dark:text-green-400">
-            <LeafIcon className="h-5 w-5" />
+        <div className="flex items-center gap-2 sm:gap-3.5 min-w-0">
+          <div className="flex h-9 w-9 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-xl sm:rounded-2xl bg-green-50 text-green-600 shadow-xs dark:bg-green-950/60 dark:text-green-400">
+            <LeafIcon className="h-4 w-4 sm:h-5 sm:w-5" />
           </div>
-          <div>
-            <h4 className="font-outfit text-sm sm:text-base font-extrabold text-gray-900 dark:text-white">
+          <div className="min-w-0">
+            <h4 className="font-outfit text-xs sm:text-base font-extrabold text-gray-900 dark:text-white truncate">
               <AnimatedCounter to={100} suffix="%" /> Fresh
             </h4>
-            <p className="text-[11px] font-medium text-gray-500 dark:text-emerald-300/70">
+            <p className="text-[10px] sm:text-[11px] font-medium text-gray-500 dark:text-emerald-300/70 truncate">
               {t("trust2Desc")}
             </p>
           </div>
         </div>
 
         {/* Metric 3: 12,000+ Happy Homes */}
-        <div className="flex items-center gap-3.5">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-amber-50 text-amber-600 shadow-xs dark:bg-amber-950/60 dark:text-amber-400">
-            <ShieldCheckIcon className="h-5 w-5" />
+        <div className="flex items-center gap-2 sm:gap-3.5 min-w-0">
+          <div className="flex h-9 w-9 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-xl sm:rounded-2xl bg-amber-50 text-amber-600 shadow-xs dark:bg-amber-950/60 dark:text-amber-400">
+            <ShieldCheckIcon className="h-4 w-4 sm:h-5 sm:w-5" />
           </div>
-          <div>
-            <h4 className="font-outfit text-sm sm:text-base font-extrabold text-gray-900 dark:text-white">
+          <div className="min-w-0">
+            <h4 className="font-outfit text-xs sm:text-base font-extrabold text-gray-900 dark:text-white truncate">
               <AnimatedCounter to={12450} suffix="+" />
             </h4>
-            <p className="text-[11px] font-medium text-gray-500 dark:text-emerald-300/70">
-              Happy Homes Served
+            <p className="text-[10px] sm:text-[11px] font-medium text-gray-500 dark:text-emerald-300/70 truncate">
+              Happy Homes
             </p>
           </div>
         </div>
 
         {/* Metric 4: 4.9 Rating */}
-        <div className="flex items-center gap-3.5">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-orange-50 text-amber-500 shadow-xs dark:bg-amber-950/60 dark:text-amber-400">
-            <StarIcon className="h-5 w-5 fill-current" />
+        <div className="flex items-center gap-2 sm:gap-3.5 min-w-0">
+          <div className="flex h-9 w-9 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-xl sm:rounded-2xl bg-orange-50 text-amber-500 shadow-xs dark:bg-amber-950/60 dark:text-amber-400">
+            <StarIcon className="h-4 w-4 sm:h-5 sm:w-5 fill-current" />
           </div>
-          <div>
-            <h4 className="font-outfit text-sm sm:text-base font-extrabold text-gray-900 dark:text-white flex items-center gap-1.5">
+          <div className="min-w-0">
+            <h4 className="font-outfit text-xs sm:text-base font-extrabold text-gray-900 dark:text-white flex items-center gap-1">
               <AnimatedCounter to={4.9} decimals={1} />
-              <StarIcon className="h-3 w-3 text-amber-500 fill-amber-500 inline" />
+              <StarIcon className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-amber-500 fill-amber-500 inline" />
             </h4>
-            <p className="text-[11px] font-medium text-gray-500 dark:text-emerald-300/70">
+            <p className="text-[10px] sm:text-[11px] font-medium text-gray-500 dark:text-emerald-300/70 truncate">
               Customer Rating
             </p>
           </div>

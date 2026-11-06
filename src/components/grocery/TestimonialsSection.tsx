@@ -66,8 +66,8 @@ export const TestimonialsSection: React.FC = () => {
         </p>
       </div>
 
-      {/* Testimonials Cards Grid */}
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+      {/* Testimonials Cards: Swipeable carousel on mobile, 3-column grid on desktop */}
+      <div className="flex overflow-x-auto gap-4 pb-3 no-scrollbar snap-x md:grid md:grid-cols-3 md:gap-6 md:pb-0">
         {TESTIMONIALS.map((item, index) => (
           <motion.div
             key={item.id}
@@ -76,7 +76,7 @@ export const TestimonialsSection: React.FC = () => {
             viewport={{ once: true, margin: "-40px" }}
             transition={{ duration: 0.5, delay: index * 0.12 }}
             whileHover={{ y: -6 }}
-            className="flex flex-col justify-between rounded-3xl border border-gray-200/80 bg-white/80 p-6 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.06)] backdrop-blur-sm transition-all hover:border-emerald-300 hover:shadow-[0_16px_32px_-8px_rgba(22,163,74,0.18)] dark:border-emerald-950/60 dark:bg-[#071910]/70 dark:hover:border-emerald-800"
+            className="w-[280px] sm:w-[320px] md:w-auto shrink-0 snap-center flex flex-col justify-between rounded-2xl sm:rounded-3xl border border-gray-200/80 bg-white/80 p-5 sm:p-6 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.06)] backdrop-blur-sm transition-all hover:border-emerald-300 hover:shadow-[0_16px_32px_-8px_rgba(22,163,74,0.18)] dark:border-emerald-950/60 dark:bg-[#071910]/70 dark:hover:border-emerald-800"
           >
             <div>
               {/* Star Rating & Verified Badge */}

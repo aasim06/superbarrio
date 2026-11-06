@@ -120,7 +120,7 @@ export const GroceryCatalog: React.FC = () => {
   ]);
 
   return (
-    <div className="mx-auto w-full max-w-[1920px] px-4 py-6 sm:px-6 md:py-8 lg:px-8 xl:px-10">
+    <div className="mx-auto w-full max-w-[1920px] px-3 py-3 sm:px-6 md:py-8 lg:px-8 xl:px-10 pb-20 md:pb-8">
       {/* Top Hero Promotions with Scroll Reveal */}
       <motion.div
         initial={{ opacity: 0, y: 24 }}
@@ -208,7 +208,7 @@ export const GroceryCatalog: React.FC = () => {
               variants={gridContainerVariants}
               initial="hidden"
               animate="show"
-              className="grid grid-cols-2 gap-3.5 sm:grid-cols-3 sm:gap-4 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-5 2xl:grid-cols-5 gap-y-6"
+              className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 sm:gap-4 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-5 2xl:grid-cols-5 gap-y-4 sm:gap-y-6"
             >
               {filteredProducts.map((product) => (
                 <motion.div key={product.id} variants={gridItemVariants}>

@@ -41,24 +41,24 @@ export const GroceryFooter: React.FC = () => {
     <footer className="mt-20 border-t border-gray-200/80 bg-white/95 pb-32 pt-2 backdrop-blur-sm dark:border-emerald-950/80 dark:bg-[#071910] sm:pb-20">
       {/* Perks Grid */}
       <div className="mx-auto w-full max-w-[1920px] border-b border-gray-100 px-4 py-12 sm:px-6 lg:px-8 xl:px-10 dark:border-emerald-950/60">
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-2 lg:grid-cols-4 sm:gap-5">
           {perks.map((p, idx) => (
             <motion.div
               key={idx}
               whileHover={shouldReduceMotion ? {} : { y: -4 }}
               transition={{ duration: 0.2 }}
-              className="flex items-start gap-4 rounded-2xl border border-gray-100 bg-gray-50/60 p-4.5 transition-all hover:border-emerald-200 hover:shadow-md dark:border-emerald-950/60 dark:bg-[#05130b] dark:hover:border-emerald-800"
+              className="flex flex-col sm:flex-row sm:items-start gap-2.5 sm:gap-4 rounded-2xl border border-gray-100 bg-gray-50/60 p-3 sm:p-4.5 transition-all hover:border-emerald-200 hover:shadow-md dark:border-emerald-950/60 dark:bg-[#05130b] dark:hover:border-emerald-800"
             >
               <div
-                className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl shadow-xs ${p.bg}`}
+                className={`flex h-9 w-9 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-xl sm:rounded-2xl shadow-xs ${p.bg}`}
               >
                 {p.icon}
               </div>
-              <div>
-                <h4 className="font-outfit text-sm font-extrabold text-gray-900 dark:text-white">
+              <div className="min-w-0">
+                <h4 className="font-outfit text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white truncate">
                   {p.title}
                 </h4>
-                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 font-medium leading-relaxed">
+                <p className="mt-0.5 sm:mt-1 text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 font-medium leading-relaxed line-clamp-2">
                   {p.desc}
                 </p>
               </div>
