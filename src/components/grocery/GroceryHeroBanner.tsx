@@ -312,12 +312,30 @@ export const GroceryHeroBanner: React.FC = () => {
     return () => clearInterval(timer);
   }, [isPaused, slides.length]);
 
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+
   const handleNext = () => {
     setCurrentSlide((prev) => (prev + 1) % slides.length);
   };
 
   const handlePrev = () => {
     setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
+  };
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStart === null) return;
+    const touchEnd = e.changedTouches[0].clientX;
+    const diff = touchStart - touchEnd;
+    if (diff > 45) {
+      handleNext();
+    } else if (diff < -45) {
+      handlePrev();
+    }
+    setTouchStart(null);
   };
 
   const scrollToCatalog = (category: string) => {
@@ -331,12 +349,14 @@ export const GroceryHeroBanner: React.FC = () => {
   const slide = slides[currentSlide];
 
   return (
-    <div className="w-full space-y-4">
+    <div className="w-full space-y-2.5 sm:space-y-4">
       {/* 1. Main Billboard Banner Canvas */}
       <div
-        className="group relative w-full overflow-hidden rounded-3xl border border-emerald-900/30 bg-[#072416] shadow-2xl transition-all"
+        className="group relative w-full overflow-hidden rounded-2xl sm:rounded-3xl border border-emerald-900/30 bg-[#072416] shadow-xl sm:shadow-2xl transition-all"
         onMouseEnter={() => setIsPaused(true)}
         onMouseLeave={() => setIsPaused(false)}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
       >
         {/* Animated Radial Lighting Glow Background */}
         <div
@@ -395,7 +415,7 @@ export const GroceryHeroBanner: React.FC = () => {
         />
 
         {/* Banner Content Container with AnimatePresence Crossfade */}
-        <div className="relative z-10 flex min-h-[380px] sm:min-h-[500px] lg:min-h-[530px] w-full flex-col justify-between p-5 sm:p-10 lg:p-14">
+        <div className="relative z-10 flex min-h-[290px] sm:min-h-[500px] lg:min-h-[530px] w-full flex-col justify-between p-4 sm:p-10 lg:p-14 pb-7 sm:pb-10">
           <AnimatePresence mode="wait">
             <motion.div
               key={slide.id}
@@ -403,7 +423,7 @@ export const GroceryHeroBanner: React.FC = () => {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -12 }}
               transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-              className="flex flex-1 flex-col justify-between gap-6 sm:gap-8 lg:flex-row lg:items-center"
+              className="flex flex-1 flex-col justify-between gap-4 sm:gap-8 lg:flex-row lg:items-center"
             >
               {/* Left Column: Bold Typography & Magnetic Action Button */}
               <div className="max-w-xl flex-1 select-none">
@@ -412,13 +432,13 @@ export const GroceryHeroBanner: React.FC = () => {
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.1, duration: 0.4 }}
-                  className="text-[11px] sm:text-[13px] font-extrabold tracking-[0.25em] text-white/80 uppercase"
+                  className="text-[10px] sm:text-[13px] font-extrabold tracking-[0.25em] text-white/80 uppercase"
                 >
                   {t(slide.kickerKey)}
                 </motion.p>
 
                 {/* Modern Headline with Responsive Scaling */}
-                <h1 className="mt-2 sm:mt-4 font-outfit text-2xl sm:text-5xl lg:text-6xl xl:text-7xl font-black tracking-tight text-white leading-[1.1] sm:leading-[1.06]">
+                <h1 className="mt-1.5 sm:mt-4 font-outfit text-xl sm:text-5xl lg:text-6xl xl:text-7xl font-black tracking-tight text-white leading-[1.1] sm:leading-[1.06]">
                   <motion.span
                     initial={{ opacity: 0, y: 15 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -451,7 +471,7 @@ export const GroceryHeroBanner: React.FC = () => {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.35, duration: 0.5 }}
-                  className="mt-2 sm:mt-4 text-xs sm:text-sm lg:text-[15px] text-gray-200/90 leading-relaxed max-w-lg line-clamp-2 sm:line-clamp-none"
+                  className="mt-1.5 sm:mt-4 text-[11px] sm:text-sm lg:text-[15px] text-gray-200/90 leading-relaxed max-w-lg line-clamp-2 sm:line-clamp-none"
                 >
                   {t(slide.descKey)}
                 </motion.p>
@@ -461,7 +481,7 @@ export const GroceryHeroBanner: React.FC = () => {
                   initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.42, duration: 0.45 }}
-                  className="mt-4 sm:mt-7 flex flex-wrap items-center gap-2.5 sm:gap-4"
+                  className="mt-3 sm:mt-7 flex flex-wrap items-center gap-2 sm:gap-4"
                 >
                   <MagneticButton
                     onClick={() => scrollToCatalog(slide.category)}
@@ -471,8 +491,8 @@ export const GroceryHeroBanner: React.FC = () => {
                     <ArrowRightIcon className="h-4 w-4 rtl:rotate-180 transition-transform duration-300 group-hover/btn:translate-x-1" />
                   </MagneticButton>
 
-                  <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-950/40 px-3 py-1 sm:px-3.5 sm:py-1.5 text-[11px] sm:text-xs font-semibold text-emerald-200 backdrop-blur-sm">
-                    <BoltIcon className="h-3.5 w-3.5 text-amber-400 fill-current" />
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-950/40 px-2.5 py-1 sm:px-3.5 sm:py-1.5 text-[10px] sm:text-xs font-semibold text-emerald-200 backdrop-blur-sm">
+                    <BoltIcon className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-amber-400 fill-current" />
                     <span>{t("expressDelivery")}</span>
                   </span>
                 </motion.div>
@@ -577,34 +597,34 @@ export const GroceryHeroBanner: React.FC = () => {
                     }}
                     whileHover={{ scale: 1.08, y: -22 }}
                     onClick={() => scrollToCatalog(slide.category)}
-                    className="group/pouch relative z-10 flex flex-col justify-between h-56 sm:h-76 lg:h-84 w-36 sm:w-44 lg:w-48 rounded-2xl p-3 sm:p-5 text-white cursor-pointer scale-100 sm:scale-105 select-none shadow-[0_30px_50px_rgba(0,0,0,0.75)]"
+                    className="group/pouch relative z-10 flex flex-col justify-between h-44 sm:h-76 lg:h-84 w-32 sm:w-44 lg:w-48 rounded-2xl p-2.5 sm:p-5 text-white cursor-pointer scale-100 sm:scale-105 select-none shadow-[0_30px_50px_rgba(0,0,0,0.75)]"
                     style={{
                       background: `linear-gradient(175deg, ${slide.pouches[1].color} 0%, #7f1d1d 100%)`,
                     }}
                   >
-                    <div className="flex items-center justify-between border-b border-black/25 pb-2 opacity-90">
-                      <span className="h-2 w-2 rounded-full bg-white/40" />
-                      <span className="text-[10px] font-black tracking-widest uppercase">
+                    <div className="flex items-center justify-between border-b border-black/25 pb-1 sm:pb-2 opacity-90">
+                      <span className="h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full bg-white/40" />
+                      <span className="text-[9px] sm:text-[10px] font-black tracking-widest uppercase">
                         SuperBarrio™ Fresh
                       </span>
-                      <span className="h-2 w-2 rounded-full bg-white/40" />
+                      <span className="h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full bg-white/40" />
                     </div>
 
-                    <div className="text-center my-1.5">
+                    <div className="text-center my-1 sm:my-1.5">
                       {slide.pouches[1].accentBadge && (
-                        <span className="inline-block rounded-full bg-white/20 px-2 py-0.5 text-[9px] font-bold text-white mb-1 shadow-xs">
+                        <span className="inline-block rounded-full bg-white/20 px-1.5 py-0.5 text-[8px] sm:text-[9px] font-bold text-white mb-0.5 sm:mb-1 shadow-xs">
                           {slide.pouches[1].accentBadge}
                         </span>
                       )}
-                      <h3 className="text-xs sm:text-sm font-black leading-tight">
+                      <h3 className="text-[11px] sm:text-sm font-black leading-tight">
                         {slide.pouches[1].name}
                       </h3>
-                      <p className="text-[10px] text-white/80 mt-0.5">
+                      <p className="text-[9px] sm:text-[10px] text-white/80 mt-0.5">
                         {slide.pouches[1].subname}
                       </p>
                     </div>
 
-                    <div className="relative mx-auto h-20 w-20 sm:h-24 sm:w-24 lg:h-28 lg:w-28 overflow-hidden rounded-full border-2 border-white/80 shadow-md bg-black/30 my-1">
+                    <div className="relative mx-auto h-14 w-14 sm:h-24 sm:w-24 lg:h-28 lg:w-28 overflow-hidden rounded-full border-2 border-white/80 shadow-md bg-black/30 my-0.5 sm:my-1">
                       <img
                         src={slide.pouches[1].imgUrl}
                         alt={slide.pouches[1].name}
@@ -613,7 +633,7 @@ export const GroceryHeroBanner: React.FC = () => {
                       />
                     </div>
 
-                    <div className="flex items-center justify-between border-t border-white/25 pt-2 text-[11px]">
+                    <div className="flex items-center justify-between border-t border-white/25 pt-1 sm:pt-2 text-[10px] sm:text-[11px]">
                       <span className="text-white/90 font-medium">
                         {slide.pouches[1].weight}
                       </span>
@@ -707,11 +727,11 @@ export const GroceryHeroBanner: React.FC = () => {
           </AnimatePresence>
         </div>
 
-        {/* Carousel Slider Navigation Arrows */}
+        {/* Carousel Slider Navigation Arrows (Hidden on Mobile for cleaner view) */}
         <button
           type="button"
           onClick={handlePrev}
-          className="absolute start-3 sm:start-4 top-1/2 -translate-y-1/2 z-20 flex h-10 w-10 items-center justify-center rounded-full bg-black/40 text-white backdrop-blur-md transition-all duration-200 hover:bg-black/70 hover:scale-110 active:scale-95 opacity-70 group-hover:opacity-100"
+          className="hidden sm:flex absolute start-3 sm:start-4 top-1/2 -translate-y-1/2 z-20 h-10 w-10 items-center justify-center rounded-full bg-black/40 text-white backdrop-blur-md transition-all duration-200 hover:bg-black/70 hover:scale-110 active:scale-95 opacity-70 group-hover:opacity-100"
           title="Previous Banner"
         >
           <AngleLeftIcon className="h-5 w-5 rtl:rotate-180" />
@@ -720,14 +740,14 @@ export const GroceryHeroBanner: React.FC = () => {
         <button
           type="button"
           onClick={handleNext}
-          className="absolute end-3 sm:end-4 top-1/2 -translate-y-1/2 z-20 flex h-10 w-10 items-center justify-center rounded-full bg-black/40 text-white backdrop-blur-md transition-all duration-200 hover:bg-black/70 hover:scale-110 active:scale-95 opacity-70 group-hover:opacity-100"
+          className="hidden sm:flex absolute end-3 sm:end-4 top-1/2 -translate-y-1/2 z-20 h-10 w-10 items-center justify-center rounded-full bg-black/40 text-white backdrop-blur-md transition-all duration-200 hover:bg-black/70 hover:scale-110 active:scale-95 opacity-70 group-hover:opacity-100"
           title="Next Banner"
         >
           <AngleRightIcon className="h-5 w-5 rtl:rotate-180" />
         </button>
 
         {/* Bottom Pagination Dots */}
-        <div className="absolute bottom-3 sm:bottom-4 inset-x-0 z-20 flex items-center justify-center gap-2">
+        <div className="absolute bottom-2 sm:bottom-4 inset-x-0 z-20 flex items-center justify-center gap-1.5 sm:gap-2">
           {slides.map((s, idx) => (
             <button
               key={s.id}
