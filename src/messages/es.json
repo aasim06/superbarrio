@@ -1003,9 +1003,9 @@
     },
     "backToStore": "Volver a la tienda",
     "secureCheckout": "Compra 100% Segura • Cifrado SSL de 256 bits",
-    "emptyTitle": "Tu cesta está vacía",
-    "emptySubtitle": "No tienes artículos en la cesta para tramitar el pedido.",
-    "startShopping": "Comenzar a Comprar",
+    "emptyTitle": "¡Tu cesta está esperando productos frescos!",
+    "emptySubtitle": "Aún no has añadido ningún producto a tu compra. ¡Descubre nuestras frutas de temporada, verduras de la huerta y panadería recién horneada!",
+    "startShopping": "Volver a la tienda",
     "deliverySection": {
       "title": "Datos de Envío y Contacto en España",
       "subtitle": "Introduce la dirección donde deseas recibir tu compra de productos frescos",

@@ -12,7 +12,6 @@ import {
 import { CustomerOrder, PaymentMethod } from "@/types/grocery";
 import {
   WhatsAppIcon,
-  CartIcon,
   CreditCardIcon,
   DollarLineIcon,
   CheckCircleIcon,
@@ -20,27 +19,61 @@ import {
 } from "@/icons";
 import { useLocale, useTranslations } from "next-intl";
 import { formatPrice } from "@/utils/currency";
-import { motion, AnimatePresence, type Variants } from "framer-motion";
+import { motion, AnimatePresence, useReducedMotion, type Variants } from "framer-motion";
 import { toast } from "sonner";
+import { z } from "zod";
 
-// Staggered entrance animation variants
+// Zod Validation Schema for Spain Checkout Form
+const spainCheckoutSchema = z.object({
+  fullName: z
+    .string()
+    .min(3, "Por favor, introduce tu nombre y apellidos completos."),
+  email: z
+    .string()
+    .email("Introduce una dirección de correo electrónico válida (p. ej. maria@email.es)."),
+  phone: z
+    .string()
+    .refine(
+      (val) => val.replace(/\D/g, "").length === 9,
+      "El teléfono móvil debe tener exactamente 9 dígitos de España (p. ej. 612 345 678).",
+    ),
+  street: z
+    .string()
+    .min(4, "Introduce la calle, avenida o plaza y el número exterior."),
+  apartment: z.string().optional(),
+  postalCode: z
+    .string()
+    .refine(
+      (val) => /^[0-9]{5}$/.test(val.trim()),
+      "El código postal debe contener exactamente 5 dígitos numéricos (p. ej. 28013).",
+    ),
+  city: z
+    .string()
+    .min(2, "Introduce tu ciudad o municipio de residencia."),
+  province: z
+    .string()
+    .min(2, "Selecciona una provincia de España."),
+  notes: z.string().optional(),
+});
+
+// Staggered entrance animation variants (with reduced-motion awareness)
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.12,
+      staggerChildren: 0.1,
     },
   },
 };
 
 const cardVariants: Variants = {
-  hidden: { opacity: 0, y: 22 },
+  hidden: { opacity: 0, y: 16 },
   visible: {
     opacity: 1,
     y: 0,
     transition: {
-      duration: 0.45,
+      duration: 0.4,
       ease: [0.16, 1, 0.3, 1],
     },
   },
@@ -49,7 +82,12 @@ const cardVariants: Variants = {
 // Shimmer Skeleton Loader when cart is hydrating
 export const CheckoutSkeleton: React.FC = () => {
   return (
-    <div className="mx-auto w-full max-w-[1920px] px-4 py-6 sm:px-6 md:py-10 lg:px-8 xl:px-10 animate-pulse">
+    <div
+      role="status"
+      aria-busy="true"
+      aria-label="Cargando proceso de compra"
+      className="mx-auto w-full max-w-[1920px] px-4 py-6 sm:px-6 md:py-10 lg:px-8 xl:px-10 animate-pulse"
+    >
       {/* Stepper Skeleton */}
       <div className="mb-8">
         <div className="flex items-center justify-between pb-4">
@@ -161,6 +199,7 @@ export const CheckoutView: React.FC = () => {
   const locale = useLocale();
   const t = useTranslations("checkout");
   const isEs = locale === "es";
+  const shouldReduceMotion = useReducedMotion();
 
   const {
     cart,
@@ -193,6 +232,9 @@ export const CheckoutView: React.FC = () => {
     saveData: true,
     createAccount: false,
   });
+
+  // Per-field Zod validation errors
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
   // Delivery Slots (Spain timing)
   const slots: SpainDeliverySlot[] = React.useMemo(
@@ -231,6 +273,18 @@ export const CheckoutView: React.FC = () => {
     }
   }, []);
 
+  const handleFieldChange = (field: string, value: string | boolean) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+    // Clear error for that field as user types
+    if (formErrors[field]) {
+      setFormErrors((prev) => {
+        const next = { ...prev };
+        delete next[field];
+        return next;
+      });
+    }
+  };
+
   const handleApplyCoupon = (e: React.FormEvent) => {
     e.preventDefault();
     if (!couponInput.trim()) return;
@@ -242,8 +296,10 @@ export const CheckoutView: React.FC = () => {
       setCouponInput("");
     } else {
       setCouponError(res.message);
-      setIsCouponShaking(true);
-      setTimeout(() => setIsCouponShaking(false), 500);
+      if (!shouldReduceMotion) {
+        setIsCouponShaking(true);
+        setTimeout(() => setIsCouponShaking(false), 500);
+      }
       toast.error(res.message);
     }
   };
@@ -253,62 +309,35 @@ export const CheckoutView: React.FC = () => {
     toast.info(isEs ? "Código promocional eliminado." : "Promo code removed.");
   };
 
-  // Form Validation
-  const validateForm = () => {
-    if (!formData.fullName.trim()) {
-      toast.error(
-        isEs
-          ? "Por favor, introduce tu nombre completo."
-          : "Please enter your full name.",
-      );
+  // Form Validation using Zod
+  const validateWithZod = () => {
+    const parseResult = spainCheckoutSchema.safeParse(formData);
+
+    if (!parseResult.success) {
+      const errorsMap: Record<string, string> = {};
+      parseResult.error.issues.forEach((err) => {
+        const fieldName = String(err.path[0] || "");
+        if (fieldName && !errorsMap[fieldName]) {
+          errorsMap[fieldName] = err.message;
+        }
+      });
+      setFormErrors(errorsMap);
+
+      // Trigger user toast with the first error message
+      const firstError = Object.values(errorsMap)[0];
+      if (firstError) {
+        toast.error(firstError);
+      }
       return false;
     }
-    if (!formData.email.trim() || !formData.email.includes("@")) {
-      toast.error(
-        isEs
-          ? "Introduce un correo electrónico válido."
-          : "Please enter a valid email address.",
-      );
-      return false;
-    }
-    // Clean phone number
-    const cleanPhone = formData.phone.replace(/\D/g, "");
-    if (cleanPhone.length < 9) {
-      toast.error(
-        isEs
-          ? "Introduce un número de teléfono válido de España (9 dígitos)."
-          : "Please enter a valid 9-digit Spanish phone number.",
-      );
-      return false;
-    }
-    if (!formData.street.trim()) {
-      toast.error(
-        isEs
-          ? "Introduce tu calle y número."
-          : "Please enter your street address and number.",
-      );
-      return false;
-    }
-    if (!formData.postalCode.trim() || formData.postalCode.length !== 5) {
-      toast.error(
-        isEs
-          ? "El código postal debe tener exactamente 5 dígitos (p. ej. 28013)."
-          : "Postal code must have 5 digits (e.g. 28013).",
-      );
-      return false;
-    }
-    if (!formData.city.trim()) {
-      toast.error(
-        isEs ? "Introduce tu ciudad o municipio." : "Please enter your city.",
-      );
-      return false;
-    }
+
+    setFormErrors({});
     return true;
   };
 
   const handleSubmitOrder = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validateForm()) return;
+    if (!validateWithZod()) return;
 
     if (cart.length === 0) {
       toast.error(isEs ? "Tu cesta está vacía." : "Your basket is empty.");
@@ -413,30 +442,90 @@ export const CheckoutView: React.FC = () => {
     return `https://wa.me/34612345678?text=${encodeURIComponent(msg)}`;
   };
 
-  // If still loading cart from localStorage, show shimmering Skeleton Loader
+  // If still hydrating from localStorage, show shimmering Skeleton Loader
   if (!isLoaded) {
     return <CheckoutSkeleton />;
   }
 
-  // If cart is empty after hydration
+  // Friendly Empty Cart State with Animated Illustration
   if (cart.length === 0 && !isSubmitting && !isSuccess) {
     return (
       <div className="mx-auto max-w-xl px-4 py-20 text-center">
-        <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-3xl bg-emerald-50 text-emerald-600 shadow-lg shadow-emerald-600/10 dark:bg-emerald-950/40 dark:text-emerald-400">
-          <CartIcon className="h-12 w-12" />
+        {/* Friendly Grocery Basket Illustration with subtle floating particles */}
+        <div className="relative mx-auto flex h-36 w-36 items-center justify-center">
+          {/* Glowing backdrop halo */}
+          <div className="absolute inset-0 rounded-full bg-emerald-500/10 blur-2xl dark:bg-emerald-500/15" />
+
+          {/* Floating Fresh Veggie & Fruit Badges */}
+          <motion.div
+            animate={
+              shouldReduceMotion
+                ? {}
+                : {
+                    y: [-4, 6, -4],
+                    rotate: [-3, 3, -3],
+                  }
+            }
+            transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute -top-1 -start-1 flex h-10 w-10 items-center justify-center rounded-2xl bg-amber-100 text-lg shadow-md dark:bg-amber-950/70"
+            title="Naranjas frescas"
+          >
+            🍊
+          </motion.div>
+
+          <motion.div
+            animate={
+              shouldReduceMotion
+                ? {}
+                : {
+                    y: [6, -4, 6],
+                    rotate: [4, -4, 4],
+                  }
+            }
+            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute -bottom-1 -end-1 flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-100 text-lg shadow-md dark:bg-emerald-950/70"
+            title="Manzanas crujientes"
+          >
+            🍏
+          </motion.div>
+
+          {/* Center Shopping Basket */}
+          <div className="relative flex h-24 w-24 items-center justify-center rounded-3xl bg-gradient-to-tr from-emerald-600 to-green-500 text-white shadow-2xl shadow-emerald-600/30">
+            <svg
+              className="h-12 w-12"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              strokeWidth={1.8}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
+              />
+            </svg>
+          </div>
         </div>
-        <h2 className="mt-5 font-outfit text-2xl font-black text-gray-900 dark:text-white">
+
+        <h2 className="mt-6 font-outfit text-2xl font-black text-gray-900 dark:text-white sm:text-3xl">
           {t("emptyTitle")}
         </h2>
-        <p className="mt-2 text-xs sm:text-sm text-gray-500 dark:text-gray-400">
+        <p className="mx-auto mt-2.5 max-w-md text-xs sm:text-sm font-medium leading-relaxed text-gray-500 dark:text-gray-300">
           {t("emptySubtitle")}
         </p>
-        <Link
-          href="/grocery"
-          className="mt-6 inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-emerald-600 to-green-600 px-7 py-3.5 text-xs font-black text-white shadow-xl shadow-emerald-600/30 transition hover:scale-105 active:scale-95"
-        >
-          <span>← {t("startShopping")}</span>
-        </Link>
+
+        {/* Primary Action Button */}
+        <div className="mt-7 flex justify-center">
+          <Link
+            href="/grocery"
+            className="group inline-flex items-center gap-2.5 rounded-2xl bg-gradient-to-r from-emerald-600 to-green-600 px-7 py-4 text-xs font-black text-white shadow-xl shadow-emerald-600/35 transition-all duration-200 hover:scale-105 active:scale-95 hover:shadow-2xl hover:shadow-emerald-600/45"
+          >
+            <span className="transition-transform group-hover:-translate-x-1 font-bold">
+              ←
+            </span>
+            <span>{t("startShopping")}</span>
+          </Link>
+        </div>
       </div>
     );
   }
@@ -471,7 +560,7 @@ export const CheckoutView: React.FC = () => {
           <motion.div
             initial={{ width: "25%" }}
             animate={{ width: "66%" }}
-            transition={{ duration: 0.6, ease: "easeOut" }}
+            transition={shouldReduceMotion ? { duration: 0.1 } : { duration: 0.6, ease: "easeOut" }}
             className="absolute top-1/2 start-0 -translate-y-1/2 h-1 bg-gradient-to-r from-emerald-500 to-green-500 -z-0 rounded-full"
           />
 
@@ -525,9 +614,10 @@ export const CheckoutView: React.FC = () => {
           type="button"
           onClick={() => setIsMobileSummaryOpen(!isMobileSummaryOpen)}
           className="flex w-full items-center justify-between rounded-2xl border border-emerald-500/30 bg-emerald-50/90 px-4 py-3.5 text-xs font-bold text-emerald-950 shadow-sm backdrop-blur-md dark:border-emerald-950/80 dark:bg-[#071d12] dark:text-emerald-200"
+          aria-expanded={isMobileSummaryOpen}
         >
           <div className="flex items-center gap-2">
-            <CartIcon className="h-4 w-4 text-emerald-600" />
+            <span className="text-base">🛒</span>
             <span>
               {isMobileSummaryOpen ? "Ocultar resumen" : "Ver resumen del pedido"} ({cart.length})
             </span>
@@ -543,30 +633,31 @@ export const CheckoutView: React.FC = () => {
         <AnimatePresence>
           {isMobileSummaryOpen && (
             <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
+              initial={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, height: 0 }}
+              animate={shouldReduceMotion ? { opacity: 1 } : { opacity: 1, height: "auto" }}
+              exit={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, height: 0 }}
               className="mt-2 overflow-hidden rounded-2xl border border-gray-200/90 bg-white p-4 shadow-md dark:border-emerald-950/80 dark:bg-[#071910]"
             >
-              <div className="divide-y divide-gray-100 dark:divide-emerald-950/60 max-h-60 overflow-y-auto">
+              {/* Smart max-height for mobile list */}
+              <div className="divide-y divide-gray-100 dark:divide-emerald-950/60 max-h-[360px] overflow-y-auto custom-scrollbar">
                 {cart.map((item) => (
                   <div key={item.id} className="flex items-center justify-between py-2.5 text-xs">
                     <div className="flex items-center gap-2.5 min-w-0">
                       <img
                         src={item.imageUrl}
                         alt={item.name}
-                        className="h-9 w-9 rounded-lg object-cover"
+                        className="h-10 w-10 rounded-xl object-cover shrink-0"
                       />
                       <div className="truncate">
                         <span className="font-bold text-gray-900 dark:text-white truncate block">
                           {item.name}
                         </span>
                         <span className="text-[10px] text-gray-500 dark:text-emerald-300/60">
-                          {item.quantity} x {formatPrice(item.price, locale)}
+                          {item.quantity} x {formatPrice(item.price, locale)} ({item.unit})
                         </span>
                       </div>
                     </div>
-                    <span className="font-outfit font-black text-gray-900 dark:text-white">
+                    <span className="font-outfit font-black text-gray-900 dark:text-white ms-2">
                       {formatPrice(item.price * item.quantity, locale)}
                     </span>
                   </div>
@@ -581,15 +672,15 @@ export const CheckoutView: React.FC = () => {
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
         {/* Left Column: Delivery Form, Slots, Payment (7 Columns) with Staggered Entrance */}
         <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
+          variants={shouldReduceMotion ? {} : containerVariants}
+          initial={shouldReduceMotion ? undefined : "hidden"}
+          animate={shouldReduceMotion ? undefined : "visible"}
           className="space-y-6 lg:col-span-7"
         >
-          <form onSubmit={handleSubmitOrder} className="space-y-6">
+          <form onSubmit={handleSubmitOrder} noValidate className="space-y-6">
             {/* Section 1: Spain Delivery Address & Contact */}
             <motion.div
-              variants={cardVariants}
+              variants={shouldReduceMotion ? {} : cardVariants}
               className="rounded-3xl border border-gray-200/80 bg-white p-5 sm:p-7 shadow-[0_4px_24px_-4px_rgba(0,0,0,0.06)] backdrop-blur-sm dark:border-emerald-950/70 dark:bg-[#071910] dark:shadow-[0_4px_24px_-4px_rgba(0,0,0,0.4)]"
             >
               <div className="flex items-center gap-3 pb-4 border-b border-gray-100 dark:border-emerald-950/60">
@@ -609,41 +700,78 @@ export const CheckoutView: React.FC = () => {
               <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
                 {/* Full Name */}
                 <div>
-                  <label className="block text-xs font-bold text-gray-700 dark:text-gray-300">
+                  <label
+                    htmlFor="checkout-fullName"
+                    className="block text-xs font-bold text-gray-700 dark:text-gray-300"
+                  >
                     {t("deliverySection.fullName")}
                   </label>
                   <input
+                    id="checkout-fullName"
+                    name="fullName"
                     type="text"
                     required
+                    autoComplete="name"
+                    aria-required="true"
+                    aria-invalid={!!formErrors.fullName}
                     value={formData.fullName}
                     onChange={(e) =>
-                      setFormData({ ...formData, fullName: e.target.value })
+                      handleFieldChange("fullName", e.target.value)
                     }
                     placeholder={t("deliverySection.fullNamePlaceholder")}
-                    className="mt-1.5 w-full rounded-2xl border border-gray-200/80 bg-gray-50/70 px-4 py-2.5 text-xs sm:text-sm font-semibold text-gray-800 placeholder-gray-400 transition focus:border-emerald-500 focus:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/30 dark:border-emerald-950 dark:bg-[#05130b] dark:text-white dark:placeholder-emerald-400/40"
+                    className={`mt-1.5 w-full rounded-2xl border px-4 py-2.5 text-xs sm:text-sm font-semibold transition focus:bg-white focus:outline-none focus-visible:ring-2 dark:bg-[#05130b] dark:text-white ${
+                      formErrors.fullName
+                        ? "border-rose-400 bg-rose-50/30 text-rose-900 focus:border-rose-500 focus-visible:ring-rose-500/20 dark:border-rose-800"
+                        : "border-gray-200/80 bg-gray-50/70 text-gray-800 placeholder-gray-400 focus:border-emerald-500 focus-visible:ring-emerald-500/30 dark:border-emerald-950 dark:placeholder-emerald-400/40"
+                    }`}
                   />
+                  {formErrors.fullName && (
+                    <span className="mt-1 block text-[11px] font-bold text-rose-600 dark:text-rose-400">
+                      ⚠ {formErrors.fullName}
+                    </span>
+                  )}
                 </div>
 
                 {/* Email */}
                 <div>
-                  <label className="block text-xs font-bold text-gray-700 dark:text-gray-300">
+                  <label
+                    htmlFor="checkout-email"
+                    className="block text-xs font-bold text-gray-700 dark:text-gray-300"
+                  >
                     {t("deliverySection.email")}
                   </label>
                   <input
+                    id="checkout-email"
+                    name="email"
                     type="email"
                     required
+                    autoComplete="email"
+                    aria-required="true"
+                    aria-invalid={!!formErrors.email}
                     value={formData.email}
                     onChange={(e) =>
-                      setFormData({ ...formData, email: e.target.value })
+                      handleFieldChange("email", e.target.value)
                     }
                     placeholder={t("deliverySection.emailPlaceholder")}
-                    className="mt-1.5 w-full rounded-2xl border border-gray-200/80 bg-gray-50/70 px-4 py-2.5 text-xs sm:text-sm font-semibold text-gray-800 placeholder-gray-400 transition focus:border-emerald-500 focus:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/30 dark:border-emerald-950 dark:bg-[#05130b] dark:text-white dark:placeholder-emerald-400/40"
+                    className={`mt-1.5 w-full rounded-2xl border px-4 py-2.5 text-xs sm:text-sm font-semibold transition focus:bg-white focus:outline-none focus-visible:ring-2 dark:bg-[#05130b] dark:text-white ${
+                      formErrors.email
+                        ? "border-rose-400 bg-rose-50/30 text-rose-900 focus:border-rose-500 focus-visible:ring-rose-500/20 dark:border-rose-800"
+                        : "border-gray-200/80 bg-gray-50/70 text-gray-800 placeholder-gray-400 focus:border-emerald-500 focus-visible:ring-emerald-500/30 dark:border-emerald-950 dark:placeholder-emerald-400/40"
+                    }`}
                   />
+                  {formErrors.email && (
+                    <span className="mt-1 block text-[11px] font-bold text-rose-600 dark:text-rose-400">
+                      ⚠ {formErrors.email}
+                    </span>
+                  )}
                 </div>
 
                 {/* Phone (+34 Spain) */}
                 <div className="sm:col-span-2">
-                  <label className="block text-xs font-bold text-gray-700 dark:text-gray-300">
+                  <label
+                    htmlFor="checkout-phone"
+                    className="block text-xs font-bold text-gray-700 dark:text-gray-300"
+                  >
                     {t("deliverySection.phone")}
                   </label>
                   <div className="relative mt-1.5 flex items-center">
@@ -652,51 +780,87 @@ export const CheckoutView: React.FC = () => {
                       <span>+34</span>
                     </span>
                     <input
+                      id="checkout-phone"
+                      name="tel"
                       type="tel"
                       required
+                      autoComplete="tel"
+                      aria-required="true"
+                      aria-invalid={!!formErrors.phone}
                       value={formData.phone}
                       onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          phone: e.target.value.replace(/[^0-9\s]/g, ""),
-                        })
+                        handleFieldChange(
+                          "phone",
+                          e.target.value.replace(/[^0-9\s]/g, ""),
+                        )
                       }
                       placeholder={t("deliverySection.phonePlaceholder")}
-                      className="w-full rounded-2xl border border-gray-200/80 bg-gray-50/70 py-2.5 pe-4 ps-20 text-xs sm:text-sm font-semibold text-gray-800 placeholder-gray-400 transition focus:border-emerald-500 focus:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/30 dark:border-emerald-950 dark:bg-[#05130b] dark:text-white dark:placeholder-emerald-400/40"
+                      className={`w-full rounded-2xl border py-2.5 pe-4 ps-20 text-xs sm:text-sm font-semibold transition focus:bg-white focus:outline-none focus-visible:ring-2 dark:bg-[#05130b] dark:text-white ${
+                        formErrors.phone
+                          ? "border-rose-400 bg-rose-50/30 text-rose-900 focus:border-rose-500 focus-visible:ring-rose-500/20 dark:border-rose-800"
+                          : "border-gray-200/80 bg-gray-50/70 text-gray-800 placeholder-gray-400 focus:border-emerald-500 focus-visible:ring-emerald-500/30 dark:border-emerald-950 dark:placeholder-emerald-400/40"
+                      }`}
                     />
                   </div>
-                  <p className="mt-1 text-[11px] font-medium text-gray-400 dark:text-emerald-400/60">
-                    {t("deliverySection.phoneHelp")}
-                  </p>
+                  {formErrors.phone ? (
+                    <span className="mt-1 block text-[11px] font-bold text-rose-600 dark:text-rose-400">
+                      ⚠ {formErrors.phone}
+                    </span>
+                  ) : (
+                    <p className="mt-1 text-[11px] font-medium text-gray-400 dark:text-emerald-400/60">
+                      {t("deliverySection.phoneHelp")}
+                    </p>
+                  )}
                 </div>
 
                 {/* Street & Number */}
                 <div className="sm:col-span-2">
-                  <label className="block text-xs font-bold text-gray-700 dark:text-gray-300">
+                  <label
+                    htmlFor="checkout-street"
+                    className="block text-xs font-bold text-gray-700 dark:text-gray-300"
+                  >
                     {t("deliverySection.street")}
                   </label>
                   <input
+                    id="checkout-street"
+                    name="street-address"
                     type="text"
                     required
+                    autoComplete="street-address"
+                    aria-required="true"
+                    aria-invalid={!!formErrors.street}
                     value={formData.street}
                     onChange={(e) =>
-                      setFormData({ ...formData, street: e.target.value })
+                      handleFieldChange("street", e.target.value)
                     }
                     placeholder={t("deliverySection.streetPlaceholder")}
-                    className="mt-1.5 w-full rounded-2xl border border-gray-200/80 bg-gray-50/70 px-4 py-2.5 text-xs sm:text-sm font-semibold text-gray-800 placeholder-gray-400 transition focus:border-emerald-500 focus:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/30 dark:border-emerald-950 dark:bg-[#05130b] dark:text-white dark:placeholder-emerald-400/40"
+                    className={`mt-1.5 w-full rounded-2xl border px-4 py-2.5 text-xs sm:text-sm font-semibold transition focus:bg-white focus:outline-none focus-visible:ring-2 dark:bg-[#05130b] dark:text-white ${
+                      formErrors.street
+                        ? "border-rose-400 bg-rose-50/30 text-rose-900 focus:border-rose-500 focus-visible:ring-rose-500/20 dark:border-rose-800"
+                        : "border-gray-200/80 bg-gray-50/70 text-gray-800 placeholder-gray-400 focus:border-emerald-500 focus-visible:ring-emerald-500/30 dark:border-emerald-950 dark:placeholder-emerald-400/40"
+                    }`}
                   />
+                  {formErrors.street && (
+                    <span className="mt-1 block text-[11px] font-bold text-rose-600 dark:text-rose-400">
+                      ⚠ {formErrors.street}
+                    </span>
+                  )}
                 </div>
 
                 {/* Floor / Apartment */}
                 <div>
-                  <label className="block text-xs font-bold text-gray-700 dark:text-gray-300">
+                  <label
+                    htmlFor="checkout-apartment"
+                    className="block text-xs font-bold text-gray-700 dark:text-gray-300"
+                  >
                     {t("deliverySection.apartment")}
                   </label>
                   <input
+                    id="checkout-apartment"
                     type="text"
                     value={formData.apartment}
                     onChange={(e) =>
-                      setFormData({ ...formData, apartment: e.target.value })
+                      handleFieldChange("apartment", e.target.value)
                     }
                     placeholder={t("deliverySection.apartmentPlaceholder")}
                     className="mt-1.5 w-full rounded-2xl border border-gray-200/80 bg-gray-50/70 px-4 py-2.5 text-xs sm:text-sm font-semibold text-gray-800 placeholder-gray-400 transition focus:border-emerald-500 focus:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/30 dark:border-emerald-950 dark:bg-[#05130b] dark:text-white dark:placeholder-emerald-400/40"
@@ -705,51 +869,90 @@ export const CheckoutView: React.FC = () => {
 
                 {/* Postal Code (5 Digits) */}
                 <div>
-                  <label className="block text-xs font-bold text-gray-700 dark:text-gray-300">
+                  <label
+                    htmlFor="checkout-postalCode"
+                    className="block text-xs font-bold text-gray-700 dark:text-gray-300"
+                  >
                     {t("deliverySection.postalCode")}
                   </label>
                   <input
+                    id="checkout-postalCode"
+                    name="postal-code"
                     type="text"
                     maxLength={5}
                     required
+                    autoComplete="postal-code"
+                    aria-required="true"
+                    aria-invalid={!!formErrors.postalCode}
                     value={formData.postalCode}
                     onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        postalCode: e.target.value.replace(/\D/g, "").slice(0, 5),
-                      })
+                      handleFieldChange(
+                        "postalCode",
+                        e.target.value.replace(/\D/g, "").slice(0, 5),
+                      )
                     }
                     placeholder={t("deliverySection.postalCodePlaceholder")}
-                    className="mt-1.5 w-full rounded-2xl border border-gray-200/80 bg-gray-50/70 px-4 py-2.5 text-xs sm:text-sm font-semibold text-gray-800 placeholder-gray-400 transition focus:border-emerald-500 focus:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/30 dark:border-emerald-950 dark:bg-[#05130b] dark:text-white dark:placeholder-emerald-400/40"
+                    className={`mt-1.5 w-full rounded-2xl border px-4 py-2.5 text-xs sm:text-sm font-semibold transition focus:bg-white focus:outline-none focus-visible:ring-2 dark:bg-[#05130b] dark:text-white ${
+                      formErrors.postalCode
+                        ? "border-rose-400 bg-rose-50/30 text-rose-900 focus:border-rose-500 focus-visible:ring-rose-500/20 dark:border-rose-800"
+                        : "border-gray-200/80 bg-gray-50/70 text-gray-800 placeholder-gray-400 focus:border-emerald-500 focus-visible:ring-emerald-500/30 dark:border-emerald-950 dark:placeholder-emerald-400/40"
+                    }`}
                   />
+                  {formErrors.postalCode && (
+                    <span className="mt-1 block text-[11px] font-bold text-rose-600 dark:text-rose-400">
+                      ⚠ {formErrors.postalCode}
+                    </span>
+                  )}
                 </div>
 
                 {/* City */}
                 <div>
-                  <label className="block text-xs font-bold text-gray-700 dark:text-gray-300">
+                  <label
+                    htmlFor="checkout-city"
+                    className="block text-xs font-bold text-gray-700 dark:text-gray-300"
+                  >
                     {t("deliverySection.city")}
                   </label>
                   <input
+                    id="checkout-city"
+                    name="city"
                     type="text"
                     required
+                    autoComplete="address-level2"
+                    aria-required="true"
+                    aria-invalid={!!formErrors.city}
                     value={formData.city}
                     onChange={(e) =>
-                      setFormData({ ...formData, city: e.target.value })
+                      handleFieldChange("city", e.target.value)
                     }
                     placeholder={t("deliverySection.cityPlaceholder")}
-                    className="mt-1.5 w-full rounded-2xl border border-gray-200/80 bg-gray-50/70 px-4 py-2.5 text-xs sm:text-sm font-semibold text-gray-800 placeholder-gray-400 transition focus:border-emerald-500 focus:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/30 dark:border-emerald-950 dark:bg-[#05130b] dark:text-white dark:placeholder-emerald-400/40"
+                    className={`mt-1.5 w-full rounded-2xl border px-4 py-2.5 text-xs sm:text-sm font-semibold transition focus:bg-white focus:outline-none focus-visible:ring-2 dark:bg-[#05130b] dark:text-white ${
+                      formErrors.city
+                        ? "border-rose-400 bg-rose-50/30 text-rose-900 focus:border-rose-500 focus-visible:ring-rose-500/20 dark:border-rose-800"
+                        : "border-gray-200/80 bg-gray-50/70 text-gray-800 placeholder-gray-400 focus:border-emerald-500 focus-visible:ring-emerald-500/30 dark:border-emerald-950 dark:placeholder-emerald-400/40"
+                    }`}
                   />
+                  {formErrors.city && (
+                    <span className="mt-1 block text-[11px] font-bold text-rose-600 dark:text-rose-400">
+                      ⚠ {formErrors.city}
+                    </span>
+                  )}
                 </div>
 
                 {/* Province Dropdown */}
                 <div>
-                  <label className="block text-xs font-bold text-gray-700 dark:text-gray-300">
+                  <label
+                    htmlFor="checkout-province"
+                    className="block text-xs font-bold text-gray-700 dark:text-gray-300"
+                  >
                     {t("deliverySection.province")}
                   </label>
                   <select
+                    id="checkout-province"
+                    name="province"
                     value={formData.province}
                     onChange={(e) =>
-                      setFormData({ ...formData, province: e.target.value })
+                      handleFieldChange("province", e.target.value)
                     }
                     className="mt-1.5 w-full rounded-2xl border border-gray-200/80 bg-gray-50/70 px-3.5 py-2.5 text-xs sm:text-sm font-semibold text-gray-800 transition focus:border-emerald-500 focus:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/30 dark:border-emerald-950 dark:bg-[#05130b] dark:text-white"
                   >
@@ -786,14 +989,18 @@ export const CheckoutView: React.FC = () => {
 
                 {/* Delivery Instructions */}
                 <div className="sm:col-span-2">
-                  <label className="block text-xs font-bold text-gray-700 dark:text-gray-300">
+                  <label
+                    htmlFor="checkout-notes"
+                    className="block text-xs font-bold text-gray-700 dark:text-gray-300"
+                  >
                     {t("deliverySection.instructions")}
                   </label>
                   <input
+                    id="checkout-notes"
                     type="text"
                     value={formData.notes}
                     onChange={(e) =>
-                      setFormData({ ...formData, notes: e.target.value })
+                      handleFieldChange("notes", e.target.value)
                     }
                     placeholder={t("deliverySection.instructionsPlaceholder")}
                     className="mt-1.5 w-full rounded-2xl border border-gray-200/80 bg-gray-50/70 px-4 py-2.5 text-xs sm:text-sm font-semibold text-gray-800 placeholder-gray-400 transition focus:border-emerald-500 focus:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/30 dark:border-emerald-950 dark:bg-[#05130b] dark:text-white dark:placeholder-emerald-400/40"
@@ -807,7 +1014,7 @@ export const CheckoutView: React.FC = () => {
                       type="checkbox"
                       checked={formData.saveData}
                       onChange={(e) =>
-                        setFormData({ ...formData, saveData: e.target.checked })
+                        handleFieldChange("saveData", e.target.checked)
                       }
                       className="h-4 w-4 rounded-md border-gray-300 text-emerald-600 focus:ring-emerald-500 accent-emerald-600"
                     />
@@ -819,10 +1026,7 @@ export const CheckoutView: React.FC = () => {
                       type="checkbox"
                       checked={formData.createAccount}
                       onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          createAccount: e.target.checked,
-                        })
+                        handleFieldChange("createAccount", e.target.checked)
                       }
                       className="h-4 w-4 rounded-md border-gray-300 text-emerald-600 focus:ring-emerald-500 accent-emerald-600"
                     />
@@ -834,7 +1038,7 @@ export const CheckoutView: React.FC = () => {
 
             {/* Section 2: Preferred Delivery Slot (Spain Timing) with Scale & Custom Checkmark */}
             <motion.div
-              variants={cardVariants}
+              variants={shouldReduceMotion ? {} : cardVariants}
               className="rounded-3xl border border-gray-200/80 bg-white p-5 sm:p-7 shadow-[0_4px_24px_-4px_rgba(0,0,0,0.06)] backdrop-blur-sm dark:border-emerald-950/70 dark:bg-[#071910] dark:shadow-[0_4px_24px_-4px_rgba(0,0,0,0.4)]"
             >
               <div className="flex items-center gap-3 pb-4 border-b border-gray-100 dark:border-emerald-950/60">
@@ -860,8 +1064,8 @@ export const CheckoutView: React.FC = () => {
                   return (
                     <motion.div
                       key={slot.id}
-                      whileHover={!isDisabled ? { scale: 1.015 } : {}}
-                      whileTap={!isDisabled ? { scale: 0.985 } : {}}
+                      whileHover={!isDisabled && !shouldReduceMotion ? { scale: 1.015 } : {}}
+                      whileTap={!isDisabled && !shouldReduceMotion ? { scale: 0.985 } : {}}
                       onClick={() => !isDisabled && setSelectedSlot(slot.id)}
                       className={`relative flex items-center justify-between rounded-2xl border p-4 transition-all duration-200 select-none ${
                         isDisabled
@@ -902,7 +1106,7 @@ export const CheckoutView: React.FC = () => {
                       <div className="ms-3 flex h-6 w-6 shrink-0 items-center justify-center">
                         {isChecked ? (
                           <motion.div
-                            initial={{ scale: 0 }}
+                            initial={shouldReduceMotion ? { scale: 1 } : { scale: 0 }}
                             animate={{ scale: 1 }}
                             transition={{ type: "spring", stiffness: 350, damping: 20 }}
                             className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-600 text-white shadow-xs"
@@ -927,7 +1131,7 @@ export const CheckoutView: React.FC = () => {
 
             {/* Section 3: Spain Payment Methods (Custom Checkmarks & Clean Fresh Green / Orange accents) */}
             <motion.div
-              variants={cardVariants}
+              variants={shouldReduceMotion ? {} : cardVariants}
               className="rounded-3xl border border-gray-200/80 bg-white p-5 sm:p-7 shadow-[0_4px_24px_-4px_rgba(0,0,0,0.06)] backdrop-blur-sm dark:border-emerald-950/70 dark:bg-[#071910] dark:shadow-[0_4px_24px_-4px_rgba(0,0,0,0.4)]"
             >
               <div className="flex items-center gap-3 pb-4 border-b border-gray-100 dark:border-emerald-950/60">
@@ -947,8 +1151,8 @@ export const CheckoutView: React.FC = () => {
               <div className="mt-5 space-y-3">
                 {/* 1. Credit / Debit Card (Visa, Mastercard) */}
                 <motion.div
-                  whileHover={{ scale: 1.01 }}
-                  whileTap={{ scale: 0.99 }}
+                  whileHover={shouldReduceMotion ? {} : { scale: 1.01 }}
+                  whileTap={shouldReduceMotion ? {} : { scale: 0.99 }}
                   onClick={() => setPaymentMethod("card")}
                   className={`flex cursor-pointer items-start justify-between rounded-2xl border p-4.5 transition-all duration-200 ${
                     paymentMethod === "card"
@@ -980,7 +1184,7 @@ export const CheckoutView: React.FC = () => {
                   <div className="mt-1 ms-2">
                     {paymentMethod === "card" ? (
                       <motion.div
-                        initial={{ scale: 0 }}
+                        initial={shouldReduceMotion ? { scale: 1 } : { scale: 0 }}
                         animate={{ scale: 1 }}
                         className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-600 text-white shadow-xs"
                       >
@@ -996,8 +1200,8 @@ export const CheckoutView: React.FC = () => {
 
                 {/* 2. Bizum (Famous Spain mobile instant payment) */}
                 <motion.div
-                  whileHover={{ scale: 1.01 }}
-                  whileTap={{ scale: 0.99 }}
+                  whileHover={shouldReduceMotion ? {} : { scale: 1.01 }}
+                  whileTap={shouldReduceMotion ? {} : { scale: 0.99 }}
                   onClick={() => setPaymentMethod("bizum")}
                   className={`flex cursor-pointer items-start justify-between rounded-2xl border p-4.5 transition-all duration-200 ${
                     paymentMethod === "bizum"
@@ -1026,7 +1230,7 @@ export const CheckoutView: React.FC = () => {
                   <div className="mt-1 ms-2">
                     {paymentMethod === "bizum" ? (
                       <motion.div
-                        initial={{ scale: 0 }}
+                        initial={shouldReduceMotion ? { scale: 1 } : { scale: 0 }}
                         animate={{ scale: 1 }}
                         className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-600 text-white shadow-xs"
                       >
@@ -1042,8 +1246,8 @@ export const CheckoutView: React.FC = () => {
 
                 {/* 3. PayPal */}
                 <motion.div
-                  whileHover={{ scale: 1.01 }}
-                  whileTap={{ scale: 0.99 }}
+                  whileHover={shouldReduceMotion ? {} : { scale: 1.01 }}
+                  whileTap={shouldReduceMotion ? {} : { scale: 0.99 }}
                   onClick={() => setPaymentMethod("paypal")}
                   className={`flex cursor-pointer items-start justify-between rounded-2xl border p-4.5 transition-all duration-200 ${
                     paymentMethod === "paypal"
@@ -1067,7 +1271,7 @@ export const CheckoutView: React.FC = () => {
                   <div className="mt-1 ms-2">
                     {paymentMethod === "paypal" ? (
                       <motion.div
-                        initial={{ scale: 0 }}
+                        initial={shouldReduceMotion ? { scale: 1 } : { scale: 0 }}
                         animate={{ scale: 1 }}
                         className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-600 text-white shadow-xs"
                       >
@@ -1083,8 +1287,8 @@ export const CheckoutView: React.FC = () => {
 
                 {/* 4. Apple Pay / Google Pay */}
                 <motion.div
-                  whileHover={{ scale: 1.01 }}
-                  whileTap={{ scale: 0.99 }}
+                  whileHover={shouldReduceMotion ? {} : { scale: 1.01 }}
+                  whileTap={shouldReduceMotion ? {} : { scale: 0.99 }}
                   onClick={() => setPaymentMethod("apple_google")}
                   className={`flex cursor-pointer items-start justify-between rounded-2xl border p-4.5 transition-all duration-200 ${
                     paymentMethod === "apple_google"
@@ -1108,7 +1312,7 @@ export const CheckoutView: React.FC = () => {
                   <div className="mt-1 ms-2">
                     {paymentMethod === "apple_google" ? (
                       <motion.div
-                        initial={{ scale: 0 }}
+                        initial={shouldReduceMotion ? { scale: 1 } : { scale: 0 }}
                         animate={{ scale: 1 }}
                         className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-600 text-white shadow-xs"
                       >
@@ -1124,8 +1328,8 @@ export const CheckoutView: React.FC = () => {
 
                 {/* 5. Efectivo contra entrega (Cash on Delivery) */}
                 <motion.div
-                  whileHover={{ scale: 1.01 }}
-                  whileTap={{ scale: 0.99 }}
+                  whileHover={shouldReduceMotion ? {} : { scale: 1.01 }}
+                  whileTap={shouldReduceMotion ? {} : { scale: 0.99 }}
                   onClick={() => setPaymentMethod("cod")}
                   className={`flex cursor-pointer items-start justify-between rounded-2xl border p-4.5 transition-all duration-200 ${
                     paymentMethod === "cod"
@@ -1149,7 +1353,7 @@ export const CheckoutView: React.FC = () => {
                   <div className="mt-1 ms-2">
                     {paymentMethod === "cod" ? (
                       <motion.div
-                        initial={{ scale: 0 }}
+                        initial={shouldReduceMotion ? { scale: 1 } : { scale: 0 }}
                         animate={{ scale: 1 }}
                         className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-600 text-white shadow-xs"
                       >
@@ -1170,8 +1374,8 @@ export const CheckoutView: React.FC = () => {
               <motion.button
                 type="submit"
                 disabled={isSubmitting || isSuccess}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+                whileHover={shouldReduceMotion ? {} : { scale: 1.02 }}
+                whileTap={shouldReduceMotion ? {} : { scale: 0.98 }}
                 className="w-full rounded-2xl bg-gradient-to-r from-emerald-600 via-green-600 to-emerald-700 py-4.5 text-center font-outfit text-base font-black text-white shadow-xl shadow-emerald-600/35 transition-all duration-200 hover:shadow-2xl hover:shadow-emerald-600/45 disabled:opacity-50"
               >
                 {isSubmitting ? (
@@ -1254,19 +1458,26 @@ export const CheckoutView: React.FC = () => {
               </div>
             </div>
 
-            {/* Items list with Quantity Controls */}
-            <div className="max-h-60 overflow-y-auto pe-1 divide-y divide-gray-100 dark:divide-emerald-950/60">
+            {/* Items list with Smart Height: no internal scroll if 5 or fewer items, smart max-height for large baskets */}
+            <div
+              className={`divide-y divide-gray-100 dark:divide-emerald-950/60 ${
+                cart.length > 5
+                  ? "max-h-[380px] overflow-y-auto custom-scrollbar pe-1.5"
+                  : "max-h-none"
+              }`}
+            >
               {cart.map((item) => (
                 <div
                   key={item.id}
-                  className="flex items-center justify-between py-3 text-xs"
+                  className="flex items-center justify-between py-3.5 text-xs"
                 >
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="h-11 w-11 shrink-0 overflow-hidden rounded-xl bg-gray-100 dark:bg-gray-800">
+                  <div className="flex items-center gap-3.5 min-w-0">
+                    <div className="h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-gray-100 dark:bg-gray-800 border border-gray-100 dark:border-emerald-950/60">
                       <img
                         src={item.imageUrl}
                         alt={item.name}
                         className="h-full w-full object-cover"
+                        loading="lazy"
                       />
                     </div>
                     <div className="truncate">
@@ -1280,13 +1491,14 @@ export const CheckoutView: React.FC = () => {
                   </div>
 
                   {/* Quantity Stepper & Remove */}
-                  <div className="flex shrink-0 items-center gap-2">
+                  <div className="flex shrink-0 items-center gap-2 ms-2">
                     <div className="flex items-center rounded-xl border border-gray-200/80 bg-gray-50/80 dark:border-emerald-950 dark:bg-emerald-950/40">
                       <button
                         type="button"
                         onClick={() =>
                           updateQuantity(item.id, item.quantity - 1)
                         }
+                        aria-label={`Disminuir cantidad de ${item.name}`}
                         className="flex h-7 w-6 items-center justify-center font-black text-gray-600 hover:bg-gray-200/60 hover:text-emerald-600 dark:text-gray-300 dark:hover:bg-emerald-900/40"
                       >
                         -
@@ -1299,6 +1511,7 @@ export const CheckoutView: React.FC = () => {
                         onClick={() =>
                           updateQuantity(item.id, item.quantity + 1)
                         }
+                        aria-label={`Aumentar cantidad de ${item.name}`}
                         className="flex h-7 w-6 items-center justify-center font-black text-gray-600 hover:bg-gray-200/60 hover:text-emerald-600 dark:text-gray-300 dark:hover:bg-emerald-900/40"
                       >
                         +
@@ -1312,8 +1525,9 @@ export const CheckoutView: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => removeFromCart(item.id)}
+                      aria-label={`Eliminar ${item.name} de la cesta`}
                       className="text-gray-400 hover:text-rose-500 transition px-1"
-                      title="Eliminar"
+                      title="Eliminar artículo"
                     >
                       ✕
                     </button>
@@ -1344,7 +1558,7 @@ export const CheckoutView: React.FC = () => {
                 <motion.form
                   onSubmit={handleApplyCoupon}
                   animate={
-                    isCouponShaking
+                    isCouponShaking && !shouldReduceMotion
                       ? { x: [0, -8, 8, -6, 6, 0] }
                       : { x: 0 }
                   }
@@ -1352,7 +1566,12 @@ export const CheckoutView: React.FC = () => {
                   className="space-y-1.5"
                 >
                   <div className="flex items-center gap-2">
+                    <label htmlFor="checkout-coupon" className="sr-only">
+                      {t("summary.promoPlaceholder")}
+                    </label>
                     <input
+                      id="checkout-coupon"
+                      name="coupon"
                       type="text"
                       value={couponInput}
                       onChange={(e) => setCouponInput(e.target.value)}
@@ -1421,7 +1640,7 @@ export const CheckoutView: React.FC = () => {
                 </span>
                 <motion.span
                   key={total}
-                  initial={{ scale: 0.85 }}
+                  initial={{ scale: shouldReduceMotion ? 1 : 0.85 }}
                   animate={{ scale: 1 }}
                   className="font-outfit text-2xl font-black text-emerald-600 dark:text-emerald-400"
                 >

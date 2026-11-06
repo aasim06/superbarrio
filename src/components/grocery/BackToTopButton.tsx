@@ -1,12 +1,13 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { ArrowUpIcon } from "@/icons";
 
 export const BackToTopButton: React.FC = () => {
   const [scrollProgress, setScrollProgress] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
+  const shouldReduceMotion = useReducedMotion();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -24,7 +25,7 @@ export const BackToTopButton: React.FC = () => {
   }, []);
 
   const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    window.scrollTo({ top: 0, behavior: shouldReduceMotion ? "auto" : "smooth" });
   };
 
   const radius = 18;
@@ -36,15 +37,15 @@ export const BackToTopButton: React.FC = () => {
     <AnimatePresence>
       {isVisible && (
         <motion.button
-          initial={{ opacity: 0, scale: 0.8, y: 20 }}
+          initial={{ opacity: 0, scale: shouldReduceMotion ? 1 : 0.8, y: shouldReduceMotion ? 0 : 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.8, y: 20 }}
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
+          exit={{ opacity: 0, scale: shouldReduceMotion ? 1 : 0.8, y: shouldReduceMotion ? 0 : 20 }}
+          whileHover={shouldReduceMotion ? {} : { scale: 1.1 }}
+          whileTap={shouldReduceMotion ? {} : { scale: 0.9 }}
           onClick={scrollToTop}
-          className="fixed bottom-20 start-5 sm:bottom-6 sm:start-6 z-40 flex h-12 w-12 items-center justify-center rounded-full bg-white text-emerald-700 shadow-xl transition-shadow dark:bg-[#071910] dark:text-emerald-400 dark:border dark:border-emerald-950/80"
-          aria-label="Back to top"
-          title="Back to top"
+          className="fixed bottom-22 start-4 sm:bottom-8 sm:start-8 z-30 flex h-12 w-12 items-center justify-center rounded-full bg-white text-emerald-700 shadow-xl transition-shadow dark:bg-[#071910] dark:text-emerald-400 dark:border dark:border-emerald-950/80"
+          aria-label="Volver arriba / Scroll back to top"
+          title="Volver arriba"
         >
           {/* SVG Circular Progress Ring */}
           <svg className="absolute inset-0 h-12 w-12 -rotate-90 transform">
@@ -80,4 +81,3 @@ export const BackToTopButton: React.FC = () => {
 };
 
 export default BackToTopButton;
-

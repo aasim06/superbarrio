@@ -996,9 +996,9 @@
     },
     "backToStore": "Back to Store",
     "secureCheckout": "100% Secure Checkout • 256-Bit SSL Encryption",
-    "emptyTitle": "Your basket is empty",
-    "emptySubtitle": "You don't have any items in your basket to proceed with checkout.",
-    "startShopping": "Start Shopping",
+    "emptyTitle": "Your basket is waiting for fresh produce!",
+    "emptySubtitle": "You haven't added any products to your basket yet. Explore our farm-fresh vegetables, organic fruits and artisanal bakery!",
+    "startShopping": "Back to store",
     "deliverySection": {
       "title": "Delivery & Contact Information (Spain)",
       "subtitle": "Enter the address where you want to receive your fresh groceries",

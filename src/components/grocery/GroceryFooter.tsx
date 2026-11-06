@@ -4,10 +4,11 @@ import React from "react";
 import { Link } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 import { BoltIcon, LeafIcon, RefreshIcon, ShieldCheckIcon } from "@/icons";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 
 export const GroceryFooter: React.FC = () => {
   const t = useTranslations("grocery");
+  const shouldReduceMotion = useReducedMotion();
 
   const perks = [
     {
@@ -37,14 +38,14 @@ export const GroceryFooter: React.FC = () => {
   ];
 
   return (
-    <footer className="mt-20 border-t border-gray-200/80 bg-white/90 backdrop-blur-sm dark:border-emerald-950/80 dark:bg-[#071910]">
+    <footer className="mt-20 border-t border-gray-200/80 bg-white/95 pb-32 pt-2 backdrop-blur-sm dark:border-emerald-950/80 dark:bg-[#071910] sm:pb-20">
       {/* Perks Grid */}
       <div className="mx-auto w-full max-w-[1920px] border-b border-gray-100 px-4 py-12 sm:px-6 lg:px-8 xl:px-10 dark:border-emerald-950/60">
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {perks.map((p, idx) => (
             <motion.div
               key={idx}
-              whileHover={{ y: -4 }}
+              whileHover={shouldReduceMotion ? {} : { y: -4 }}
               transition={{ duration: 0.2 }}
               className="flex items-start gap-4 rounded-2xl border border-gray-100 bg-gray-50/60 p-4.5 transition-all hover:border-emerald-200 hover:shadow-md dark:border-emerald-950/60 dark:bg-[#05130b] dark:hover:border-emerald-800"
             >
@@ -66,8 +67,9 @@ export const GroceryFooter: React.FC = () => {
         </div>
       </div>
 
-      {/* Main Footer Links & Copyright */}
-      <div className="mx-auto flex w-full max-w-[1920px] flex-col items-center justify-between gap-4 px-4 py-8 sm:flex-row sm:px-6 lg:px-8 xl:px-10 text-xs font-semibold text-gray-500 dark:text-emerald-300/70">
+      {/* Main Footer Links & Copyright with Safety Clearance Padding for Floating Buttons */}
+      <div className="mx-auto flex w-full max-w-[1920px] flex-col items-center justify-between gap-6 px-4 py-8 sm:flex-row sm:px-6 sm:ps-24 sm:pe-32 lg:px-8 lg:ps-28 lg:pe-36 xl:px-10 text-xs font-semibold text-gray-500 dark:text-emerald-300/70">
+        {/* Brand Logo & Copyright (Indented to never be covered by BackToTop) */}
         <div className="flex items-center gap-2">
           <span className="font-outfit text-sm font-black text-gray-900 dark:text-white">
             Super<span className="text-emerald-600 dark:text-emerald-400">Barrio</span>
@@ -76,7 +78,8 @@ export const GroceryFooter: React.FC = () => {
           <span>{t("poweredBy")}</span>
         </div>
 
-        <div className="flex items-center gap-6">
+        {/* Links (Padded so Floating WhatsApp button never overlaps them) */}
+        <div className="flex flex-wrap items-center justify-center gap-6">
           <Link
             href="/grocery"
             className="hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors"
