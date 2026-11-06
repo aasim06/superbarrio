@@ -3,34 +3,51 @@
 import React, { useRef, useState } from "react";
 import { GroceryProduct } from "@/types/grocery";
 import { useGroceryCart } from "@/context/GroceryCartContext";
-import Badge from "@/components/ui/badge/Badge";
 import { LeafIcon } from "@/icons";
 import { useLocale, useTranslations } from "next-intl";
 import { formatPrice } from "@/utils/currency";
 import { motion, AnimatePresence } from "framer-motion";
+import { toast } from "sonner";
 
 interface ProductCardProps {
   product: GroceryProduct;
 }
 
+const FALLBACK_IMAGE =
+  "https://images.unsplash.com/photo-1542838132-92c53300491e?w=600&auto=format&fit=crop&q=80";
+
 export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const t = useTranslations("grocery");
   const locale = useLocale();
-  const { cart, addToCart, updateQuantity } = useGroceryCart();
+  const {
+    cart,
+    addToCart,
+    updateQuantity,
+    toggleWishlist,
+    isWishlisted,
+    setQuickViewProduct,
+  } = useGroceryCart();
+
   const cartItem = cart.find((item) => item.id === product.id);
   const quantity = cartItem ? cartItem.quantity : 0;
+  const wishlisted = isWishlisted(product.id);
 
   const imageRef = useRef<HTMLImageElement>(null);
   const [imageLoaded, setImageLoaded] = useState(false);
+  const [imgSrc, setImgSrc] = useState(product.imageUrl || FALLBACK_IMAGE);
 
   const handleAdd = (e: React.MouseEvent) => {
     e.stopPropagation();
     addToCart(product, 1, imageRef.current);
+    toast.success(`Added ${product.name} to basket!`, {
+      icon: "🛒",
+    });
   };
 
   const handleIncrement = (e: React.MouseEvent) => {
     e.stopPropagation();
     addToCart(product, 1, imageRef.current);
+    toast.success(`Updated quantity for ${product.name}`, { duration: 1500 });
   };
 
   const handleDecrement = (e: React.MouseEvent) => {
@@ -38,36 +55,46 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     updateQuantity(product.id, quantity - 1);
   };
 
+  const handleWishlistClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const added = toggleWishlist(product.id);
+    if (added) {
+      toast.success(`Saved to wishlist! ❤️`, { duration: 1800 });
+    } else {
+      toast.info(`Removed from wishlist.`, { duration: 1500 });
+    }
+  };
+
+  const handleCardClick = () => {
+    setQuickViewProduct(product);
+  };
+
   return (
     <motion.div
+      onClick={handleCardClick}
       whileHover={{ y: -6 }}
       transition={{ duration: 0.25, ease: "easeOut" }}
-      className="group relative flex flex-col justify-between rounded-3xl border border-gray-200/80 bg-white p-3.5 sm:p-4 shadow-[0_4px_16px_-4px_rgba(0,0,0,0.06)] transition-all duration-300 hover:border-emerald-300 hover:shadow-[0_16px_32px_-8px_rgba(22,163,74,0.2)] dark:border-emerald-950/60 dark:bg-[#071d12]/70 dark:hover:border-emerald-700/80 dark:hover:shadow-[0_16px_32px_-8px_rgba(34,197,94,0.15)]"
+      className="group relative flex flex-col justify-between rounded-3xl border border-gray-200/80 bg-white p-3.5 sm:p-4 shadow-[0_4px_16px_-4px_rgba(0,0,0,0.06)] transition-all duration-300 hover:border-emerald-300 hover:shadow-[0_16px_32px_-8px_rgba(22,163,74,0.2)] dark:border-emerald-950/60 dark:bg-[#071d12]/70 dark:hover:border-emerald-700/80 dark:hover:shadow-[0_16px_32px_-8px_rgba(34,197,94,0.15)] cursor-pointer select-none"
     >
       <div>
         {/* Product Visual Container with Skeleton Shimmer */}
         <div className="relative flex h-36 sm:h-44 w-full items-center justify-center overflow-hidden rounded-2xl bg-gray-100/80 dark:bg-gray-800/60">
           {/* Skeleton Shimmer Loader */}
-          {!imageLoaded && product.imageUrl && (
+          {!imageLoaded && (
             <div className="absolute inset-0 animate-pulse bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 dark:from-emerald-950/40 dark:via-gray-800 dark:to-emerald-950/40" />
           )}
 
-          {product.imageUrl ? (
-            <img
-              ref={imageRef}
-              src={product.imageUrl}
-              alt={product.name}
-              onLoad={() => setImageLoaded(true)}
-              className={`h-full w-full object-cover transition-all duration-500 ease-out group-hover:scale-[1.08] ${
-                imageLoaded ? "opacity-100" : "opacity-0"
-              }`}
-              loading="lazy"
-            />
-          ) : (
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-500 dark:bg-emerald-950/60 dark:text-emerald-400">
-              <LeafIcon className="h-6 w-6 stroke-[1.5]" />
-            </div>
-          )}
+          <img
+            ref={imageRef}
+            src={imgSrc}
+            alt={product.name}
+            onError={() => setImgSrc(FALLBACK_IMAGE)}
+            onLoad={() => setImageLoaded(true)}
+            className={`h-full w-full object-cover transition-all duration-500 ease-out group-hover:scale-[1.08] ${
+              imageLoaded ? "opacity-100" : "opacity-0"
+            }`}
+            loading="lazy"
+          />
 
           {/* Offer / Category Badge with Subtle Pulsing glow */}
           {product.badge && (
@@ -78,8 +105,36 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             </div>
           )}
 
-          {/* Floating Rating Tag */}
-          <div className="absolute end-2.5 top-2.5 z-10 flex items-center gap-1 rounded-full bg-white/95 px-2 py-0.5 text-[11px] font-black text-gray-800 shadow-sm backdrop-blur-md dark:bg-gray-900/95 dark:text-gray-100">
+          {/* Top-Right Heart Wishlist Button with Heart Burst Animation */}
+          <motion.button
+            whileTap={{ scale: 0.8 }}
+            onClick={handleWishlistClick}
+            className="absolute end-2.5 top-2.5 z-20 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 shadow-sm backdrop-blur-md transition-all hover:scale-110 active:scale-90 dark:bg-gray-900/90"
+            title="Add to Wishlist"
+          >
+            <motion.span
+              key={wishlisted ? "heart-active" : "heart-idle"}
+              animate={
+                wishlisted
+                  ? { scale: [1, 1.4, 0.9, 1.2, 1] }
+                  : { scale: 1 }
+              }
+              transition={{ duration: 0.4 }}
+              className="text-sm select-none"
+            >
+              {wishlisted ? "❤️" : "🤍"}
+            </motion.span>
+          </motion.button>
+
+          {/* Quick View Hover Eye Overlay */}
+          <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center bg-black/20 opacity-0 backdrop-blur-[1px] transition-opacity duration-200 group-hover:opacity-100">
+            <span className="rounded-full bg-white/95 px-3 py-1 text-[11px] font-bold text-gray-800 shadow-md backdrop-blur-md dark:bg-gray-900/95 dark:text-white">
+              👁️ Quick View
+            </span>
+          </div>
+
+          {/* Bottom Floating Rating Tag */}
+          <div className="absolute end-2.5 bottom-2.5 z-10 flex items-center gap-1 rounded-full bg-white/95 px-2 py-0.5 text-[10px] font-black text-gray-800 shadow-sm backdrop-blur-md dark:bg-gray-900/95 dark:text-gray-100">
             <span className="text-amber-500">★</span>
             <span>{product.rating}</span>
           </div>
@@ -122,7 +177,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         </div>
 
         {/* Stepper with Smooth Expand/Collapse Transition */}
-        <div className="flex items-center">
+        <div className="flex items-center" onClick={(e) => e.stopPropagation()}>
           <AnimatePresence mode="wait">
             {quantity === 0 ? (
               <motion.button

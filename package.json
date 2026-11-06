@@ -27,6 +27,7 @@
     "react-dom": "^19.2.8",
     "react-dropzone": "^20.1.1",
     "simplebar-react": "^3.3.2",
+    "sonner": "^2.0.8",
     "swiper": "^14.2.0",
     "tailwind-merge": "^2.6.0"
   },

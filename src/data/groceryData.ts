@@ -287,10 +287,12 @@ export const GROCERY_PRODUCTS: GroceryProduct[] = [
     reviewsCount: 168,
     inStock: true,
     badge: "Bestseller",
-    emoji: "",
-    imageUrl: "https://images.unsplash.com/photo-1621447504864-d8686e12698c?w=600&auto=format&fit=crop&q=80",
-    description: "Crispy all-natural golden plantain chips, lightly sea salted. No preservatives.",
-    origin: "CrunchyBites Artisanal"
+    emoji: "🍌",
+    imageUrl:
+      "https://images.unsplash.com/photo-1621447504864-d8686e12698c?w=600&auto=format&fit=crop&q=80",
+    description:
+      "Crispy all-natural golden plantain chips, lightly sea salted. No artificial preservatives.",
+    origin: "CrunchyBites Artisanal",
   },
   {
     id: "g-18",
@@ -303,10 +305,12 @@ export const GROCERY_PRODUCTS: GroceryProduct[] = [
     reviewsCount: 194,
     inStock: true,
     badge: "High Protein",
-    emoji: "",
-    imageUrl: "https://images.unsplash.com/photo-1527515637462-cff94eecc1ac?w=600&auto=format&fit=crop&q=80",
-    description: "Slow-roasted premium peanuts dusted in mild red chili spice. Real nuts, no artificial flavours.",
-    origin: "CrunchyBites Artisanal"
+    emoji: "🥜",
+    imageUrl:
+      "https://images.unsplash.com/photo-1569460275917-763435165c01?w=600&auto=format&fit=crop&q=80",
+    description:
+      "Slow-roasted golden peanuts dusted in mild red chili spice and Himalayan sea salt. 100% real nuts.",
+    origin: "CrunchyBites Artisanal",
   },
   {
     id: "g-19",
@@ -319,10 +323,12 @@ export const GROCERY_PRODUCTS: GroceryProduct[] = [
     reviewsCount: 215,
     inStock: true,
     badge: "Chef's Pick",
-    emoji: "",
-    imageUrl: "https://images.unsplash.com/photo-1536591375315-1b83683e32a7?w=600&auto=format&fit=crop&q=80",
-    description: "Gourmet medley of California almonds, crunchy cashews and roasted peanuts.",
-    origin: "CrunchyBites Artisanal"
+    emoji: "🌰",
+    imageUrl:
+      "https://images.unsplash.com/photo-1599599810769-bcde5a160d32?w=600&auto=format&fit=crop&q=80",
+    description:
+      "Gourmet medley of California whole almonds, crunchy cashews, walnuts and sea-salted roasted peanuts.",
+    origin: "CrunchyBites Artisanal",
   },
 ];
 

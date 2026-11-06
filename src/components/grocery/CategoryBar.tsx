@@ -47,7 +47,10 @@ export const CategoryBar: React.FC = () => {
   const locale = useLocale();
 
   return (
-    <div className="w-full">
+    <div
+      id="category-bar-section"
+      className="sticky top-[68px] z-30 w-full py-2.5 backdrop-blur-xl bg-[#f8faf9]/90 dark:bg-[#04130b]/90 border-b border-gray-200/60 dark:border-emerald-950/60 transition-colors"
+    >
       <div className="flex items-center justify-between pb-3">
         <h3 className="font-outfit text-base sm:text-lg font-black tracking-tight text-gray-900 dark:text-white">
           {t("shopByCategory")}

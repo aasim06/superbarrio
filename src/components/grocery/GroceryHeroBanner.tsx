@@ -183,7 +183,7 @@ export const GroceryHeroBanner: React.FC = () => {
           color: "#dc2626",
           bgGradient: "from-[#ef4444] to-[#b91c1c]",
           imgUrl:
-            "https://images.unsplash.com/photo-1527515637462-cff94eecc1ac?w=400&auto=format&fit=crop&q=80",
+            "https://images.unsplash.com/photo-1569460275917-763435165c01?w=400&auto=format&fit=crop&q=80",
           accentBadge: "🌶️ Mild Chili",
           priceNum: 2.2,
         },
@@ -195,7 +195,7 @@ export const GroceryHeroBanner: React.FC = () => {
           color: "#ca8a04",
           bgGradient: "from-[#eab308] to-[#a16207]",
           imgUrl:
-            "https://images.unsplash.com/photo-1536591375315-1b83683e32a7?w=400&auto=format&fit=crop&q=80",
+            "https://images.unsplash.com/photo-1599599810769-bcde5a160d32?w=400&auto=format&fit=crop&q=80",
           priceNum: 4.5,
         },
       ],

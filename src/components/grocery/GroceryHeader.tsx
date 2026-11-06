@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link } from "@/i18n/navigation";
 import { useGroceryCart } from "@/context/GroceryCartContext";
 import { ThemeToggleButton } from "@/components/common/ThemeToggleButton";
@@ -9,6 +9,8 @@ import { CartIcon, LeafIcon, SearchIcon } from "@/icons";
 import { useLocale, useTranslations } from "next-intl";
 import { formatPrice } from "@/utils/currency";
 import { motion, AnimatePresence } from "framer-motion";
+import { GROCERY_PRODUCTS } from "@/data/groceryData";
+import { GroceryProduct } from "@/types/grocery";
 
 export const GroceryHeader: React.FC = () => {
   const t = useTranslations("grocery");
@@ -20,7 +22,74 @@ export const GroceryHeader: React.FC = () => {
     searchQuery,
     setSearchQuery,
     isBasketBouncing,
+    setQuickViewProduct,
   } = useGroceryCart();
+
+  const [suggestions, setSuggestions] = useState<GroceryProduct[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const searchContainerRef = useRef<HTMLDivElement>(null);
+
+  // Debounced live search suggestions
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      const q = searchQuery.toLowerCase().trim();
+      const matches = GROCERY_PRODUCTS.filter(
+        (p) =>
+          p.name.toLowerCase().includes(q) ||
+          p.category.toLowerCase().includes(q) ||
+          p.description.toLowerCase().includes(q),
+      ).slice(0, 5);
+
+      setSuggestions(matches);
+      setShowSuggestions(true);
+    }, 250);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  // Click outside to close suggestions
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (
+        searchContainerRef.current &&
+        !searchContainerRef.current.contains(e.target as Node)
+      ) {
+        setShowSuggestions(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const handleSelectSuggestion = (product: GroceryProduct) => {
+    setSearchQuery(product.name);
+    setShowSuggestions(false);
+    setQuickViewProduct(product);
+  };
+
+  // Helper to highlight matching text
+  const highlightMatch = (text: string, query: string) => {
+    if (!query.trim()) return text;
+    const parts = text.split(new RegExp(`(${query})`, "gi"));
+    return parts.map((part, i) =>
+      part.toLowerCase() === query.toLowerCase() ? (
+        <span
+          key={i}
+          className="bg-amber-200 text-gray-900 rounded-xs font-black dark:bg-amber-500/40 dark:text-amber-200"
+        >
+          {part}
+        </span>
+      ) : (
+        part
+      ),
+    );
+  };
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-gray-200/70 bg-white/80 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] backdrop-blur-xl transition-colors duration-300 dark:border-emerald-950/60 dark:bg-[#071910]/85 dark:shadow-[0_4px_25px_-5px_rgba(0,0,0,0.4)]">
@@ -31,7 +100,7 @@ export const GroceryHeader: React.FC = () => {
           <span>{t("topNotice")}</span>
           <span className="hidden sm:inline text-white/80">•</span>
           <span className="hidden sm:inline font-bold text-amber-200">
-            ⚡ 15-Min Instant Delivery
+            ⚡ 15-Min Instant Delivery • Code FRESH20 for 20% OFF
           </span>
         </div>
       </div>
@@ -66,8 +135,11 @@ export const GroceryHeader: React.FC = () => {
           </div>
         </Link>
 
-        {/* Search Bar with Glassmorphic styling */}
-        <div className="relative hidden max-w-lg flex-1 md:block">
+        {/* Live Search Bar with Dropdown Suggestions */}
+        <div
+          ref={searchContainerRef}
+          className="relative hidden max-w-lg flex-1 md:block"
+        >
           <div className="pointer-events-none absolute inset-y-0 start-0 flex items-center ps-3.5 text-gray-400 dark:text-emerald-400/60">
             <svg
               className="h-4 w-4"
@@ -83,21 +155,73 @@ export const GroceryHeader: React.FC = () => {
               />
             </svg>
           </div>
+
           <input
             type="text"
             value={searchQuery}
+            onFocus={() => searchQuery.trim() && setShowSuggestions(true)}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder={t("searchPlaceholder")}
-            className="w-full rounded-2xl border border-gray-200/80 bg-gray-50/80 py-2.5 pe-4 ps-11 text-sm font-medium text-gray-800 placeholder-gray-400 shadow-xs backdrop-blur-sm transition-all duration-200 focus:border-emerald-500 focus:bg-white focus:shadow-[0_0_0_3px_rgba(22,163,74,0.15)] focus:outline-none dark:border-emerald-950/80 dark:bg-gray-900/60 dark:text-white dark:placeholder-gray-500 dark:focus:border-emerald-500 dark:focus:bg-gray-900"
+            className="w-full rounded-2xl border border-gray-200/80 bg-gray-50/80 py-2.5 pe-9 ps-11 text-sm font-medium text-gray-800 placeholder-gray-400 shadow-xs backdrop-blur-sm transition-all duration-200 focus:border-emerald-500 focus:bg-white focus:shadow-[0_0_0_3px_rgba(22,163,74,0.15)] focus:outline-none dark:border-emerald-950/80 dark:bg-gray-900/60 dark:text-white dark:placeholder-gray-500 dark:focus:border-emerald-500 dark:focus:bg-gray-900"
           />
+
           {searchQuery && (
             <button
-              onClick={() => setSearchQuery("")}
-              className="absolute inset-y-0 end-0 flex items-center pe-3.5 text-xs text-gray-400 transition hover:text-gray-700 dark:hover:text-white"
+              onClick={() => {
+                setSearchQuery("");
+                setShowSuggestions(false);
+              }}
+              className="absolute inset-y-0 end-0 flex items-center pe-3 text-xs text-gray-400 transition hover:text-gray-700 dark:hover:text-white"
             >
               ✕
             </button>
           )}
+
+          {/* Dropdown Suggestions Window */}
+          <AnimatePresence>
+            {showSuggestions && suggestions.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 8, scale: 0.98 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 8, scale: 0.98 }}
+                transition={{ duration: 0.2 }}
+                className="absolute inset-x-0 top-full mt-2 z-50 overflow-hidden rounded-2xl border border-gray-200/90 bg-white/95 p-2 shadow-2xl backdrop-blur-xl dark:border-emerald-950/90 dark:bg-[#071910]/95"
+              >
+                <div className="px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-gray-400 dark:text-emerald-400/60">
+                  Matching Products
+                </div>
+                <div className="divide-y divide-gray-100 dark:divide-emerald-950/60">
+                  {suggestions.map((item) => (
+                    <div
+                      key={item.id}
+                      onClick={() => handleSelectSuggestion(item)}
+                      className="flex items-center gap-3 rounded-xl p-2.5 transition-colors hover:bg-emerald-50/70 dark:hover:bg-emerald-950/50 cursor-pointer"
+                    >
+                      <div className="h-10 w-10 shrink-0 overflow-hidden rounded-xl bg-gray-100 dark:bg-gray-800">
+                        <img
+                          src={item.imageUrl}
+                          alt={item.name}
+                          className="h-full w-full object-cover"
+                        />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h5 className="truncate text-xs font-bold text-gray-900 dark:text-white">
+                          {highlightMatch(item.name, searchQuery)}
+                        </h5>
+                        <p className="text-[11px] text-gray-500 dark:text-emerald-300/60">
+                          {item.unit} •{" "}
+                          <span className="font-bold text-emerald-600 dark:text-emerald-400">
+                            {formatPrice(item.price, locale)}
+                          </span>
+                        </p>
+                      </div>
+                      <span className="text-xs text-gray-400">➔</span>
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
         {/* Location & Header Actions */}
@@ -108,7 +232,7 @@ export const GroceryHeader: React.FC = () => {
           {/* Theme Toggle Button */}
           <ThemeToggleButton />
 
-          {/* Animated Cart Basket Button with Bounce effect */}
+          {/* Animated Cart Basket Button with Bounce effect & Real-time Animated Total */}
           <motion.button
             id="header-basket-btn"
             onClick={() => setIsCartOpen(true)}
@@ -143,9 +267,14 @@ export const GroceryHeader: React.FC = () => {
               </AnimatePresence>
             </div>
             <span className="hidden sm:inline tracking-wide">{t("basket")}</span>
-            <span className="hidden rounded-xl bg-black/20 px-2 py-0.5 text-xs font-extrabold md:inline">
+            <motion.span
+              key={total}
+              initial={{ scale: 0.9 }}
+              animate={{ scale: 1 }}
+              className="hidden rounded-xl bg-black/20 px-2 py-0.5 text-xs font-extrabold md:inline"
+            >
               {formatPrice(total, locale)}
-            </span>
+            </motion.span>
           </motion.button>
         </div>
       </div>

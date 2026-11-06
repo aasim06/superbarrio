@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "@/i18n/navigation";
 import { useGroceryCart } from "@/context/GroceryCartContext";
 import {
@@ -13,6 +13,7 @@ import {
 import { useLocale, useTranslations } from "next-intl";
 import { formatPrice } from "@/utils/currency";
 import { motion, AnimatePresence } from "framer-motion";
+import { toast } from "sonner";
 
 export const CartDrawer: React.FC = () => {
   const t = useTranslations("grocery");
@@ -27,24 +28,51 @@ export const CartDrawer: React.FC = () => {
     totalItems,
     subtotal,
     deliveryFee,
+    discountRate,
+    discountAmount,
+    promoCode,
+    applyPromoCode,
+    removePromoCode,
     total,
     freeDeliveryThreshold,
     amountNeededForFreeDelivery,
   } = useGroceryCart();
+
+  const [inputCoupon, setInputCoupon] = useState("");
 
   const progressPercent = Math.min(
     100,
     Math.round((subtotal / freeDeliveryThreshold) * 100),
   );
 
+  const handleApplyCoupon = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!inputCoupon.trim()) return;
+    const res = applyPromoCode(inputCoupon);
+    if (res.success) {
+      toast.success(res.message, { icon: "🎉" });
+      setInputCoupon("");
+    } else {
+      toast.error(res.message);
+    }
+  };
+
+  const handleRemoveCoupon = () => {
+    removePromoCode();
+    toast.info("Promo code removed.");
+  };
+
   const getWhatsAppOrderUrl = () => {
-    let msg = `*New Order from SuperBarrio*\n\n`;
+    let msg = `*🛒 New Order from SuperBarrio*\n\n`;
     cart.forEach((item, index) => {
       msg += `${index + 1}. *${item.name}* (${item.unit}) x ${item.quantity} = ${formatPrice(item.price * item.quantity, locale)}\n`;
     });
     msg += `\n*Subtotal:* ${formatPrice(subtotal, locale)}`;
+    if (discountAmount > 0) {
+      msg += `\n*Discount (${promoCode} - ${discountRate * 100}%):* -${formatPrice(discountAmount, locale)}`;
+    }
     msg += `\n*Delivery:* ${deliveryFee === 0 ? "FREE" : formatPrice(deliveryFee, locale)}`;
-    msg += `\n*Total Amount:* ${formatPrice(total, locale)}\n\n`;
+    msg += `\n*Grand Total:* ${formatPrice(total, locale)}\n\n`;
     msg += `Please confirm my order and share delivery details!`;
     return `https://wa.me/923001234567?text=${encodeURIComponent(msg)}`;
   };
@@ -91,7 +119,10 @@ export const CartDrawer: React.FC = () => {
                 <div className="flex items-center gap-2">
                   {cart.length > 0 && (
                     <button
-                      onClick={clearCart}
+                      onClick={() => {
+                        clearCart();
+                        toast.info("Basket cleared.");
+                      }}
                       className="rounded-xl px-2.5 py-1 text-xs font-bold text-gray-400 transition hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-950/40 dark:hover:text-rose-400"
                       title="Clear basket"
                     >
@@ -226,7 +257,10 @@ export const CartDrawer: React.FC = () => {
                           </div>
 
                           <button
-                            onClick={() => removeFromCart(item.id)}
+                            onClick={() => {
+                              removeFromCart(item.id);
+                              toast.info(`Removed ${item.name}`);
+                            }}
                             className="flex h-8 w-8 items-center justify-center rounded-xl text-gray-400 transition hover:bg-rose-50 hover:text-rose-500 dark:text-gray-500 dark:hover:bg-rose-950/40 dark:hover:text-rose-400"
                             title="Remove from basket"
                           >
@@ -242,6 +276,45 @@ export const CartDrawer: React.FC = () => {
               {/* Drawer Footer / Checkout Actions */}
               {cart.length > 0 && (
                 <div className="border-t border-gray-200/80 bg-gray-50/90 p-5 dark:border-emerald-950/80 dark:bg-[#05130b]">
+                  {/* Promo Code Input Box */}
+                  <div className="mb-4">
+                    {discountRate > 0 ? (
+                      <div className="flex items-center justify-between rounded-2xl border border-emerald-500/40 bg-emerald-50/90 px-3.5 py-2.5 text-xs text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300">
+                        <div className="flex items-center gap-2">
+                          <span>🎉</span>
+                          <span className="font-extrabold tracking-wide">
+                            {promoCode} (20% OFF Applied)
+                          </span>
+                        </div>
+                        <button
+                          onClick={handleRemoveCoupon}
+                          className="font-bold text-rose-500 hover:text-rose-700"
+                        >
+                          ✕ Remove
+                        </button>
+                      </div>
+                    ) : (
+                      <form
+                        onSubmit={handleApplyCoupon}
+                        className="flex items-center gap-2"
+                      >
+                        <input
+                          type="text"
+                          value={inputCoupon}
+                          onChange={(e) => setInputCoupon(e.target.value)}
+                          placeholder="Promo code (Try FRESH20)"
+                          className="flex-1 rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs font-semibold uppercase tracking-wider text-gray-800 placeholder-gray-400 focus:border-emerald-500 focus:outline-none dark:border-emerald-950/80 dark:bg-[#071910] dark:text-white"
+                        />
+                        <button
+                          type="submit"
+                          className="rounded-xl bg-emerald-600 px-3.5 py-2 text-xs font-black text-white shadow-xs transition hover:bg-emerald-700"
+                        >
+                          Apply
+                        </button>
+                      </form>
+                    )}
+                  </div>
+
                   {/* Cost breakdown */}
                   <div className="space-y-1.5 text-xs">
                     <div className="flex justify-between text-gray-600 dark:text-gray-400 font-medium">
@@ -250,6 +323,14 @@ export const CartDrawer: React.FC = () => {
                         {formatPrice(subtotal, locale)}
                       </span>
                     </div>
+
+                    {discountAmount > 0 && (
+                      <div className="flex justify-between text-emerald-600 dark:text-emerald-400 font-bold">
+                        <span>Promo Discount (20%)</span>
+                        <span>-{formatPrice(discountAmount, locale)}</span>
+                      </div>
+                    )}
+
                     <div className="flex justify-between text-gray-600 dark:text-gray-400 font-medium">
                       <span>{t("deliveryFee")}</span>
                       <span>
@@ -262,11 +343,17 @@ export const CartDrawer: React.FC = () => {
                         )}
                       </span>
                     </div>
+
                     <div className="flex justify-between border-t border-gray-200/80 pt-2 text-sm font-black text-gray-900 dark:border-emerald-950/80 dark:text-white">
                       <span>{t("total")}</span>
-                      <span className="font-outfit text-lg font-black text-emerald-600 dark:text-emerald-400">
+                      <motion.span
+                        key={total}
+                        initial={{ scale: 0.8 }}
+                        animate={{ scale: 1 }}
+                        className="font-outfit text-xl font-black text-emerald-600 dark:text-emerald-400"
+                      >
                         {formatPrice(total, locale)}
-                      </span>
+                      </motion.span>
                     </div>
                   </div>
 

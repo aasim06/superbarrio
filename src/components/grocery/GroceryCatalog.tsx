@@ -4,6 +4,8 @@ import React, { useEffect, useMemo, useState } from "react";
 import GroceryHeroBanner from "@/components/grocery/GroceryHeroBanner";
 import CategoryBar from "@/components/grocery/CategoryBar";
 import ProductCard from "@/components/grocery/ProductCard";
+import SortFilterBar from "@/components/grocery/SortFilterBar";
+import RecentlyViewedSection from "@/components/grocery/RecentlyViewedSection";
 import { GROCERY_PRODUCTS, getAllProducts } from "@/data/groceryData";
 import { GroceryProduct } from "@/types/grocery";
 import { useGroceryCart } from "@/context/GroceryCartContext";
@@ -33,7 +35,15 @@ const gridItemVariants: Variants = {
 
 export const GroceryCatalog: React.FC = () => {
   const t = useTranslations("grocery");
-  const { activeCategory, searchQuery, setSearchQuery } = useGroceryCart();
+  const {
+    activeCategory,
+    searchQuery,
+    setSearchQuery,
+    sortBy,
+    filterInStockOnly,
+    filterOnSaleOnly,
+  } = useGroceryCart();
+
   const [products, setProducts] = useState<GroceryProduct[]>(
     () => GROCERY_PRODUCTS,
   );
@@ -49,7 +59,7 @@ export const GroceryCatalog: React.FC = () => {
   }, []);
 
   const filteredProducts = useMemo(() => {
-    return products.filter((product) => {
+    let result = products.filter((product) => {
       // Category check
       const matchesCategory =
         activeCategory === "all" || product.category === activeCategory;
@@ -61,9 +71,50 @@ export const GroceryCatalog: React.FC = () => {
         product.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
         product.category.toLowerCase().includes(searchQuery.toLowerCase());
 
-      return matchesCategory && matchesSearch;
+      // In stock only filter
+      const matchesStock = !filterInStockOnly || product.inStock;
+
+      // On sale filter
+      const matchesSale =
+        !filterOnSaleOnly ||
+        Boolean(product.originalPrice && product.originalPrice > product.price);
+
+      return matchesCategory && matchesSearch && matchesStock && matchesSale;
     });
-  }, [products, activeCategory, searchQuery]);
+
+    // Apply Sorting
+    switch (sortBy) {
+      case "price-asc":
+        result = [...result].sort((a, b) => a.price - b.price);
+        break;
+      case "price-desc":
+        result = [...result].sort((a, b) => b.price - a.price);
+        break;
+      case "rating-desc":
+        result = [...result].sort((a, b) => b.rating - a.rating);
+        break;
+      case "discount":
+        result = [...result].sort((a, b) => {
+          const discountA = a.originalPrice ? a.originalPrice - a.price : 0;
+          const discountB = b.originalPrice ? b.originalPrice - b.price : 0;
+          return discountB - discountA;
+        });
+        break;
+      case "featured":
+      default:
+        // Keep catalog order
+        break;
+    }
+
+    return result;
+  }, [
+    products,
+    activeCategory,
+    searchQuery,
+    sortBy,
+    filterInStockOnly,
+    filterOnSaleOnly,
+  ]);
 
   return (
     <div className="mx-auto w-full max-w-[1920px] px-4 py-6 sm:px-6 md:py-8 lg:px-8 xl:px-10">
@@ -76,20 +127,20 @@ export const GroceryCatalog: React.FC = () => {
         <GroceryHeroBanner />
       </motion.div>
 
-      {/* Category Pills Bar with Staggered Entrance */}
+      {/* Sticky Category Pills Bar */}
       <motion.div
         initial={{ opacity: 0, y: 18 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.15, ease: "easeOut" }}
-        className="mt-8"
+        className="mt-6"
       >
         <CategoryBar />
       </motion.div>
 
       {/* Products Catalog Grid with Scroll Reveal */}
-      <div id="grocery-catalog" className="mt-8 scroll-mt-24">
+      <div id="grocery-catalog" className="mt-8 scroll-mt-32">
         {/* Section Header */}
-        <div className="flex items-center justify-between pb-4">
+        <div className="flex items-center justify-between pb-3">
           <div>
             <h3 className="font-outfit text-xl sm:text-2xl font-black tracking-tight text-gray-900 dark:text-white">
               {searchQuery
@@ -114,6 +165,9 @@ export const GroceryCatalog: React.FC = () => {
             </motion.button>
           )}
         </div>
+
+        {/* Sort & Filter Bar */}
+        <SortFilterBar totalCount={filteredProducts.length} />
 
         {/* Empty State vs Animated Product Grid */}
         <AnimatePresence mode="wait">
@@ -144,7 +198,7 @@ export const GroceryCatalog: React.FC = () => {
             </motion.div>
           ) : (
             <motion.div
-              key={`grid-${activeCategory}-${searchQuery}`}
+              key={`grid-${activeCategory}-${searchQuery}-${sortBy}-${filterInStockOnly}-${filterOnSaleOnly}`}
               variants={gridContainerVariants}
               initial="hidden"
               animate="show"
@@ -159,6 +213,9 @@ export const GroceryCatalog: React.FC = () => {
           )}
         </AnimatePresence>
       </div>
+
+      {/* Recently Viewed & Recommendations */}
+      <RecentlyViewedSection />
     </div>
   );
 };
