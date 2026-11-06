@@ -1,20 +1,28 @@
 export function getCurrencySymbol(locale?: string): string {
-  return locale === "es" ? "€" : "$";
+  return "€";
 }
 
 export function formatPrice(amount: number, locale?: string): string {
-  const symbol = getCurrencySymbol(locale);
-  return `${symbol}${amount.toFixed(2)}`;
+  if (locale === "es") {
+    // Spanish format: "1,85 €"
+    return `${amount.toFixed(2).replace(".", ",")} €`;
+  }
+  // English format for Spain euro store: "€1.85"
+  return `€${amount.toFixed(2)}`;
 }
 
 export function formatCompactCurrency(
   amount: number,
   locale?: string,
 ): string {
-  const symbol = getCurrencySymbol(locale);
-  if (amount >= 1000) {
-    return `${symbol}${(amount / 1000).toFixed(1)}k`;
+  if (locale === "es") {
+    if (amount >= 1000) {
+      return `${(amount / 1000).toFixed(1).replace(".", ",")}k €`;
+    }
+    return `${Math.round(amount).toLocaleString("es-ES")} €`;
   }
-  return `${symbol}${Math.round(amount).toLocaleString()}`;
+  if (amount >= 1000) {
+    return `€${(amount / 1000).toFixed(1)}k`;
+  }
+  return `€${Math.round(amount).toLocaleString("en-US")}`;
 }
-

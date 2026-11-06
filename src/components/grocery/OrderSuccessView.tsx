@@ -10,6 +10,7 @@ import { formatPrice } from "@/utils/currency";
 
 export const OrderSuccessView: React.FC = () => {
   const locale = useLocale();
+  const isEs = locale === "es";
   const [order, setOrder] = useState<CustomerOrder | null>(null);
 
   useEffect(() => {
@@ -24,18 +25,34 @@ export const OrderSuccessView: React.FC = () => {
     }
   }, []);
 
-  const orderId = order?.orderId || "ORD-583921";
+  const orderId = order?.orderId || "ES-583921";
   const items = order?.items || [];
   const total = order?.total || 24.5;
-  const address = order?.address || "Street 4, Sector B, Main City";
-  const slot = order?.deliverySlot || "Express Delivery (25 - 35 mins)";
+  const address = order?.address || "Calle Gran Vía, 28, 3º B, 28013 Madrid";
+  const slot = order?.deliverySlot || "Hoy - 17:00 - 20:00 (Tarde)";
+
+  const getPaymentMethodLabel = () => {
+    switch (order?.paymentMethod) {
+      case "bizum":
+        return "Bizum";
+      case "card":
+        return isEs ? "Tarjeta Bancaria" : "Credit/Debit Card";
+      case "paypal":
+        return "PayPal";
+      case "apple_google":
+        return "Apple Pay / Google Pay";
+      case "cod":
+      default:
+        return isEs ? "Efectivo al recibir" : "Cash on Delivery";
+    }
+  };
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 md:py-14">
       {/* Success Card */}
-      <div className="overflow-hidden rounded-3xl border border-gray-200 bg-white p-6 shadow-theme-sm sm:p-10 text-center dark:border-gray-800 dark:bg-gray-900">
+      <div className="overflow-hidden rounded-3xl border border-gray-200/80 bg-white p-6 shadow-xl sm:p-10 text-center dark:border-emerald-950/60 dark:bg-[#071910]">
         {/* Animated Green Badge */}
-        <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-success-50 text-success-600 ring-8 ring-success-50/50 dark:bg-success-950/40 dark:text-success-400 dark:ring-success-950/20">
+        <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-emerald-50 text-emerald-600 ring-8 ring-emerald-50/60 dark:bg-emerald-950/60 dark:text-emerald-400 dark:ring-emerald-950/30">
           <svg
             className="h-10 w-10 animate-bounce"
             fill="none"
@@ -51,72 +68,85 @@ export const OrderSuccessView: React.FC = () => {
           </svg>
         </div>
 
-        <Badge variant="light" color="success" size="md">
-          Order Confirmed
-        </Badge>
+        <div className="mt-4">
+          <Badge variant="light" color="success" size="md">
+            {isEs ? "✓ Pedido Confirmado en España" : "✓ Order Confirmed in Spain"}
+          </Badge>
+        </div>
 
-        <h1 className="mt-3 text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl dark:text-white">
-          Thank you! Your order is placed.
+        <h1 className="mt-3 font-outfit text-2xl sm:text-3xl font-black tracking-tight text-gray-900 dark:text-white">
+          {isEs ? "¡Muchas gracias! Tu compra está en marcha." : "Thank you! Your order is placed."}
         </h1>
-        <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-          We&apos;ve received your grocery order and our warehouse team is
-          currently hand-picking the freshest items for you.
+        <p className="mt-2 text-xs sm:text-sm text-gray-500 dark:text-gray-400 max-w-lg mx-auto">
+          {isEs
+            ? "Hemos recibido tu pedido en SuperBarrio España. Nuestro equipo está seleccionando a mano los productos más frescos para ti."
+            : "We have received your grocery order at SuperBarrio Spain. Our warehouse team is currently hand-picking the freshest items for you."}
         </p>
 
         {/* Order Details Banner */}
-        <div className="mt-6 flex flex-wrap items-center justify-center gap-4 rounded-2xl bg-gray-50 p-4 text-xs dark:bg-gray-800/60">
+        <div className="mt-6 flex flex-wrap items-center justify-center gap-4 rounded-2xl border border-gray-100 bg-gray-50/80 p-4 text-xs dark:border-emerald-950/60 dark:bg-[#05130b]">
           <div>
-            <span className="text-gray-400 block">Order ID</span>
-            <span className="font-bold text-gray-800 dark:text-white">
+            <span className="text-gray-400 block text-[10px] uppercase font-bold">
+              {isEs ? "Número de Pedido" : "Order ID"}
+            </span>
+            <span className="font-black text-gray-900 dark:text-white">
               #{orderId}
             </span>
           </div>
-          <span className="text-gray-300 dark:text-gray-700">|</span>
+          <span className="text-gray-300 dark:text-gray-700 hidden sm:inline">|</span>
           <div>
-            <span className="text-gray-400 block">Estimated Arrival</span>
-            <span className="font-bold text-brand-600 dark:text-brand-400">
+            <span className="text-gray-400 block text-[10px] uppercase font-bold">
+              {isEs ? "Franja de Entrega" : "Estimated Arrival"}
+            </span>
+            <span className="font-black text-emerald-600 dark:text-emerald-400">
               {slot}
             </span>
           </div>
-          <span className="text-gray-300 dark:text-gray-700">|</span>
+          <span className="text-gray-300 dark:text-gray-700 hidden sm:inline">|</span>
           <div>
-            <span className="text-gray-400 block">Payment</span>
-            <span className="font-bold text-gray-800 dark:text-white">
-              Cash on Delivery ({formatPrice(total, locale)})
+            <span className="text-gray-400 block text-[10px] uppercase font-bold">
+              {isEs ? "Método y Total" : "Payment & Total"}
+            </span>
+            <span className="font-black text-gray-900 dark:text-white">
+              {getPaymentMethodLabel()} ({formatPrice(total, locale)})
             </span>
           </div>
         </div>
 
         {/* Live Delivery Tracker Timeline */}
-        <div className="mt-8 border-t border-gray-100 pt-8 dark:border-gray-800 text-start">
-          <h3 className="text-sm font-bold text-gray-900 dark:text-white">
-            Live Order Status
+        <div className="mt-8 border-t border-gray-100 pt-8 dark:border-emerald-950/60 text-start">
+          <h3 className="font-outfit text-sm font-black text-gray-900 dark:text-white">
+            {isEs ? "Estado en Vivo del Envío" : "Live Order Status"}
           </h3>
 
           <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-4">
             {/* Step 1 */}
             <div className="flex flex-col items-start gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-success-500 text-xs font-bold text-white shadow-theme-xs">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-600 text-xs font-black text-white shadow-xs">
                 ✓
               </div>
               <div>
                 <h4 className="text-xs font-bold text-gray-900 dark:text-white">
-                  Order Placed
+                  {isEs ? "Pedido Recibido" : "Order Placed"}
                 </h4>
-                <p className="text-[11px] text-gray-400">Received at system</p>
+                <p className="text-[11px] text-gray-400">
+                  {isEs ? "Confirmado en sistema" : "Received at system"}
+                </p>
               </div>
             </div>
 
             {/* Step 2 */}
             <div className="flex flex-col items-start gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-500 text-xs font-bold text-white shadow-theme-xs ring-4 ring-brand-100 dark:ring-brand-950 animate-pulse">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-600 text-xs font-black text-white shadow-xs ring-4 ring-emerald-500/20 animate-pulse">
                 <BoxIcon className="h-4 w-4" />
               </div>
               <div>
-                <h4 className="text-xs font-bold text-brand-600 dark:text-brand-400">
-                  Packing Items
+                <h4 className="text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                  {isEs ? "Preparando en Almacén" : "Packing Items"}
                 </h4>
-                <p className="text-[11px] text-gray-400">Quality check active</p>
+                <p className="text-[11px] text-gray-400">
+                  {isEs ? "Control de calidad activo" : "Quality check active"}
+                </p>
               </div>
             </div>
 
@@ -127,9 +157,11 @@ export const OrderSuccessView: React.FC = () => {
               </div>
               <div>
                 <h4 className="text-xs font-bold text-gray-800 dark:text-white">
-                  On the Way
+                  {isEs ? "En Reparto Isotérmico" : "On the Way"}
                 </h4>
-                <p className="text-[11px] text-gray-400">Rider assigned</p>
+                <p className="text-[11px] text-gray-400">
+                  {isEs ? "Cadena de frío" : "Rider assigned"}
+                </p>
               </div>
             </div>
 
@@ -140,42 +172,43 @@ export const OrderSuccessView: React.FC = () => {
               </div>
               <div>
                 <h4 className="text-xs font-bold text-gray-800 dark:text-white">
-                  Delivered
+                  {isEs ? "Entregado en Casa" : "Delivered"}
                 </h4>
-                <p className="text-[11px] text-gray-400">At your doorstep</p>
+                <p className="text-[11px] text-gray-400">
+                  {isEs ? "En tu puerta" : "At your doorstep"}
+                </p>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Delivery Details Summary */}
-        <div className="mt-8 rounded-2xl border border-gray-100 bg-gray-50/60 p-4 text-start text-xs dark:border-gray-800 dark:bg-gray-850">
+        {/* Delivery Address Details */}
+        <div className="mt-8 rounded-2xl border border-gray-100 bg-gray-50/70 p-4 text-start text-xs dark:border-emerald-950/60 dark:bg-[#05130b]">
           <div className="flex items-center justify-between">
-            <span className="inline-flex items-center gap-1.5 font-semibold text-gray-700 dark:text-gray-300">
-              <MapPinIcon className="h-4 w-4 text-brand-500" /> Delivering to:
+            <span className="inline-flex items-center gap-1.5 font-bold text-gray-700 dark:text-gray-300">
+              <MapPinIcon className="h-4 w-4 text-emerald-600" />
+              <span>{isEs ? "Dirección de entrega en España:" : "Delivering to:"}</span>
             </span>
-            <span className="text-gray-500 dark:text-gray-400">{address}</span>
+            <span className="text-gray-700 dark:text-gray-300 font-semibold">{address}</span>
           </div>
           {items.length > 0 && (
-            <div className="mt-3 border-t border-gray-200 pt-3 dark:border-gray-700">
-              <span className="block font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                Order Items ({items.length}):
+            <div className="mt-3 border-t border-gray-200/80 pt-3 dark:border-emerald-950/60">
+              <span className="block font-bold text-gray-700 dark:text-gray-300 mb-2">
+                {isEs ? `Artículos del Pedido (${items.length}):` : `Order Items (${items.length}):`}
               </span>
               <div className="flex flex-wrap gap-2">
                 {items.map((it) => (
                   <span
                     key={it.id}
-                    className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-2 py-1 text-[11px] text-gray-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300"
+                    className="inline-flex items-center gap-1.5 rounded-xl border border-gray-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-gray-800 dark:border-emerald-950 dark:bg-[#071910] dark:text-gray-200"
                   >
-                    {it.imageUrl ? (
+                    {it.imageUrl && (
                       <img
                         src={it.imageUrl}
                         alt={it.name}
                         className="h-4 w-4 rounded object-cover"
                         loading="lazy"
                       />
-                    ) : (
-                      <span>{it.emoji}</span>
                     )}
                     <span>
                       {it.quantity}x {it.name}
@@ -187,34 +220,34 @@ export const OrderSuccessView: React.FC = () => {
           )}
         </div>
 
-        {/* Buttons / Actions */}
+        {/* Action Buttons */}
         <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
           <Link
             href="/grocery"
-            className="w-full rounded-xl bg-brand-500 px-6 py-3 text-sm font-semibold text-white shadow-theme-xs transition hover:bg-brand-600 sm:w-auto"
+            className="w-full rounded-2xl bg-gradient-to-r from-emerald-600 to-green-600 px-6 py-3.5 text-xs font-black text-white shadow-lg shadow-emerald-600/30 transition hover:scale-105 active:scale-95 sm:w-auto"
           >
-            ← Order More Groceries
+            ← {isEs ? "Seguir Comprando" : "Order More Groceries"}
           </Link>
           <Link
             href="/dashboard"
-            className="w-full rounded-xl border border-gray-200 bg-white px-6 py-3 text-sm font-semibold text-gray-700 shadow-theme-xs transition hover:bg-gray-50 sm:w-auto dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-750"
+            className="w-full rounded-2xl border border-gray-200 bg-white px-6 py-3.5 text-xs font-bold text-gray-700 shadow-xs transition hover:bg-gray-50 sm:w-auto dark:border-emerald-950 dark:bg-[#071910] dark:text-gray-200 dark:hover:bg-emerald-950/60"
           >
-            Go to Admin Dashboard
+            {isEs ? "Panel de Control" : "Go to Admin Dashboard"}
           </Link>
         </div>
 
-        {/* WhatsApp Support Link */}
+        {/* WhatsApp Spain Support Link */}
         <div className="mt-5 flex justify-center">
           <a
-            href={`https://wa.me/923001234567?text=${encodeURIComponent(
-              `Hello SuperBarrio! I placed order #${order?.orderId || ""}. Could you please update me on delivery status?`,
+            href={`https://wa.me/34612345678?text=${encodeURIComponent(
+              `¡Hola SuperBarrio España! He realizado el pedido #${orderId}. ¿Podrían actualizarme sobre el estado del reparto?`,
             )}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 rounded-xl border border-emerald-500/20 bg-[#25D366]/10 px-4 py-2 text-xs font-semibold text-[#128C7E] transition hover:bg-[#25D366] hover:text-white dark:bg-[#25D366]/20 dark:text-emerald-300 dark:hover:bg-[#25D366] dark:hover:text-white"
+            className="inline-flex items-center gap-2 rounded-2xl border border-emerald-500/30 bg-[#25D366]/10 px-4 py-2.5 text-xs font-bold text-[#128C7E] transition hover:bg-[#25D366] hover:text-white dark:bg-[#25D366]/20 dark:text-emerald-300 dark:hover:bg-[#25D366] dark:hover:text-white"
           >
             <WhatsAppIcon className="h-4 w-4 fill-current" />
-            <span>Track / Chat on WhatsApp</span>
+            <span>{isEs ? "Atención al Cliente por WhatsApp (+34)" : "Track / Chat on WhatsApp"}</span>
           </a>
         </div>
       </div>

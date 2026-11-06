@@ -66,3 +66,4 @@ export const FloatingParticles: React.FC = () => {
 };
 
 export default FloatingParticles;
+

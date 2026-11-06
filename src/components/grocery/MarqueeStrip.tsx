@@ -61,3 +61,4 @@ export const MarqueeStrip: React.FC = () => {
 };
 
 export default MarqueeStrip;
+
