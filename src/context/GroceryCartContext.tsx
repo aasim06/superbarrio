@@ -21,6 +21,7 @@ export type SortOption =
 
 interface GroceryCartContextType {
   cart: CartItem[];
+  isLoaded: boolean;
   addToCart: (
     product: GroceryProduct,
     quantity?: number,
@@ -302,6 +303,7 @@ export const GroceryCartProvider: React.FC<{ children: React.ReactNode }> = ({
     <GroceryCartContext.Provider
       value={{
         cart,
+        isLoaded,
         addToCart,
         updateQuantity,
         removeFromCart,
@@ -349,6 +351,7 @@ export const GroceryCartProvider: React.FC<{ children: React.ReactNode }> = ({
 
 const fallbackContext: GroceryCartContextType = {
   cart: [],
+  isLoaded: false,
   addToCart: () => {},
   updateQuantity: () => {},
   removeFromCart: () => {},

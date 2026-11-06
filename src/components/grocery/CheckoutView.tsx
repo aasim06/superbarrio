@@ -20,8 +20,141 @@ import {
 } from "@/icons";
 import { useLocale, useTranslations } from "next-intl";
 import { formatPrice } from "@/utils/currency";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, type Variants } from "framer-motion";
 import { toast } from "sonner";
+
+// Staggered entrance animation variants
+const containerVariants: Variants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.12,
+    },
+  },
+};
+
+const cardVariants: Variants = {
+  hidden: { opacity: 0, y: 22 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.45,
+      ease: [0.16, 1, 0.3, 1],
+    },
+  },
+};
+
+// Shimmer Skeleton Loader when cart is hydrating
+export const CheckoutSkeleton: React.FC = () => {
+  return (
+    <div className="mx-auto w-full max-w-[1920px] px-4 py-6 sm:px-6 md:py-10 lg:px-8 xl:px-10 animate-pulse">
+      {/* Stepper Skeleton */}
+      <div className="mb-8">
+        <div className="flex items-center justify-between pb-4">
+          <div className="h-4 w-28 rounded-lg bg-gray-200 dark:bg-emerald-950/60" />
+          <div className="h-4 w-44 rounded-lg bg-gray-200 dark:bg-emerald-950/60" />
+        </div>
+        <div className="relative mx-auto max-w-3xl pt-2">
+          <div className="h-1.5 w-full rounded-full bg-gray-200 dark:bg-emerald-950/60" />
+          <div className="flex justify-between pt-3">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="flex flex-col items-center gap-2">
+                <div className="h-8 w-8 rounded-full bg-gray-200 dark:bg-emerald-950/60" />
+                <div className="h-3 w-16 rounded-md bg-gray-200 dark:bg-emerald-950/60" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
+        {/* Form Column Skeleton */}
+        <div className="space-y-6 lg:col-span-7">
+          {/* Card 1: Address */}
+          <div className="rounded-3xl border border-gray-200/80 bg-white p-6 shadow-sm dark:border-emerald-950/70 dark:bg-[#071910]">
+            <div className="flex items-center gap-3 pb-4 border-b border-gray-100 dark:border-emerald-950/60">
+              <div className="h-8 w-8 rounded-xl bg-gray-200 dark:bg-emerald-950/60" />
+              <div className="space-y-1.5">
+                <div className="h-5 w-48 rounded-md bg-gray-200 dark:bg-emerald-950/60" />
+                <div className="h-3 w-64 rounded-md bg-gray-100 dark:bg-emerald-950/40" />
+              </div>
+            </div>
+            <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div className="h-11 rounded-2xl bg-gray-100 dark:bg-[#05130b]" />
+              <div className="h-11 rounded-2xl bg-gray-100 dark:bg-[#05130b]" />
+              <div className="sm:col-span-2 h-11 rounded-2xl bg-gray-100 dark:bg-[#05130b]" />
+              <div className="sm:col-span-2 h-11 rounded-2xl bg-gray-100 dark:bg-[#05130b]" />
+              <div className="h-11 rounded-2xl bg-gray-100 dark:bg-[#05130b]" />
+              <div className="h-11 rounded-2xl bg-gray-100 dark:bg-[#05130b]" />
+            </div>
+          </div>
+
+          {/* Card 2: Slots */}
+          <div className="rounded-3xl border border-gray-200/80 bg-white p-6 shadow-sm dark:border-emerald-950/70 dark:bg-[#071910]">
+            <div className="h-5 w-44 rounded-md bg-gray-200 dark:bg-emerald-950/60 mb-4" />
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="h-18 rounded-2xl bg-gray-100 dark:bg-[#05130b]" />
+              ))}
+            </div>
+          </div>
+
+          {/* Card 3: Payment */}
+          <div className="rounded-3xl border border-gray-200/80 bg-white p-6 shadow-sm dark:border-emerald-950/70 dark:bg-[#071910]">
+            <div className="h-5 w-44 rounded-md bg-gray-200 dark:bg-emerald-950/60 mb-4" />
+            <div className="space-y-3">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <div key={i} className="h-16 rounded-2xl bg-gray-100 dark:bg-[#05130b]" />
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Summary Column Skeleton */}
+        <div className="lg:col-span-5">
+          <div className="rounded-3xl border border-gray-200/80 bg-white p-6 shadow-sm dark:border-emerald-950/70 dark:bg-[#071910] space-y-4">
+            <div className="flex justify-between items-center pb-3 border-b border-gray-100 dark:border-emerald-950/60">
+              <div className="h-5 w-36 rounded-md bg-gray-200 dark:bg-emerald-950/60" />
+              <div className="h-5 w-16 rounded-full bg-gray-200 dark:bg-emerald-950/60" />
+            </div>
+            <div className="h-12 rounded-2xl bg-gray-100 dark:bg-[#05130b]" />
+            <div className="space-y-3 pt-2">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="h-11 w-11 rounded-xl bg-gray-200 dark:bg-emerald-950/60" />
+                    <div className="space-y-1">
+                      <div className="h-4 w-32 rounded-md bg-gray-200 dark:bg-emerald-950/60" />
+                      <div className="h-3 w-20 rounded-md bg-gray-100 dark:bg-emerald-950/40" />
+                    </div>
+                  </div>
+                  <div className="h-4 w-14 rounded-md bg-gray-200 dark:bg-emerald-950/60" />
+                </div>
+              ))}
+            </div>
+            <div className="pt-4 border-t border-gray-100 dark:border-emerald-950/60 space-y-2.5">
+              <div className="flex justify-between">
+                <div className="h-4 w-20 rounded bg-gray-200 dark:bg-emerald-950/60" />
+                <div className="h-4 w-14 rounded bg-gray-200 dark:bg-emerald-950/60" />
+              </div>
+              <div className="flex justify-between">
+                <div className="h-4 w-24 rounded bg-gray-200 dark:bg-emerald-950/60" />
+                <div className="h-4 w-14 rounded bg-gray-200 dark:bg-emerald-950/60" />
+              </div>
+              <div className="flex justify-between pt-3 border-t border-gray-100 dark:border-emerald-950/60">
+                <div className="h-6 w-24 rounded bg-gray-200 dark:bg-emerald-950/60" />
+                <div className="h-7 w-24 rounded bg-gray-200 dark:bg-emerald-950/60" />
+              </div>
+            </div>
+            <div className="h-14 rounded-2xl bg-gray-200 dark:bg-emerald-950/60" />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 export const CheckoutView: React.FC = () => {
   const router = useRouter();
@@ -31,6 +164,7 @@ export const CheckoutView: React.FC = () => {
 
   const {
     cart,
+    isLoaded,
     subtotal,
     deliveryFee,
     discountAmount,
@@ -116,17 +250,25 @@ export const CheckoutView: React.FC = () => {
 
   const handleRemoveCoupon = () => {
     removePromoCode();
-    toast.info("Código promocional eliminado.");
+    toast.info(isEs ? "Código promocional eliminado." : "Promo code removed.");
   };
 
-  // Validation
+  // Form Validation
   const validateForm = () => {
     if (!formData.fullName.trim()) {
-      toast.error(isEs ? "Por favor, introduce tu nombre completo." : "Please enter your full name.");
+      toast.error(
+        isEs
+          ? "Por favor, introduce tu nombre completo."
+          : "Please enter your full name.",
+      );
       return false;
     }
     if (!formData.email.trim() || !formData.email.includes("@")) {
-      toast.error(isEs ? "Introduce un correo electrónico válido." : "Please enter a valid email address.");
+      toast.error(
+        isEs
+          ? "Introduce un correo electrónico válido."
+          : "Please enter a valid email address.",
+      );
       return false;
     }
     // Clean phone number
@@ -140,7 +282,11 @@ export const CheckoutView: React.FC = () => {
       return false;
     }
     if (!formData.street.trim()) {
-      toast.error(isEs ? "Introduce tu calle y número." : "Please enter your street address and number.");
+      toast.error(
+        isEs
+          ? "Introduce tu calle y número."
+          : "Please enter your street address and number.",
+      );
       return false;
     }
     if (!formData.postalCode.trim() || formData.postalCode.length !== 5) {
@@ -152,7 +298,9 @@ export const CheckoutView: React.FC = () => {
       return false;
     }
     if (!formData.city.trim()) {
-      toast.error(isEs ? "Introduce tu ciudad o municipio." : "Please enter your city.");
+      toast.error(
+        isEs ? "Introduce tu ciudad o municipio." : "Please enter your city.",
+      );
       return false;
     }
     return true;
@@ -237,7 +385,7 @@ export const CheckoutView: React.FC = () => {
     setTimeout(() => {
       clearCart();
       router.push(`/grocery/order-success?orderId=${newOrder.orderId}`);
-    }, 900);
+    }, 800);
   };
 
   const getWhatsAppOrderUrl = () => {
@@ -265,22 +413,27 @@ export const CheckoutView: React.FC = () => {
     return `https://wa.me/34612345678?text=${encodeURIComponent(msg)}`;
   };
 
-  // If cart is empty
+  // If still loading cart from localStorage, show shimmering Skeleton Loader
+  if (!isLoaded) {
+    return <CheckoutSkeleton />;
+  }
+
+  // If cart is empty after hydration
   if (cart.length === 0 && !isSubmitting && !isSuccess) {
     return (
       <div className="mx-auto max-w-xl px-4 py-20 text-center">
-        <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-3xl bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400">
-          <CartIcon className="h-10 w-10" />
+        <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-3xl bg-emerald-50 text-emerald-600 shadow-lg shadow-emerald-600/10 dark:bg-emerald-950/40 dark:text-emerald-400">
+          <CartIcon className="h-12 w-12" />
         </div>
         <h2 className="mt-5 font-outfit text-2xl font-black text-gray-900 dark:text-white">
           {t("emptyTitle")}
         </h2>
-        <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+        <p className="mt-2 text-xs sm:text-sm text-gray-500 dark:text-gray-400">
           {t("emptySubtitle")}
         </p>
         <Link
           href="/grocery"
-          className="mt-6 inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-emerald-600 to-green-600 px-6 py-3.5 text-xs font-black text-white shadow-lg shadow-emerald-600/30 transition hover:scale-105 active:scale-95"
+          className="mt-6 inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-emerald-600 to-green-600 px-7 py-3.5 text-xs font-black text-white shadow-xl shadow-emerald-600/30 transition hover:scale-105 active:scale-95"
         >
           <span>← {t("startShopping")}</span>
         </Link>
@@ -298,14 +451,14 @@ export const CheckoutView: React.FC = () => {
         <div className="flex items-center justify-between pb-4">
           <Link
             href="/grocery"
-            className="group inline-flex items-center gap-2 text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:underline"
+            className="group inline-flex items-center gap-2 text-xs font-bold text-emerald-600 transition-colors hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300"
           >
             <span className="transition-transform group-hover:-translate-x-1">
               ←
             </span>
             <span>{t("backToStore")}</span>
           </Link>
-          <div className="flex items-center gap-1.5 text-xs font-semibold text-gray-400 dark:text-emerald-400/60">
+          <div className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 dark:text-emerald-400/70">
             <ShieldCheckIcon className="h-4 w-4 text-emerald-500" />
             <span className="hidden sm:inline">{t("secureCheckout")}</span>
             <span className="sm:hidden">SSL 256-Bit</span>
@@ -325,7 +478,7 @@ export const CheckoutView: React.FC = () => {
           <div className="relative z-10 flex items-center justify-between">
             {/* Step 1: Cesta */}
             <div className="flex flex-col items-center">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-600 text-xs font-black text-white shadow-md">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-600 text-xs font-black text-white shadow-md shadow-emerald-600/25">
                 ✓
               </div>
               <span className="mt-1.5 text-[11px] font-bold text-emerald-700 dark:text-emerald-400">
@@ -335,7 +488,7 @@ export const CheckoutView: React.FC = () => {
 
             {/* Step 2: Datos y Entrega (Active) */}
             <div className="flex flex-col items-center">
-              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-600 text-xs font-black text-white shadow-lg ring-4 ring-emerald-500/20">
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-tr from-emerald-600 to-green-500 text-xs font-black text-white shadow-lg shadow-emerald-600/35 ring-4 ring-emerald-500/25">
                 2
               </div>
               <span className="mt-1.5 text-[11px] font-black text-emerald-700 dark:text-emerald-300">
@@ -345,7 +498,7 @@ export const CheckoutView: React.FC = () => {
 
             {/* Step 3: Pago */}
             <div className="flex flex-col items-center">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-emerald-500/60 bg-white text-xs font-black text-emerald-600 dark:bg-[#071910] dark:text-emerald-400 shadow-xs">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-emerald-500/70 bg-white text-xs font-black text-emerald-600 dark:bg-[#071910] dark:text-emerald-400 shadow-xs">
                 3
               </div>
               <span className="mt-1.5 text-[11px] font-semibold text-gray-500 dark:text-gray-400">
@@ -371,7 +524,7 @@ export const CheckoutView: React.FC = () => {
         <button
           type="button"
           onClick={() => setIsMobileSummaryOpen(!isMobileSummaryOpen)}
-          className="flex w-full items-center justify-between rounded-2xl border border-emerald-500/30 bg-emerald-50/80 px-4 py-3.5 text-xs font-bold text-emerald-900 shadow-xs backdrop-blur-md dark:border-emerald-950/80 dark:bg-[#071d12] dark:text-emerald-200"
+          className="flex w-full items-center justify-between rounded-2xl border border-emerald-500/30 bg-emerald-50/90 px-4 py-3.5 text-xs font-bold text-emerald-950 shadow-sm backdrop-blur-md dark:border-emerald-950/80 dark:bg-[#071d12] dark:text-emerald-200"
         >
           <div className="flex items-center gap-2">
             <CartIcon className="h-4 w-4 text-emerald-600" />
@@ -393,7 +546,7 @@ export const CheckoutView: React.FC = () => {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
-              className="mt-2 overflow-hidden rounded-2xl border border-gray-200 bg-white p-4 shadow-md dark:border-emerald-950/80 dark:bg-[#071910]"
+              className="mt-2 overflow-hidden rounded-2xl border border-gray-200/90 bg-white p-4 shadow-md dark:border-emerald-950/80 dark:bg-[#071910]"
             >
               <div className="divide-y divide-gray-100 dark:divide-emerald-950/60 max-h-60 overflow-y-auto">
                 {cart.map((item) => (
@@ -408,7 +561,7 @@ export const CheckoutView: React.FC = () => {
                         <span className="font-bold text-gray-900 dark:text-white truncate block">
                           {item.name}
                         </span>
-                        <span className="text-[10px] text-gray-500">
+                        <span className="text-[10px] text-gray-500 dark:text-emerald-300/60">
                           {item.quantity} x {formatPrice(item.price, locale)}
                         </span>
                       </div>
@@ -426,11 +579,19 @@ export const CheckoutView: React.FC = () => {
 
       {/* Main Form & Sticky Summary Grid */}
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
-        {/* Left Column: Delivery Form, Slots, Payment (7 Columns) */}
-        <div className="space-y-6 lg:col-span-7">
+        {/* Left Column: Delivery Form, Slots, Payment (7 Columns) with Staggered Entrance */}
+        <motion.div
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+          className="space-y-6 lg:col-span-7"
+        >
           <form onSubmit={handleSubmitOrder} className="space-y-6">
             {/* Section 1: Spain Delivery Address & Contact */}
-            <div className="rounded-3xl border border-gray-200/80 bg-white p-5 sm:p-7 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] backdrop-blur-sm dark:border-emerald-950/60 dark:bg-[#071910]/70">
+            <motion.div
+              variants={cardVariants}
+              className="rounded-3xl border border-gray-200/80 bg-white p-5 sm:p-7 shadow-[0_4px_24px_-4px_rgba(0,0,0,0.06)] backdrop-blur-sm dark:border-emerald-950/70 dark:bg-[#071910] dark:shadow-[0_4px_24px_-4px_rgba(0,0,0,0.4)]"
+            >
               <div className="flex items-center gap-3 pb-4 border-b border-gray-100 dark:border-emerald-950/60">
                 <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-50 text-xs font-black text-emerald-600 shadow-xs dark:bg-emerald-950/60 dark:text-emerald-400">
                   1
@@ -459,7 +620,7 @@ export const CheckoutView: React.FC = () => {
                       setFormData({ ...formData, fullName: e.target.value })
                     }
                     placeholder={t("deliverySection.fullNamePlaceholder")}
-                    className="mt-1.5 w-full rounded-2xl border border-gray-200/80 bg-gray-50/70 px-4 py-2.5 text-xs sm:text-sm font-semibold text-gray-800 placeholder-gray-400 transition focus:border-emerald-500 focus:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 dark:border-emerald-950 dark:bg-[#05130b] dark:text-white"
+                    className="mt-1.5 w-full rounded-2xl border border-gray-200/80 bg-gray-50/70 px-4 py-2.5 text-xs sm:text-sm font-semibold text-gray-800 placeholder-gray-400 transition focus:border-emerald-500 focus:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/30 dark:border-emerald-950 dark:bg-[#05130b] dark:text-white dark:placeholder-emerald-400/40"
                   />
                 </div>
 
@@ -476,7 +637,7 @@ export const CheckoutView: React.FC = () => {
                       setFormData({ ...formData, email: e.target.value })
                     }
                     placeholder={t("deliverySection.emailPlaceholder")}
-                    className="mt-1.5 w-full rounded-2xl border border-gray-200/80 bg-gray-50/70 px-4 py-2.5 text-xs sm:text-sm font-semibold text-gray-800 placeholder-gray-400 transition focus:border-emerald-500 focus:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 dark:border-emerald-950 dark:bg-[#05130b] dark:text-white"
+                    className="mt-1.5 w-full rounded-2xl border border-gray-200/80 bg-gray-50/70 px-4 py-2.5 text-xs sm:text-sm font-semibold text-gray-800 placeholder-gray-400 transition focus:border-emerald-500 focus:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/30 dark:border-emerald-950 dark:bg-[#05130b] dark:text-white dark:placeholder-emerald-400/40"
                   />
                 </div>
 
@@ -486,7 +647,7 @@ export const CheckoutView: React.FC = () => {
                     {t("deliverySection.phone")}
                   </label>
                   <div className="relative mt-1.5 flex items-center">
-                    <span className="absolute start-3.5 inline-flex items-center gap-1.5 text-xs font-black text-gray-500 dark:text-emerald-400">
+                    <span className="absolute start-3.5 inline-flex items-center gap-1.5 text-xs font-black text-emerald-700 dark:text-emerald-400">
                       <span>🇪🇸</span>
                       <span>+34</span>
                     </span>
@@ -501,7 +662,7 @@ export const CheckoutView: React.FC = () => {
                         })
                       }
                       placeholder={t("deliverySection.phonePlaceholder")}
-                      className="w-full rounded-2xl border border-gray-200/80 bg-gray-50/70 py-2.5 pe-4 ps-20 text-xs sm:text-sm font-semibold text-gray-800 placeholder-gray-400 transition focus:border-emerald-500 focus:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 dark:border-emerald-950 dark:bg-[#05130b] dark:text-white"
+                      className="w-full rounded-2xl border border-gray-200/80 bg-gray-50/70 py-2.5 pe-4 ps-20 text-xs sm:text-sm font-semibold text-gray-800 placeholder-gray-400 transition focus:border-emerald-500 focus:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/30 dark:border-emerald-950 dark:bg-[#05130b] dark:text-white dark:placeholder-emerald-400/40"
                     />
                   </div>
                   <p className="mt-1 text-[11px] font-medium text-gray-400 dark:text-emerald-400/60">
@@ -522,7 +683,7 @@ export const CheckoutView: React.FC = () => {
                       setFormData({ ...formData, street: e.target.value })
                     }
                     placeholder={t("deliverySection.streetPlaceholder")}
-                    className="mt-1.5 w-full rounded-2xl border border-gray-200/80 bg-gray-50/70 px-4 py-2.5 text-xs sm:text-sm font-semibold text-gray-800 placeholder-gray-400 transition focus:border-emerald-500 focus:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 dark:border-emerald-950 dark:bg-[#05130b] dark:text-white"
+                    className="mt-1.5 w-full rounded-2xl border border-gray-200/80 bg-gray-50/70 px-4 py-2.5 text-xs sm:text-sm font-semibold text-gray-800 placeholder-gray-400 transition focus:border-emerald-500 focus:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/30 dark:border-emerald-950 dark:bg-[#05130b] dark:text-white dark:placeholder-emerald-400/40"
                   />
                 </div>
 
@@ -538,7 +699,7 @@ export const CheckoutView: React.FC = () => {
                       setFormData({ ...formData, apartment: e.target.value })
                     }
                     placeholder={t("deliverySection.apartmentPlaceholder")}
-                    className="mt-1.5 w-full rounded-2xl border border-gray-200/80 bg-gray-50/70 px-4 py-2.5 text-xs sm:text-sm font-semibold text-gray-800 placeholder-gray-400 transition focus:border-emerald-500 focus:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 dark:border-emerald-950 dark:bg-[#05130b] dark:text-white"
+                    className="mt-1.5 w-full rounded-2xl border border-gray-200/80 bg-gray-50/70 px-4 py-2.5 text-xs sm:text-sm font-semibold text-gray-800 placeholder-gray-400 transition focus:border-emerald-500 focus:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/30 dark:border-emerald-950 dark:bg-[#05130b] dark:text-white dark:placeholder-emerald-400/40"
                   />
                 </div>
 
@@ -559,7 +720,7 @@ export const CheckoutView: React.FC = () => {
                       })
                     }
                     placeholder={t("deliverySection.postalCodePlaceholder")}
-                    className="mt-1.5 w-full rounded-2xl border border-gray-200/80 bg-gray-50/70 px-4 py-2.5 text-xs sm:text-sm font-semibold text-gray-800 placeholder-gray-400 transition focus:border-emerald-500 focus:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 dark:border-emerald-950 dark:bg-[#05130b] dark:text-white"
+                    className="mt-1.5 w-full rounded-2xl border border-gray-200/80 bg-gray-50/70 px-4 py-2.5 text-xs sm:text-sm font-semibold text-gray-800 placeholder-gray-400 transition focus:border-emerald-500 focus:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/30 dark:border-emerald-950 dark:bg-[#05130b] dark:text-white dark:placeholder-emerald-400/40"
                   />
                 </div>
 
@@ -576,7 +737,7 @@ export const CheckoutView: React.FC = () => {
                       setFormData({ ...formData, city: e.target.value })
                     }
                     placeholder={t("deliverySection.cityPlaceholder")}
-                    className="mt-1.5 w-full rounded-2xl border border-gray-200/80 bg-gray-50/70 px-4 py-2.5 text-xs sm:text-sm font-semibold text-gray-800 placeholder-gray-400 transition focus:border-emerald-500 focus:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 dark:border-emerald-950 dark:bg-[#05130b] dark:text-white"
+                    className="mt-1.5 w-full rounded-2xl border border-gray-200/80 bg-gray-50/70 px-4 py-2.5 text-xs sm:text-sm font-semibold text-gray-800 placeholder-gray-400 transition focus:border-emerald-500 focus:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/30 dark:border-emerald-950 dark:bg-[#05130b] dark:text-white dark:placeholder-emerald-400/40"
                   />
                 </div>
 
@@ -590,7 +751,7 @@ export const CheckoutView: React.FC = () => {
                     onChange={(e) =>
                       setFormData({ ...formData, province: e.target.value })
                     }
-                    className="mt-1.5 w-full rounded-2xl border border-gray-200/80 bg-gray-50/70 px-3.5 py-2.5 text-xs sm:text-sm font-semibold text-gray-800 transition focus:border-emerald-500 focus:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 dark:border-emerald-950 dark:bg-[#05130b] dark:text-white"
+                    className="mt-1.5 w-full rounded-2xl border border-gray-200/80 bg-gray-50/70 px-3.5 py-2.5 text-xs sm:text-sm font-semibold text-gray-800 transition focus:border-emerald-500 focus:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/30 dark:border-emerald-950 dark:bg-[#05130b] dark:text-white"
                   >
                     {SPAIN_PROVINCES.map((prov) => (
                       <option key={prov} value={prov}>
@@ -616,7 +777,7 @@ export const CheckoutView: React.FC = () => {
                           province: c,
                         }))
                       }
-                      className="rounded-xl border border-emerald-500/20 bg-emerald-50/60 px-2.5 py-0.5 text-[11px] font-bold text-emerald-800 transition hover:bg-emerald-600 hover:text-white dark:bg-emerald-950/40 dark:text-emerald-300"
+                      className="rounded-xl border border-emerald-500/20 bg-emerald-50/60 px-2.5 py-0.5 text-[11px] font-bold text-emerald-800 transition hover:bg-emerald-600 hover:text-white dark:bg-emerald-950/40 dark:text-emerald-300 dark:hover:bg-emerald-600"
                     >
                       {c}
                     </button>
@@ -635,25 +796,25 @@ export const CheckoutView: React.FC = () => {
                       setFormData({ ...formData, notes: e.target.value })
                     }
                     placeholder={t("deliverySection.instructionsPlaceholder")}
-                    className="mt-1.5 w-full rounded-2xl border border-gray-200/80 bg-gray-50/70 px-4 py-2.5 text-xs sm:text-sm font-semibold text-gray-800 placeholder-gray-400 transition focus:border-emerald-500 focus:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 dark:border-emerald-950 dark:bg-[#05130b] dark:text-white"
+                    className="mt-1.5 w-full rounded-2xl border border-gray-200/80 bg-gray-50/70 px-4 py-2.5 text-xs sm:text-sm font-semibold text-gray-800 placeholder-gray-400 transition focus:border-emerald-500 focus:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/30 dark:border-emerald-950 dark:bg-[#05130b] dark:text-white dark:placeholder-emerald-400/40"
                   />
                 </div>
 
                 {/* Checkboxes: Save Data & Guest Account */}
                 <div className="sm:col-span-2 space-y-2 pt-2 border-t border-gray-100 dark:border-emerald-950/60">
-                  <label className="flex items-center gap-2.5 cursor-pointer text-xs font-semibold text-gray-700 dark:text-gray-300">
+                  <label className="flex items-center gap-2.5 cursor-pointer text-xs font-semibold text-gray-700 dark:text-gray-300 select-none">
                     <input
                       type="checkbox"
                       checked={formData.saveData}
                       onChange={(e) =>
                         setFormData({ ...formData, saveData: e.target.checked })
                       }
-                      className="h-4 w-4 rounded-md border-gray-300 text-emerald-600 focus:ring-emerald-500"
+                      className="h-4 w-4 rounded-md border-gray-300 text-emerald-600 focus:ring-emerald-500 accent-emerald-600"
                     />
                     <span>{t("deliverySection.saveData")}</span>
                   </label>
 
-                  <label className="flex items-center gap-2.5 cursor-pointer text-xs font-semibold text-gray-700 dark:text-gray-300">
+                  <label className="flex items-center gap-2.5 cursor-pointer text-xs font-semibold text-gray-700 dark:text-gray-300 select-none">
                     <input
                       type="checkbox"
                       checked={formData.createAccount}
@@ -663,16 +824,19 @@ export const CheckoutView: React.FC = () => {
                           createAccount: e.target.checked,
                         })
                       }
-                      className="h-4 w-4 rounded-md border-gray-300 text-emerald-600 focus:ring-emerald-500"
+                      className="h-4 w-4 rounded-md border-gray-300 text-emerald-600 focus:ring-emerald-500 accent-emerald-600"
                     />
                     <span>{t("deliverySection.createAccount")}</span>
                   </label>
                 </div>
               </div>
-            </div>
+            </motion.div>
 
-            {/* Section 2: Preferred Delivery Slot (Spain Timing) */}
-            <div className="rounded-3xl border border-gray-200/80 bg-white p-5 sm:p-7 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] backdrop-blur-sm dark:border-emerald-950/60 dark:bg-[#071910]/70">
+            {/* Section 2: Preferred Delivery Slot (Spain Timing) with Scale & Custom Checkmark */}
+            <motion.div
+              variants={cardVariants}
+              className="rounded-3xl border border-gray-200/80 bg-white p-5 sm:p-7 shadow-[0_4px_24px_-4px_rgba(0,0,0,0.06)] backdrop-blur-sm dark:border-emerald-950/70 dark:bg-[#071910] dark:shadow-[0_4px_24px_-4px_rgba(0,0,0,0.4)]"
+            >
               <div className="flex items-center gap-3 pb-4 border-b border-gray-100 dark:border-emerald-950/60">
                 <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-50 text-xs font-black text-emerald-600 shadow-xs dark:bg-emerald-950/60 dark:text-emerald-400">
                   2
@@ -694,15 +858,17 @@ export const CheckoutView: React.FC = () => {
                   const isDisabled = slot.disabled;
 
                   return (
-                    <label
+                    <motion.div
                       key={slot.id}
+                      whileHover={!isDisabled ? { scale: 1.015 } : {}}
+                      whileTap={!isDisabled ? { scale: 0.985 } : {}}
                       onClick={() => !isDisabled && setSelectedSlot(slot.id)}
-                      className={`relative flex items-center justify-between rounded-2xl border p-4 transition-all select-none ${
+                      className={`relative flex items-center justify-between rounded-2xl border p-4 transition-all duration-200 select-none ${
                         isDisabled
                           ? "opacity-45 bg-gray-100/60 border-gray-200 cursor-not-allowed dark:bg-gray-900/40 dark:border-emerald-950/40"
                           : isChecked
-                          ? "cursor-pointer border-emerald-500 bg-emerald-50/50 shadow-sm ring-2 ring-emerald-500/25 dark:border-emerald-500 dark:bg-emerald-950/40"
-                          : "cursor-pointer border-gray-200/80 bg-white hover:border-emerald-300 dark:border-emerald-950 dark:bg-[#05130b]"
+                          ? "cursor-pointer border-emerald-500 bg-emerald-50/60 shadow-[0_0_20px_-3px_rgba(22,163,74,0.18)] ring-2 ring-emerald-500/25 dark:border-emerald-500 dark:bg-emerald-950/40"
+                          : "cursor-pointer border-gray-200/80 bg-white hover:border-emerald-300 hover:shadow-xs dark:border-emerald-950 dark:bg-[#05130b] dark:hover:border-emerald-800"
                       }`}
                     >
                       <div>
@@ -717,7 +883,7 @@ export const CheckoutView: React.FC = () => {
                             {slot.dayLabel}
                           </span>
                           {slot.periodLabel && (
-                            <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-bold text-gray-600 dark:bg-emerald-950/80 dark:text-emerald-300">
+                            <span className="rounded-full bg-emerald-100/70 px-2 py-0.5 text-[10px] font-bold text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300">
                               {slot.periodLabel}
                             </span>
                           )}
@@ -732,26 +898,38 @@ export const CheckoutView: React.FC = () => {
                         )}
                       </div>
 
-                      <input
-                        type="radio"
-                        name="deliverySlot"
-                        disabled={isDisabled}
-                        checked={isChecked}
-                        onChange={() => setSelectedSlot(slot.id)}
-                        className="h-4 w-4 text-emerald-600 focus:ring-emerald-500"
-                      />
-                    </label>
+                      {/* Custom Radio with Green Border & Check Icon */}
+                      <div className="ms-3 flex h-6 w-6 shrink-0 items-center justify-center">
+                        {isChecked ? (
+                          <motion.div
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            transition={{ type: "spring", stiffness: 350, damping: 20 }}
+                            className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-600 text-white shadow-xs"
+                          >
+                            <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={3}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                            </svg>
+                          </motion.div>
+                        ) : (
+                          <div className="h-5 w-5 rounded-full border-2 border-gray-300 dark:border-emerald-950 bg-white dark:bg-gray-800 transition-colors" />
+                        )}
+                      </div>
+                    </motion.div>
                   );
                 })}
               </div>
 
-              <p className="mt-3 text-[11px] font-medium text-emerald-600 dark:text-emerald-400">
+              <p className="mt-3 text-[11px] font-semibold text-emerald-700 dark:text-emerald-400">
                 ⚡ {t("slotSection.expressNotice")}
               </p>
-            </div>
+            </motion.div>
 
-            {/* Section 3: Spain Payment Methods */}
-            <div className="rounded-3xl border border-gray-200/80 bg-white p-5 sm:p-7 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] backdrop-blur-sm dark:border-emerald-950/60 dark:bg-[#071910]/70">
+            {/* Section 3: Spain Payment Methods (Custom Checkmarks & Clean Fresh Green / Orange accents) */}
+            <motion.div
+              variants={cardVariants}
+              className="rounded-3xl border border-gray-200/80 bg-white p-5 sm:p-7 shadow-[0_4px_24px_-4px_rgba(0,0,0,0.06)] backdrop-blur-sm dark:border-emerald-950/70 dark:bg-[#071910] dark:shadow-[0_4px_24px_-4px_rgba(0,0,0,0.4)]"
+            >
               <div className="flex items-center gap-3 pb-4 border-b border-gray-100 dark:border-emerald-950/60">
                 <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-50 text-xs font-black text-emerald-600 shadow-xs dark:bg-emerald-950/60 dark:text-emerald-400">
                   3
@@ -768,11 +946,13 @@ export const CheckoutView: React.FC = () => {
 
               <div className="mt-5 space-y-3">
                 {/* 1. Credit / Debit Card (Visa, Mastercard) */}
-                <label
+                <motion.div
+                  whileHover={{ scale: 1.01 }}
+                  whileTap={{ scale: 0.99 }}
                   onClick={() => setPaymentMethod("card")}
-                  className={`flex cursor-pointer items-start justify-between rounded-2xl border p-4.5 transition-all ${
+                  className={`flex cursor-pointer items-start justify-between rounded-2xl border p-4.5 transition-all duration-200 ${
                     paymentMethod === "card"
-                      ? "border-emerald-500 bg-emerald-50/50 shadow-sm ring-2 ring-emerald-500/20 dark:border-emerald-500 dark:bg-emerald-950/40"
+                      ? "border-emerald-500 bg-emerald-50/60 shadow-[0_0_20px_-3px_rgba(22,163,74,0.18)] ring-2 ring-emerald-500/25 dark:border-emerald-500 dark:bg-emerald-950/40"
                       : "border-gray-200/80 bg-white hover:border-gray-300 dark:border-emerald-950 dark:bg-[#05130b]"
                   }`}
                 >
@@ -785,10 +965,10 @@ export const CheckoutView: React.FC = () => {
                         <span className="font-outfit text-sm font-black text-gray-900 dark:text-white">
                           {t("paymentSection.card")}
                         </span>
-                        <span className="rounded bg-gray-100 px-1.5 py-0.5 text-[10px] font-black text-blue-700 dark:bg-gray-800 dark:text-blue-400">
+                        <span className="rounded-md bg-emerald-100/70 px-2 py-0.5 text-[10px] font-black text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300">
                           VISA
                         </span>
-                        <span className="rounded bg-gray-100 px-1.5 py-0.5 text-[10px] font-black text-red-600 dark:bg-gray-800 dark:text-red-400">
+                        <span className="rounded-md bg-amber-100/70 px-2 py-0.5 text-[10px] font-black text-amber-800 dark:bg-amber-950/80 dark:text-amber-300">
                           Mastercard
                         </span>
                       </div>
@@ -797,21 +977,31 @@ export const CheckoutView: React.FC = () => {
                       </p>
                     </div>
                   </div>
-                  <input
-                    type="radio"
-                    name="paymentMethod"
-                    checked={paymentMethod === "card"}
-                    onChange={() => setPaymentMethod("card")}
-                    className="mt-1 h-4 w-4 text-emerald-600 focus:ring-emerald-500"
-                  />
-                </label>
+                  <div className="mt-1 ms-2">
+                    {paymentMethod === "card" ? (
+                      <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-600 text-white shadow-xs"
+                      >
+                        <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={3}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                      </motion.div>
+                    ) : (
+                      <div className="h-5 w-5 rounded-full border-2 border-gray-300 dark:border-emerald-950 bg-white dark:bg-gray-800" />
+                    )}
+                  </div>
+                </motion.div>
 
                 {/* 2. Bizum (Famous Spain mobile instant payment) */}
-                <label
+                <motion.div
+                  whileHover={{ scale: 1.01 }}
+                  whileTap={{ scale: 0.99 }}
                   onClick={() => setPaymentMethod("bizum")}
-                  className={`flex cursor-pointer items-start justify-between rounded-2xl border p-4.5 transition-all ${
+                  className={`flex cursor-pointer items-start justify-between rounded-2xl border p-4.5 transition-all duration-200 ${
                     paymentMethod === "bizum"
-                      ? "border-emerald-500 bg-emerald-50/50 shadow-sm ring-2 ring-emerald-500/20 dark:border-emerald-500 dark:bg-emerald-950/40"
+                      ? "border-emerald-500 bg-emerald-50/60 shadow-[0_0_20px_-3px_rgba(22,163,74,0.18)] ring-2 ring-emerald-500/25 dark:border-emerald-500 dark:bg-emerald-950/40"
                       : "border-gray-200/80 bg-white hover:border-gray-300 dark:border-emerald-950 dark:bg-[#05130b]"
                   }`}
                 >
@@ -824,7 +1014,7 @@ export const CheckoutView: React.FC = () => {
                         <span className="font-outfit text-sm font-black text-gray-900 dark:text-white">
                           {t("paymentSection.bizum")}
                         </span>
-                        <span className="rounded-full bg-[#00A99D]/15 px-2 py-0.5 text-[10px] font-bold text-[#00A99D]">
+                        <span className="rounded-full bg-[#00A99D]/15 px-2.5 py-0.5 text-[10px] font-extrabold text-[#00A99D]">
                           Popular en España
                         </span>
                       </div>
@@ -833,26 +1023,36 @@ export const CheckoutView: React.FC = () => {
                       </p>
                     </div>
                   </div>
-                  <input
-                    type="radio"
-                    name="paymentMethod"
-                    checked={paymentMethod === "bizum"}
-                    onChange={() => setPaymentMethod("bizum")}
-                    className="mt-1 h-4 w-4 text-emerald-600 focus:ring-emerald-500"
-                  />
-                </label>
+                  <div className="mt-1 ms-2">
+                    {paymentMethod === "bizum" ? (
+                      <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-600 text-white shadow-xs"
+                      >
+                        <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={3}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                      </motion.div>
+                    ) : (
+                      <div className="h-5 w-5 rounded-full border-2 border-gray-300 dark:border-emerald-950 bg-white dark:bg-gray-800" />
+                    )}
+                  </div>
+                </motion.div>
 
                 {/* 3. PayPal */}
-                <label
+                <motion.div
+                  whileHover={{ scale: 1.01 }}
+                  whileTap={{ scale: 0.99 }}
                   onClick={() => setPaymentMethod("paypal")}
-                  className={`flex cursor-pointer items-start justify-between rounded-2xl border p-4.5 transition-all ${
+                  className={`flex cursor-pointer items-start justify-between rounded-2xl border p-4.5 transition-all duration-200 ${
                     paymentMethod === "paypal"
-                      ? "border-emerald-500 bg-emerald-50/50 shadow-sm ring-2 ring-emerald-500/20 dark:border-emerald-500 dark:bg-emerald-950/40"
+                      ? "border-emerald-500 bg-emerald-50/60 shadow-[0_0_20px_-3px_rgba(22,163,74,0.18)] ring-2 ring-emerald-500/25 dark:border-emerald-500 dark:bg-emerald-950/40"
                       : "border-gray-200/80 bg-white hover:border-gray-300 dark:border-emerald-950 dark:bg-[#05130b]"
                   }`}
                 >
                   <div className="flex items-start gap-3.5">
-                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#003087]/10 text-[#003087] font-black text-xs shadow-xs dark:bg-blue-950 dark:text-blue-300">
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-800 font-black text-xs shadow-xs dark:bg-emerald-950/60 dark:text-emerald-300">
                       PayPal
                     </div>
                     <div>
@@ -864,26 +1064,36 @@ export const CheckoutView: React.FC = () => {
                       </p>
                     </div>
                   </div>
-                  <input
-                    type="radio"
-                    name="paymentMethod"
-                    checked={paymentMethod === "paypal"}
-                    onChange={() => setPaymentMethod("paypal")}
-                    className="mt-1 h-4 w-4 text-emerald-600 focus:ring-emerald-500"
-                  />
-                </label>
+                  <div className="mt-1 ms-2">
+                    {paymentMethod === "paypal" ? (
+                      <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-600 text-white shadow-xs"
+                      >
+                        <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={3}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                      </motion.div>
+                    ) : (
+                      <div className="h-5 w-5 rounded-full border-2 border-gray-300 dark:border-emerald-950 bg-white dark:bg-gray-800" />
+                    )}
+                  </div>
+                </motion.div>
 
                 {/* 4. Apple Pay / Google Pay */}
-                <label
+                <motion.div
+                  whileHover={{ scale: 1.01 }}
+                  whileTap={{ scale: 0.99 }}
                   onClick={() => setPaymentMethod("apple_google")}
-                  className={`flex cursor-pointer items-start justify-between rounded-2xl border p-4.5 transition-all ${
+                  className={`flex cursor-pointer items-start justify-between rounded-2xl border p-4.5 transition-all duration-200 ${
                     paymentMethod === "apple_google"
-                      ? "border-emerald-500 bg-emerald-50/50 shadow-sm ring-2 ring-emerald-500/20 dark:border-emerald-500 dark:bg-emerald-950/40"
+                      ? "border-emerald-500 bg-emerald-50/60 shadow-[0_0_20px_-3px_rgba(22,163,74,0.18)] ring-2 ring-emerald-500/25 dark:border-emerald-500 dark:bg-emerald-950/40"
                       : "border-gray-200/80 bg-white hover:border-gray-300 dark:border-emerald-950 dark:bg-[#05130b]"
                   }`}
                 >
                   <div className="flex items-start gap-3.5">
-                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gray-100 text-gray-800 font-bold text-xs shadow-xs dark:bg-gray-800 dark:text-white">
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gray-100 text-gray-900 font-black text-xs shadow-xs dark:bg-gray-800 dark:text-white">
                        / G
                     </div>
                     <div>
@@ -895,21 +1105,31 @@ export const CheckoutView: React.FC = () => {
                       </p>
                     </div>
                   </div>
-                  <input
-                    type="radio"
-                    name="paymentMethod"
-                    checked={paymentMethod === "apple_google"}
-                    onChange={() => setPaymentMethod("apple_google")}
-                    className="mt-1 h-4 w-4 text-emerald-600 focus:ring-emerald-500"
-                  />
-                </label>
+                  <div className="mt-1 ms-2">
+                    {paymentMethod === "apple_google" ? (
+                      <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-600 text-white shadow-xs"
+                      >
+                        <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={3}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                      </motion.div>
+                    ) : (
+                      <div className="h-5 w-5 rounded-full border-2 border-gray-300 dark:border-emerald-950 bg-white dark:bg-gray-800" />
+                    )}
+                  </div>
+                </motion.div>
 
                 {/* 5. Efectivo contra entrega (Cash on Delivery) */}
-                <label
+                <motion.div
+                  whileHover={{ scale: 1.01 }}
+                  whileTap={{ scale: 0.99 }}
                   onClick={() => setPaymentMethod("cod")}
-                  className={`flex cursor-pointer items-start justify-between rounded-2xl border p-4.5 transition-all ${
+                  className={`flex cursor-pointer items-start justify-between rounded-2xl border p-4.5 transition-all duration-200 ${
                     paymentMethod === "cod"
-                      ? "border-emerald-500 bg-emerald-50/50 shadow-sm ring-2 ring-emerald-500/20 dark:border-emerald-500 dark:bg-emerald-950/40"
+                      ? "border-emerald-500 bg-emerald-50/60 shadow-[0_0_20px_-3px_rgba(22,163,74,0.18)] ring-2 ring-emerald-500/25 dark:border-emerald-500 dark:bg-emerald-950/40"
                       : "border-gray-200/80 bg-white hover:border-gray-300 dark:border-emerald-950 dark:bg-[#05130b]"
                   }`}
                 >
@@ -926,29 +1146,37 @@ export const CheckoutView: React.FC = () => {
                       </p>
                     </div>
                   </div>
-                  <input
-                    type="radio"
-                    name="paymentMethod"
-                    checked={paymentMethod === "cod"}
-                    onChange={() => setPaymentMethod("cod")}
-                    className="mt-1 h-4 w-4 text-emerald-600 focus:ring-emerald-500"
-                  />
-                </label>
+                  <div className="mt-1 ms-2">
+                    {paymentMethod === "cod" ? (
+                      <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-600 text-white shadow-xs"
+                      >
+                        <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={3}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                      </motion.div>
+                    ) : (
+                      <div className="h-5 w-5 rounded-full border-2 border-gray-300 dark:border-emerald-950 bg-white dark:bg-gray-800" />
+                    )}
+                  </div>
+                </motion.div>
               </div>
-            </div>
+            </motion.div>
 
-            {/* Desktop Place Order Button */}
+            {/* Desktop Place Order Button (Brand Fresh Green Gradient) */}
             <div className="hidden lg:block pt-2">
               <motion.button
                 type="submit"
                 disabled={isSubmitting || isSuccess}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className="w-full rounded-2xl bg-gradient-to-r from-emerald-600 to-green-600 py-4 text-center font-outfit text-base font-black text-white shadow-xl shadow-emerald-600/35 transition-all duration-200 hover:shadow-2xl hover:shadow-emerald-600/45 disabled:opacity-50"
+                className="w-full rounded-2xl bg-gradient-to-r from-emerald-600 via-green-600 to-emerald-700 py-4.5 text-center font-outfit text-base font-black text-white shadow-xl shadow-emerald-600/35 transition-all duration-200 hover:shadow-2xl hover:shadow-emerald-600/45 disabled:opacity-50"
               >
                 {isSubmitting ? (
                   <span className="flex items-center justify-center gap-2">
-                    <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                    <span className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
                     <span>{t("summary.processing")}</span>
                   </span>
                 ) : isSuccess ? (
@@ -980,22 +1208,22 @@ export const CheckoutView: React.FC = () => {
               </p>
             </div>
           </form>
-        </div>
+        </motion.div>
 
         {/* Right Column: Sticky Order Summary (5 Columns) */}
         <div className="lg:col-span-5">
-          <div className="sticky top-28 rounded-3xl border border-gray-200/80 bg-white p-6 shadow-[0_8px_30px_-6px_rgba(0,0,0,0.08)] backdrop-blur-sm dark:border-emerald-950/60 dark:bg-[#071910]/80">
+          <div className="sticky top-28 rounded-3xl border border-gray-200/80 bg-white p-6 shadow-[0_8px_30px_-6px_rgba(0,0,0,0.08)] backdrop-blur-sm dark:border-emerald-950/70 dark:bg-[#071910] dark:shadow-[0_8px_30px_-6px_rgba(0,0,0,0.4)]">
             {/* Header */}
             <div className="flex items-center justify-between pb-4 border-b border-gray-100 dark:border-emerald-950/60">
               <h3 className="font-outfit text-base font-black text-gray-900 dark:text-white">
                 {t("summary.title")}
               </h3>
-              <span className="rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-black text-emerald-700 dark:bg-emerald-950/80 dark:text-emerald-300">
+              <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-black text-emerald-700 dark:bg-emerald-950/80 dark:text-emerald-300">
                 {t("summary.itemsCount", { count: cart.length })}
               </span>
             </div>
 
-            {/* Free Delivery Tracker ($25 threshold) */}
+            {/* Free Delivery Tracker (25 € threshold) */}
             <div className="my-4 rounded-2xl border border-emerald-500/30 bg-emerald-50/60 p-3.5 dark:border-emerald-950/80 dark:bg-emerald-950/30">
               <div className="flex items-center justify-between text-xs font-bold">
                 {amountNeededForFreeDelivery === 0 ? (
@@ -1059,7 +1287,7 @@ export const CheckoutView: React.FC = () => {
                         onClick={() =>
                           updateQuantity(item.id, item.quantity - 1)
                         }
-                        className="flex h-7 w-6 items-center justify-center font-black text-gray-600 hover:bg-gray-200/60 hover:text-emerald-600 dark:text-gray-300"
+                        className="flex h-7 w-6 items-center justify-center font-black text-gray-600 hover:bg-gray-200/60 hover:text-emerald-600 dark:text-gray-300 dark:hover:bg-emerald-900/40"
                       >
                         -
                       </button>
@@ -1071,7 +1299,7 @@ export const CheckoutView: React.FC = () => {
                         onClick={() =>
                           updateQuantity(item.id, item.quantity + 1)
                         }
-                        className="flex h-7 w-6 items-center justify-center font-black text-gray-600 hover:bg-gray-200/60 hover:text-emerald-600 dark:text-gray-300"
+                        className="flex h-7 w-6 items-center justify-center font-black text-gray-600 hover:bg-gray-200/60 hover:text-emerald-600 dark:text-gray-300 dark:hover:bg-emerald-900/40"
                       >
                         +
                       </button>
@@ -1094,7 +1322,7 @@ export const CheckoutView: React.FC = () => {
               ))}
             </div>
 
-            {/* Promo Code Box with Shake Animation on Error */}
+            {/* Promo Code Box with Green Apply Button & Shake on Error */}
             <div className="mt-5 border-t border-gray-100 pt-4 dark:border-emerald-950/60">
               {discountAmount > 0 ? (
                 <div className="flex items-center justify-between rounded-2xl border border-emerald-500/40 bg-emerald-50 px-3.5 py-2.5 text-xs text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300">
@@ -1129,11 +1357,12 @@ export const CheckoutView: React.FC = () => {
                       value={couponInput}
                       onChange={(e) => setCouponInput(e.target.value)}
                       placeholder={t("summary.promoPlaceholder")}
-                      className="flex-1 rounded-xl border border-gray-200 bg-gray-50/70 px-3.5 py-2 text-xs font-black uppercase tracking-wider text-gray-800 focus:border-emerald-500 focus:bg-white focus:outline-none dark:border-emerald-950 dark:bg-[#05130b] dark:text-white"
+                      className="flex-1 rounded-xl border border-gray-200 bg-gray-50/70 px-3.5 py-2.5 text-xs font-black uppercase tracking-wider text-gray-800 focus:border-emerald-500 focus:bg-white focus:outline-none dark:border-emerald-950 dark:bg-[#05130b] dark:text-white"
                     />
+                    {/* Brand Green Apply Button */}
                     <button
                       type="submit"
-                      className="rounded-xl bg-emerald-600 px-4 py-2 text-xs font-black text-white shadow-xs transition hover:bg-emerald-700"
+                      className="rounded-xl bg-gradient-to-r from-emerald-600 to-green-600 px-4 py-2.5 text-xs font-black text-white shadow-md shadow-emerald-600/25 transition hover:from-emerald-700 hover:to-green-700 active:scale-95"
                     >
                       {t("summary.apply")}
                     </button>
@@ -1148,7 +1377,7 @@ export const CheckoutView: React.FC = () => {
             </div>
 
             {/* Financial Breakdown */}
-            <div className="mt-5 space-y-2 border-t border-gray-100 pt-4 text-xs font-semibold text-gray-600 dark:border-emerald-950/60 dark:text-gray-400">
+            <div className="mt-5 space-y-2.5 border-t border-gray-100 pt-4 text-xs font-semibold text-gray-600 dark:border-emerald-950/60 dark:text-gray-400">
               <div className="flex justify-between">
                 <span>{t("summary.subtotal")}</span>
                 <span className="font-bold text-gray-900 dark:text-white">
@@ -1180,7 +1409,7 @@ export const CheckoutView: React.FC = () => {
                 </span>
               </div>
 
-              <div className="flex justify-between text-[11px] text-gray-400">
+              <div className="flex justify-between text-[11px] text-gray-400 dark:text-emerald-400/50">
                 <span>{t("summary.vatIncluded")}</span>
                 <span>{formatPrice(vatAmount, locale)}</span>
               </div>
@@ -1225,7 +1454,7 @@ export const CheckoutView: React.FC = () => {
             type="button"
             disabled={isSubmitting || isSuccess}
             onClick={handleSubmitOrder}
-            className="flex-1 rounded-2xl bg-gradient-to-r from-emerald-600 to-green-600 py-3.5 text-center font-outfit text-sm font-black text-white shadow-lg shadow-emerald-600/30 transition active:scale-95 disabled:opacity-50"
+            className="flex-1 rounded-2xl bg-gradient-to-r from-emerald-600 via-green-600 to-emerald-700 py-3.5 text-center font-outfit text-sm font-black text-white shadow-lg shadow-emerald-600/30 transition active:scale-95 disabled:opacity-50"
           >
             {isSubmitting ? (
               <span>{t("summary.processing")}</span>
