@@ -35,6 +35,12 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const imageRef = useRef<HTMLImageElement>(null);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imgSrc, setImgSrc] = useState(product.imageUrl || FALLBACK_IMAGE);
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+
+  const handleCardMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    setMousePos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+  };
 
   const handleAdd = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -72,11 +78,29 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   return (
     <motion.div
       onClick={handleCardClick}
+      onMouseMove={handleCardMouseMove}
       whileHover={{ y: -6 }}
       transition={{ duration: 0.25, ease: "easeOut" }}
-      className="group relative flex flex-col justify-between rounded-3xl border border-gray-200/80 bg-white p-3.5 sm:p-4 shadow-[0_4px_16px_-4px_rgba(0,0,0,0.06)] transition-all duration-300 hover:border-emerald-300 hover:shadow-[0_16px_32px_-8px_rgba(22,163,74,0.2)] dark:border-emerald-950/60 dark:bg-[#071d12]/70 dark:hover:border-emerald-700/80 dark:hover:shadow-[0_16px_32px_-8px_rgba(34,197,94,0.15)] cursor-pointer select-none"
+      role="button"
+      tabIndex={0}
+      aria-label={`View details for ${product.name}, price ${formatPrice(product.price, locale)}`}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          handleCardClick();
+        }
+      }}
+      className="group relative flex flex-col justify-between rounded-3xl border border-gray-200/80 bg-white p-3.5 sm:p-4 shadow-[0_4px_16px_-4px_rgba(0,0,0,0.06)] transition-all duration-300 hover:border-emerald-300 hover:shadow-[0_16px_32px_-8px_rgba(22,163,74,0.2)] dark:border-emerald-950/60 dark:bg-[#071d12]/70 dark:hover:border-emerald-700/80 dark:hover:shadow-[0_16px_32px_-8px_rgba(34,197,94,0.15)] cursor-pointer select-none overflow-hidden focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:outline-none"
     >
-      <div>
+      {/* Cursor-follow Spotlight Soft Glow Effect */}
+      <div
+        className="pointer-events-none absolute inset-0 rounded-3xl opacity-0 transition-opacity duration-300 group-hover:opacity-100 -z-0"
+        style={{
+          background: `radial-gradient(280px circle at ${mousePos.x}px ${mousePos.y}px, rgba(22, 163, 74, 0.16), transparent 70%)`,
+        }}
+      />
+
+      <div className="relative z-10">
         {/* Product Visual Container with Skeleton Shimmer */}
         <div className="relative flex h-36 sm:h-44 w-full items-center justify-center overflow-hidden rounded-2xl bg-gray-100/80 dark:bg-gray-800/60">
           {/* Skeleton Shimmer Loader */}

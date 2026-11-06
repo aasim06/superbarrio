@@ -214,3 +214,4 @@ export const QuickViewModal: React.FC = () => {
 };
 
 export default QuickViewModal;
+

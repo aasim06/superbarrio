@@ -82,3 +82,4 @@ export const RecentlyViewedSection: React.FC = () => {
 };
 
 export default RecentlyViewedSection;
+

@@ -6,6 +6,9 @@ import CategoryBar from "@/components/grocery/CategoryBar";
 import ProductCard from "@/components/grocery/ProductCard";
 import SortFilterBar from "@/components/grocery/SortFilterBar";
 import RecentlyViewedSection from "@/components/grocery/RecentlyViewedSection";
+import MarqueeStrip from "@/components/grocery/MarqueeStrip";
+import TestimonialsSection from "@/components/grocery/TestimonialsSection";
+import NewsletterSection from "@/components/grocery/NewsletterSection";
 import { GROCERY_PRODUCTS, getAllProducts } from "@/data/groceryData";
 import { GroceryProduct } from "@/types/grocery";
 import { useGroceryCart } from "@/context/GroceryCartContext";
@@ -127,6 +130,9 @@ export const GroceryCatalog: React.FC = () => {
         <GroceryHeroBanner />
       </motion.div>
 
+      {/* Infinite Organic Ticker Marquee Strip */}
+      <MarqueeStrip />
+
       {/* Sticky Category Pills Bar */}
       <motion.div
         initial={{ opacity: 0, y: 18 }}
@@ -216,6 +222,12 @@ export const GroceryCatalog: React.FC = () => {
 
       {/* Recently Viewed & Recommendations */}
       <RecentlyViewedSection />
+
+      {/* Customer Testimonials Carousel & Reviews */}
+      <TestimonialsSection />
+
+      {/* Newsletter Subscription with Animated Gradient Border */}
+      <NewsletterSection />
     </div>
   );
 };

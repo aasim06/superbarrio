@@ -84,3 +84,4 @@ export const SortFilterBar: React.FC<SortFilterBarProps> = ({ totalCount }) => {
 };
 
 export default SortFilterBar;
+

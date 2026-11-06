@@ -14,6 +14,7 @@ import {
 import { useLocale, useTranslations } from "next-intl";
 import { formatPrice } from "@/utils/currency";
 import { motion, AnimatePresence, useInView } from "framer-motion";
+import FloatingParticles from "@/components/grocery/FloatingParticles";
 
 interface ProductPouch {
   name: string;
@@ -378,6 +379,9 @@ export const GroceryHeroBanner: React.FC = () => {
         <div className="pointer-events-none absolute -end-8 -top-8 text-emerald-400/10 blur-[1px]">
           <LeafIcon className="h-56 w-56 rotate-45" />
         </div>
+
+        {/* Floating Fruit & Leaf Particles */}
+        <FloatingParticles />
 
         {/* Rustic Tabletop Platform (Bottom Horizon) */}
         <div
