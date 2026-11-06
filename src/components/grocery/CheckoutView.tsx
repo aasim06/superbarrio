@@ -252,6 +252,15 @@ export const CheckoutView: React.FC = () => {
     slots.find((s) => !s.disabled)?.id || "tomorrow-morning";
   const [selectedSlot, setSelectedSlot] = useState<string>(defaultSlot);
 
+  const allTodayPassed = React.useMemo(
+    () => slots.filter((s) => s.dayType === "today").every((s) => s.disabled),
+    [slots],
+  );
+
+  const [selectedDay, setSelectedDay] = useState<"today" | "tomorrow">(
+    defaultSlot.startsWith("today") ? "today" : "tomorrow",
+  );
+
   // Payment Method
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("card");
 
@@ -541,8 +550,8 @@ export const CheckoutView: React.FC = () => {
   return (
     <div className="mx-auto w-full max-w-[1920px] px-4 py-6 sm:px-6 md:py-10 lg:px-8 xl:px-10 pb-28 lg:pb-10">
       {/* 1. Top Navigation & Progress Stepper */}
-      <div className="mb-8">
-        <div className="flex items-center justify-between pb-4">
+      <div className="mb-6 sm:mb-8">
+        <div className="flex items-center justify-between pb-3 sm:pb-4">
           <Link
             href="/grocery"
             className="group inline-flex items-center gap-2 text-xs font-bold text-emerald-600 transition-colors hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300"
@@ -560,52 +569,52 @@ export const CheckoutView: React.FC = () => {
         </div>
 
         {/* Animated 4-Step Checkout Progress Stepper */}
-        <div className="relative mx-auto max-w-3xl pt-2">
-          <div className="absolute top-1/2 start-0 end-0 -translate-y-1/2 h-1 bg-gray-200 dark:bg-emerald-950/80 -z-0 rounded-full" />
+        <div className="relative mx-auto max-w-xl pt-1">
+          <div className="absolute top-1/2 start-0 end-0 -translate-y-1/2 h-0.5 bg-gray-200 dark:bg-emerald-950/80 -z-0 rounded-full" />
           <motion.div
             initial={{ width: "25%" }}
             animate={{ width: "66%" }}
             transition={shouldReduceMotion ? { duration: 0.1 } : { duration: 0.6, ease: "easeOut" }}
-            className="absolute top-1/2 start-0 -translate-y-1/2 h-1 bg-gradient-to-r from-emerald-500 to-green-500 -z-0 rounded-full"
+            className="absolute top-1/2 start-0 -translate-y-1/2 h-0.5 bg-gradient-to-r from-emerald-500 to-green-500 -z-0 rounded-full"
           />
 
           <div className="relative z-10 flex items-center justify-between">
             {/* Step 1: Cesta */}
             <div className="flex flex-col items-center">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-600 text-xs font-black text-white shadow-md shadow-emerald-600/25">
+              <div className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-full bg-emerald-600 text-[11px] sm:text-xs font-black text-white shadow-xs">
                 ✓
               </div>
-              <span className="mt-1.5 text-[11px] font-bold text-emerald-700 dark:text-emerald-400">
+              <span className="mt-1 text-[10px] sm:text-[11px] font-bold text-emerald-700 dark:text-emerald-400 text-center truncate max-w-[64px] sm:max-w-none">
                 {t("stepper.basket")}
               </span>
             </div>
 
-            {/* Step 2: Datos y Entrega (Active) */}
+            {/* Step 2: Entrega (Active) */}
             <div className="flex flex-col items-center">
-              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-tr from-emerald-600 to-green-500 text-xs font-black text-white shadow-lg shadow-emerald-600/35 ring-4 ring-emerald-500/25">
+              <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-full bg-gradient-to-tr from-emerald-600 to-green-500 text-[11px] sm:text-xs font-black text-white shadow-md shadow-emerald-600/35 ring-3 ring-emerald-500/25">
                 2
               </div>
-              <span className="mt-1.5 text-[11px] font-black text-emerald-700 dark:text-emerald-300">
+              <span className="mt-1 text-[10px] sm:text-[11px] font-black text-emerald-700 dark:text-emerald-300 text-center truncate max-w-[64px] sm:max-w-none">
                 {t("stepper.delivery")}
               </span>
             </div>
 
             {/* Step 3: Pago */}
             <div className="flex flex-col items-center">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-emerald-500/70 bg-white text-xs font-black text-emerald-600 dark:bg-[#071910] dark:text-emerald-400 shadow-xs">
+              <div className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-full border-2 border-emerald-500/70 bg-white text-[11px] sm:text-xs font-black text-emerald-600 dark:bg-[#071910] dark:text-emerald-400 shadow-2xs">
                 3
               </div>
-              <span className="mt-1.5 text-[11px] font-semibold text-gray-500 dark:text-gray-400">
+              <span className="mt-1 text-[10px] sm:text-[11px] font-semibold text-gray-500 dark:text-gray-400 text-center truncate max-w-[64px] sm:max-w-none">
                 {t("stepper.payment")}
               </span>
             </div>
 
             {/* Step 4: Confirmación */}
             <div className="flex flex-col items-center">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-gray-300 bg-white text-xs font-bold text-gray-400 dark:border-emerald-950 dark:bg-gray-800">
+              <div className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-full border border-gray-300 bg-white text-[11px] sm:text-xs font-bold text-gray-400 dark:border-emerald-950 dark:bg-gray-800">
                 4
               </div>
-              <span className="mt-1.5 text-[11px] font-medium text-gray-400 dark:text-gray-500">
+              <span className="mt-1 text-[10px] sm:text-[11px] font-medium text-gray-400 dark:text-gray-500 text-center truncate max-w-[64px] sm:max-w-none">
                 {t("stepper.confirmation")}
               </span>
             </div>
@@ -686,10 +695,10 @@ export const CheckoutView: React.FC = () => {
             {/* Section 1: Spain Delivery Address & Contact */}
             <motion.div
               variants={shouldReduceMotion ? {} : cardVariants}
-              className="rounded-3xl border border-gray-200/80 bg-white p-5 sm:p-7 shadow-[0_4px_24px_-4px_rgba(0,0,0,0.06)] backdrop-blur-sm dark:border-emerald-950/70 dark:bg-[#071910] dark:shadow-[0_4px_24px_-4px_rgba(0,0,0,0.4)]"
+              className="rounded-2xl sm:rounded-3xl border border-gray-200/80 bg-white p-4 sm:p-6 shadow-[0_4px_24px_-4px_rgba(0,0,0,0.06)] backdrop-blur-sm dark:border-emerald-950/70 dark:bg-[#071910]"
             >
-              <div className="flex items-center gap-3 pb-4 border-b border-gray-100 dark:border-emerald-950/60">
-                <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-50 text-xs font-black text-emerald-600 shadow-xs dark:bg-emerald-950/60 dark:text-emerald-400">
+              <div className="flex items-center gap-3 pb-3 sm:pb-3.5 border-b border-gray-100 dark:border-emerald-950/60">
+                <span className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-xl bg-emerald-50 text-xs font-black text-emerald-600 shadow-xs dark:bg-emerald-950/60 dark:text-emerald-400">
                   1
                 </span>
                 <div>
@@ -702,7 +711,7 @@ export const CheckoutView: React.FC = () => {
                 </div>
               </div>
 
-              <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div className="mt-4 grid grid-cols-1 gap-3 sm:gap-3.5 sm:grid-cols-2">
                 {/* Full Name */}
                 <div>
                   <label
@@ -970,8 +979,8 @@ export const CheckoutView: React.FC = () => {
                 </div>
 
                 {/* Quick City Suggestions */}
-                <div className="sm:col-span-2 flex flex-wrap items-center gap-1.5 pt-1">
-                  <span className="text-[11px] font-bold text-gray-400">
+                <div className="sm:col-span-2 flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
+                  <span className="text-[10px] sm:text-[11px] font-bold text-gray-400 shrink-0">
                     {t("deliverySection.quickCities")}
                   </span>
                   {TOP_SPAIN_CITIES.map((c) => (
@@ -985,7 +994,7 @@ export const CheckoutView: React.FC = () => {
                           province: c,
                         }))
                       }
-                      className="rounded-xl border border-emerald-500/20 bg-emerald-50/60 px-2.5 py-0.5 text-[11px] font-bold text-emerald-800 transition hover:bg-emerald-600 hover:text-white dark:bg-emerald-950/40 dark:text-emerald-300 dark:hover:bg-emerald-600"
+                      className="shrink-0 rounded-lg border border-emerald-500/20 bg-emerald-50/70 px-2.5 py-0.5 text-[10px] sm:text-[11px] font-bold text-emerald-800 transition hover:bg-emerald-600 hover:text-white dark:bg-emerald-950/40 dark:text-emerald-300 dark:hover:bg-emerald-600"
                     >
                       {c}
                     </button>
@@ -1041,13 +1050,13 @@ export const CheckoutView: React.FC = () => {
               </div>
             </motion.div>
 
-            {/* Section 2: Preferred Delivery Slot (Spain Timing) with Scale & Custom Checkmark */}
+            {/* Section 2: Preferred Delivery Slot with Day Tabs */}
             <motion.div
               variants={shouldReduceMotion ? {} : cardVariants}
-              className="rounded-3xl border border-gray-200/80 bg-white p-5 sm:p-7 shadow-[0_4px_24px_-4px_rgba(0,0,0,0.06)] backdrop-blur-sm dark:border-emerald-950/70 dark:bg-[#071910] dark:shadow-[0_4px_24px_-4px_rgba(0,0,0,0.4)]"
+              className="rounded-2xl sm:rounded-3xl border border-gray-200/80 bg-white p-4 sm:p-6 shadow-[0_4px_24px_-4px_rgba(0,0,0,0.06)] backdrop-blur-sm dark:border-emerald-950/70 dark:bg-[#071910]"
             >
-              <div className="flex items-center gap-3 pb-4 border-b border-gray-100 dark:border-emerald-950/60">
-                <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-50 text-xs font-black text-emerald-600 shadow-xs dark:bg-emerald-950/60 dark:text-emerald-400">
+              <div className="flex items-center gap-3 pb-3 sm:pb-3.5 border-b border-gray-100 dark:border-emerald-950/60">
+                <span className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-xl bg-emerald-50 text-xs font-black text-emerald-600 shadow-xs dark:bg-emerald-950/60 dark:text-emerald-400">
                   2
                 </span>
                 <div>
@@ -1060,73 +1069,100 @@ export const CheckoutView: React.FC = () => {
                 </div>
               </div>
 
-              {/* Slot Grid */}
-              <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
-                {slots.map((slot) => {
-                  const isChecked = selectedSlot === slot.id;
-                  const isDisabled = slot.disabled;
+              {/* Day Tab Switcher (Hoy vs Mañana) */}
+              <div className="mt-3.5 flex rounded-xl bg-gray-100/90 p-1 dark:bg-[#05130b] border border-gray-200/60 dark:border-emerald-950/60">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedDay("today");
+                    const firstToday = slots.find((s) => s.dayType === "today" && !s.disabled);
+                    if (firstToday) setSelectedSlot(firstToday.id);
+                  }}
+                  className={`flex-1 rounded-lg py-2 text-xs font-black transition-all ${
+                    selectedDay === "today"
+                      ? "bg-white text-emerald-700 shadow-xs dark:bg-emerald-900/60 dark:text-emerald-200"
+                      : "text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+                  }`}
+                >
+                  {t("slotSection.today")} {allTodayPassed ? `(${t("slotSection.passed")})` : ""}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedDay("tomorrow");
+                    const firstTomorrow = slots.find((s) => s.dayType === "tomorrow" && !s.disabled);
+                    if (firstTomorrow) setSelectedSlot(firstTomorrow.id);
+                  }}
+                  className={`flex-1 rounded-lg py-2 text-xs font-black transition-all ${
+                    selectedDay === "tomorrow"
+                      ? "bg-white text-emerald-700 shadow-xs dark:bg-emerald-900/60 dark:text-emerald-200"
+                      : "text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+                  }`}
+                >
+                  {t("slotSection.tomorrow")}
+                </button>
+              </div>
 
-                  return (
-                    <motion.div
-                      key={slot.id}
-                      whileHover={!isDisabled && !shouldReduceMotion ? { scale: 1.015 } : {}}
-                      whileTap={!isDisabled && !shouldReduceMotion ? { scale: 0.985 } : {}}
-                      onClick={() => !isDisabled && setSelectedSlot(slot.id)}
-                      className={`relative flex items-center justify-between rounded-2xl border p-4 transition-all duration-200 select-none ${
-                        isDisabled
-                          ? "opacity-45 bg-gray-100/60 border-gray-200 cursor-not-allowed dark:bg-gray-900/40 dark:border-emerald-950/40"
-                          : isChecked
-                          ? "cursor-pointer border-emerald-500 bg-emerald-50/60 shadow-[0_0_20px_-3px_rgba(22,163,74,0.18)] ring-2 ring-emerald-500/25 dark:border-emerald-500 dark:bg-emerald-950/40"
-                          : "cursor-pointer border-gray-200/80 bg-white hover:border-emerald-300 hover:shadow-xs dark:border-emerald-950 dark:bg-[#05130b] dark:hover:border-emerald-800"
-                      }`}
-                    >
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span
-                            className={`text-[11px] font-black uppercase tracking-wider ${
-                              slot.dayType === "today"
-                                ? "text-emerald-600 dark:text-emerald-400"
-                                : "text-amber-600 dark:text-amber-400"
-                            }`}
-                          >
-                            {slot.dayLabel}
-                          </span>
-                          {slot.periodLabel && (
-                            <span className="rounded-full bg-emerald-100/70 px-2 py-0.5 text-[10px] font-bold text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300">
-                              {slot.periodLabel}
+              {/* 4 Slots for Selected Day in 2-Column Responsive Grid */}
+              <div className="mt-3 grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+                {slots
+                  .filter((s) => s.dayType === selectedDay)
+                  .map((slot) => {
+                    const isChecked = selectedSlot === slot.id;
+                    const isDisabled = slot.disabled;
+
+                    return (
+                      <motion.div
+                        key={slot.id}
+                        whileHover={!isDisabled && !shouldReduceMotion ? { scale: 1.01 } : {}}
+                        whileTap={!isDisabled && !shouldReduceMotion ? { scale: 0.99 } : {}}
+                        onClick={() => !isDisabled && setSelectedSlot(slot.id)}
+                        className={`relative flex items-center justify-between rounded-xl border p-3 transition-all duration-200 select-none ${
+                          isDisabled
+                            ? "opacity-45 bg-gray-100/60 border-gray-200 cursor-not-allowed dark:bg-gray-900/40 dark:border-emerald-950/40"
+                            : isChecked
+                            ? "cursor-pointer border-emerald-500 bg-emerald-50/70 shadow-xs ring-2 ring-emerald-500/25 dark:border-emerald-500 dark:bg-emerald-950/40"
+                            : "cursor-pointer border-gray-200/80 bg-white hover:border-emerald-300 dark:border-emerald-950 dark:bg-[#05130b] dark:hover:border-emerald-800"
+                        }`}
+                      >
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className="font-outfit text-sm font-black text-gray-900 dark:text-white">
+                              {slot.timeRange}
+                            </span>
+                            {slot.periodLabel && (
+                              <span className="rounded-md bg-emerald-100/70 px-2 py-0.5 text-[10px] font-bold text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300">
+                                {slot.periodLabel}
+                              </span>
+                            )}
+                          </div>
+                          {isDisabled && (
+                            <span className="mt-0.5 block text-[10px] font-bold text-rose-500 dark:text-rose-400">
+                              {t("slotSection.passed")}
                             </span>
                           )}
                         </div>
-                        <span className="mt-1 block font-outfit text-sm font-black text-gray-900 dark:text-white">
-                          {slot.timeRange}
-                        </span>
-                        {isDisabled && (
-                          <span className="text-[10px] font-bold text-rose-500 dark:text-rose-400">
-                            {t("slotSection.passed")}
-                          </span>
-                        )}
-                      </div>
 
-                      {/* Custom Radio with Green Border & Check Icon */}
-                      <div className="ms-3 flex h-6 w-6 shrink-0 items-center justify-center">
-                        {isChecked ? (
-                          <motion.div
-                            initial={shouldReduceMotion ? { scale: 1 } : { scale: 0 }}
-                            animate={{ scale: 1 }}
-                            transition={{ type: "spring", stiffness: 350, damping: 20 }}
-                            className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-600 text-white shadow-xs"
-                          >
-                            <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={3}>
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                            </svg>
-                          </motion.div>
-                        ) : (
-                          <div className="h-5 w-5 rounded-full border-2 border-gray-300 dark:border-emerald-950 bg-white dark:bg-gray-800 transition-colors" />
-                        )}
-                      </div>
-                    </motion.div>
-                  );
-                })}
+                        {/* Custom Radio with Green Border & Check Icon */}
+                        <div className="ms-2 flex h-5 w-5 shrink-0 items-center justify-center">
+                          {isChecked ? (
+                            <motion.div
+                              initial={shouldReduceMotion ? { scale: 1 } : { scale: 0 }}
+                              animate={{ scale: 1 }}
+                              transition={{ type: "spring", stiffness: 350, damping: 20 }}
+                              className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-600 text-white shadow-xs"
+                            >
+                              <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={3}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                              </svg>
+                            </motion.div>
+                          ) : (
+                            <div className="h-4 w-4 rounded-full border-2 border-gray-300 dark:border-emerald-950 bg-white dark:bg-gray-800" />
+                          )}
+                        </div>
+                      </motion.div>
+                    );
+                  })}
               </div>
 
               <p className="mt-3 flex items-center gap-1.5 text-[11px] font-semibold text-emerald-700 dark:text-emerald-400">
@@ -1135,13 +1171,13 @@ export const CheckoutView: React.FC = () => {
               </p>
             </motion.div>
 
-            {/* Section 3: Spain Payment Methods (Custom Checkmarks & Clean Fresh Green / Orange accents) */}
+            {/* Section 3: Spain Payment Methods */}
             <motion.div
               variants={shouldReduceMotion ? {} : cardVariants}
-              className="rounded-3xl border border-gray-200/80 bg-white p-5 sm:p-7 shadow-[0_4px_24px_-4px_rgba(0,0,0,0.06)] backdrop-blur-sm dark:border-emerald-950/70 dark:bg-[#071910] dark:shadow-[0_4px_24px_-4px_rgba(0,0,0,0.4)]"
+              className="rounded-2xl sm:rounded-3xl border border-gray-200/80 bg-white p-4 sm:p-6 shadow-[0_4px_24px_-4px_rgba(0,0,0,0.06)] backdrop-blur-sm dark:border-emerald-950/70 dark:bg-[#071910]"
             >
-              <div className="flex items-center gap-3 pb-4 border-b border-gray-100 dark:border-emerald-950/60">
-                <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-50 text-xs font-black text-emerald-600 shadow-xs dark:bg-emerald-950/60 dark:text-emerald-400">
+              <div className="flex items-center gap-3 pb-3 sm:pb-3.5 border-b border-gray-100 dark:border-emerald-950/60">
+                <span className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-xl bg-emerald-50 text-xs font-black text-emerald-600 shadow-xs dark:bg-emerald-950/60 dark:text-emerald-400">
                   3
                 </span>
                 <div>
@@ -1154,221 +1190,201 @@ export const CheckoutView: React.FC = () => {
                 </div>
               </div>
 
-              <div className="mt-5 space-y-3">
+              <div className="mt-3.5 space-y-2.5">
                 {/* 1. Credit / Debit Card (Visa, Mastercard) */}
                 <motion.div
-                  whileHover={shouldReduceMotion ? {} : { scale: 1.01 }}
-                  whileTap={shouldReduceMotion ? {} : { scale: 0.99 }}
+                  whileHover={shouldReduceMotion ? {} : { scale: 1.008 }}
+                  whileTap={shouldReduceMotion ? {} : { scale: 0.992 }}
                   onClick={() => setPaymentMethod("card")}
-                  className={`flex cursor-pointer items-start justify-between rounded-2xl border p-4.5 transition-all duration-200 ${
+                  className={`flex cursor-pointer items-center justify-between rounded-xl sm:rounded-2xl border p-3 sm:p-3.5 transition-all duration-200 ${
                     paymentMethod === "card"
-                      ? "border-emerald-500 bg-emerald-50/60 shadow-[0_0_20px_-3px_rgba(22,163,74,0.18)] ring-2 ring-emerald-500/25 dark:border-emerald-500 dark:bg-emerald-950/40"
+                      ? "border-emerald-500 bg-emerald-50/60 shadow-xs ring-2 ring-emerald-500/25 dark:border-emerald-500 dark:bg-emerald-950/40"
                       : "border-gray-200/80 bg-white hover:border-gray-300 dark:border-emerald-950 dark:bg-[#05130b]"
                   }`}
                 >
-                  <div className="flex items-start gap-3.5">
-                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600 shadow-xs dark:bg-emerald-950/60 dark:text-emerald-400">
-                      <CreditCardIcon className="h-6 w-6" />
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
+                    <div className="flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 shadow-2xs dark:bg-emerald-950/60 dark:text-emerald-400">
+                      <CreditCardIcon className="h-5 w-5" />
                     </div>
-                    <div>
-                      <div className="flex items-center gap-2">
+                    <div className="min-w-0 flex-1 pe-2">
+                      <div className="flex flex-wrap items-center gap-1.5">
                         <span className="font-outfit text-sm font-black text-gray-900 dark:text-white">
                           {t("paymentSection.card")}
                         </span>
-                        <span className="rounded-md bg-emerald-100/70 px-2 py-0.5 text-[10px] font-black text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300">
+                        <span className="rounded-md bg-emerald-100/70 px-1.5 py-0.5 text-[9px] font-black text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300">
                           VISA
                         </span>
-                        <span className="rounded-md bg-amber-100/70 px-2 py-0.5 text-[10px] font-black text-amber-800 dark:bg-amber-950/80 dark:text-amber-300">
+                        <span className="rounded-md bg-amber-100/70 px-1.5 py-0.5 text-[9px] font-black text-amber-800 dark:bg-amber-950/80 dark:text-amber-300">
                           Mastercard
                         </span>
                       </div>
-                      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                      <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400 truncate sm:whitespace-normal">
                         {t("paymentSection.cardDesc")}
                       </p>
                     </div>
                   </div>
-                  <div className="mt-1 ms-2">
+                  <div className="shrink-0 ms-2">
                     {paymentMethod === "card" ? (
-                      <motion.div
-                        initial={shouldReduceMotion ? { scale: 1 } : { scale: 0 }}
-                        animate={{ scale: 1 }}
-                        className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-600 text-white shadow-xs"
-                      >
-                        <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={3}>
+                      <div className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-600 text-white shadow-xs">
+                        <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={3}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                         </svg>
-                      </motion.div>
+                      </div>
                     ) : (
-                      <div className="h-5 w-5 rounded-full border-2 border-gray-300 dark:border-emerald-950 bg-white dark:bg-gray-800" />
+                      <div className="h-4 w-4 rounded-full border-2 border-gray-300 dark:border-emerald-950 bg-white dark:bg-gray-800" />
                     )}
                   </div>
                 </motion.div>
 
                 {/* 2. Bizum (Famous Spain mobile instant payment) */}
                 <motion.div
-                  whileHover={shouldReduceMotion ? {} : { scale: 1.01 }}
-                  whileTap={shouldReduceMotion ? {} : { scale: 0.99 }}
+                  whileHover={shouldReduceMotion ? {} : { scale: 1.008 }}
+                  whileTap={shouldReduceMotion ? {} : { scale: 0.992 }}
                   onClick={() => setPaymentMethod("bizum")}
-                  className={`flex cursor-pointer items-start justify-between rounded-2xl border p-4.5 transition-all duration-200 ${
+                  className={`flex cursor-pointer items-center justify-between rounded-xl sm:rounded-2xl border p-3 sm:p-3.5 transition-all duration-200 ${
                     paymentMethod === "bizum"
-                      ? "border-emerald-500 bg-emerald-50/60 shadow-[0_0_20px_-3px_rgba(22,163,74,0.18)] ring-2 ring-emerald-500/25 dark:border-emerald-500 dark:bg-emerald-950/40"
+                      ? "border-emerald-500 bg-emerald-50/60 shadow-xs ring-2 ring-emerald-500/25 dark:border-emerald-500 dark:bg-emerald-950/40"
                       : "border-gray-200/80 bg-white hover:border-gray-300 dark:border-emerald-950 dark:bg-[#05130b]"
                   }`}
                 >
-                  <div className="flex items-start gap-3.5">
-                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#00A99D]/10 text-[#00A99D] font-black text-xs shadow-xs">
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
+                    <div className="flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-xl bg-[#00A99D]/10 text-[#00A99D] font-black text-xs shadow-2xs">
                       bizum
                     </div>
-                    <div>
-                      <div className="flex items-center gap-2">
+                    <div className="min-w-0 flex-1 pe-2">
+                      <div className="flex flex-wrap items-center gap-1.5">
                         <span className="font-outfit text-sm font-black text-gray-900 dark:text-white">
                           {t("paymentSection.bizum")}
                         </span>
-                        <span className="rounded-full bg-[#00A99D]/15 px-2.5 py-0.5 text-[10px] font-extrabold text-[#00A99D]">
-                          Popular en España
+                        <span className="rounded-full bg-[#00A99D]/15 px-2 py-0.5 text-[9px] font-extrabold text-[#00A99D]">
+                          España
                         </span>
                       </div>
-                      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                      <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400 truncate sm:whitespace-normal">
                         {t("paymentSection.bizumDesc")}
                       </p>
                     </div>
                   </div>
-                  <div className="mt-1 ms-2">
+                  <div className="shrink-0 ms-2">
                     {paymentMethod === "bizum" ? (
-                      <motion.div
-                        initial={shouldReduceMotion ? { scale: 1 } : { scale: 0 }}
-                        animate={{ scale: 1 }}
-                        className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-600 text-white shadow-xs"
-                      >
-                        <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={3}>
+                      <div className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-600 text-white shadow-xs">
+                        <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={3}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                         </svg>
-                      </motion.div>
+                      </div>
                     ) : (
-                      <div className="h-5 w-5 rounded-full border-2 border-gray-300 dark:border-emerald-950 bg-white dark:bg-gray-800" />
+                      <div className="h-4 w-4 rounded-full border-2 border-gray-300 dark:border-emerald-950 bg-white dark:bg-gray-800" />
                     )}
                   </div>
                 </motion.div>
 
                 {/* 3. PayPal */}
                 <motion.div
-                  whileHover={shouldReduceMotion ? {} : { scale: 1.01 }}
-                  whileTap={shouldReduceMotion ? {} : { scale: 0.99 }}
+                  whileHover={shouldReduceMotion ? {} : { scale: 1.008 }}
+                  whileTap={shouldReduceMotion ? {} : { scale: 0.992 }}
                   onClick={() => setPaymentMethod("paypal")}
-                  className={`flex cursor-pointer items-start justify-between rounded-2xl border p-4.5 transition-all duration-200 ${
+                  className={`flex cursor-pointer items-center justify-between rounded-xl sm:rounded-2xl border p-3 sm:p-3.5 transition-all duration-200 ${
                     paymentMethod === "paypal"
-                      ? "border-emerald-500 bg-emerald-50/60 shadow-[0_0_20px_-3px_rgba(22,163,74,0.18)] ring-2 ring-emerald-500/25 dark:border-emerald-500 dark:bg-emerald-950/40"
+                      ? "border-emerald-500 bg-emerald-50/60 shadow-xs ring-2 ring-emerald-500/25 dark:border-emerald-500 dark:bg-emerald-950/40"
                       : "border-gray-200/80 bg-white hover:border-gray-300 dark:border-emerald-950 dark:bg-[#05130b]"
                   }`}
                 >
-                  <div className="flex items-start gap-3.5">
-                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-800 font-black text-xs shadow-xs dark:bg-emerald-950/60 dark:text-emerald-300">
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
+                    <div className="flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-700 font-black text-xs shadow-2xs dark:bg-blue-950/60 dark:text-blue-300">
                       PayPal
                     </div>
-                    <div>
+                    <div className="min-w-0 flex-1 pe-2">
                       <span className="font-outfit text-sm font-black text-gray-900 dark:text-white">
                         {t("paymentSection.paypal")}
                       </span>
-                      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                      <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400 truncate sm:whitespace-normal">
                         {t("paymentSection.paypalDesc")}
                       </p>
                     </div>
                   </div>
-                  <div className="mt-1 ms-2">
+                  <div className="shrink-0 ms-2">
                     {paymentMethod === "paypal" ? (
-                      <motion.div
-                        initial={shouldReduceMotion ? { scale: 1 } : { scale: 0 }}
-                        animate={{ scale: 1 }}
-                        className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-600 text-white shadow-xs"
-                      >
-                        <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={3}>
+                      <div className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-600 text-white shadow-xs">
+                        <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={3}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                         </svg>
-                      </motion.div>
+                      </div>
                     ) : (
-                      <div className="h-5 w-5 rounded-full border-2 border-gray-300 dark:border-emerald-950 bg-white dark:bg-gray-800" />
+                      <div className="h-4 w-4 rounded-full border-2 border-gray-300 dark:border-emerald-950 bg-white dark:bg-gray-800" />
                     )}
                   </div>
                 </motion.div>
 
                 {/* 4. Apple Pay / Google Pay */}
                 <motion.div
-                  whileHover={shouldReduceMotion ? {} : { scale: 1.01 }}
-                  whileTap={shouldReduceMotion ? {} : { scale: 0.99 }}
+                  whileHover={shouldReduceMotion ? {} : { scale: 1.008 }}
+                  whileTap={shouldReduceMotion ? {} : { scale: 0.992 }}
                   onClick={() => setPaymentMethod("apple_google")}
-                  className={`flex cursor-pointer items-start justify-between rounded-2xl border p-4.5 transition-all duration-200 ${
+                  className={`flex cursor-pointer items-center justify-between rounded-xl sm:rounded-2xl border p-3 sm:p-3.5 transition-all duration-200 ${
                     paymentMethod === "apple_google"
-                      ? "border-emerald-500 bg-emerald-50/60 shadow-[0_0_20px_-3px_rgba(22,163,74,0.18)] ring-2 ring-emerald-500/25 dark:border-emerald-500 dark:bg-emerald-950/40"
+                      ? "border-emerald-500 bg-emerald-50/60 shadow-xs ring-2 ring-emerald-500/25 dark:border-emerald-500 dark:bg-emerald-950/40"
                       : "border-gray-200/80 bg-white hover:border-gray-300 dark:border-emerald-950 dark:bg-[#05130b]"
                   }`}
                 >
-                  <div className="flex items-start gap-3.5">
-                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gray-100 text-gray-900 font-black text-xs shadow-xs dark:bg-gray-800 dark:text-white">
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
+                    <div className="flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-xl bg-gray-100 text-gray-900 font-black text-xs shadow-2xs dark:bg-gray-800 dark:text-white">
                        / G
                     </div>
-                    <div>
+                    <div className="min-w-0 flex-1 pe-2">
                       <span className="font-outfit text-sm font-black text-gray-900 dark:text-white">
                         {t("paymentSection.appleGoogle")}
                       </span>
-                      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                      <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400 truncate sm:whitespace-normal">
                         {t("paymentSection.appleGoogleDesc")}
                       </p>
                     </div>
                   </div>
-                  <div className="mt-1 ms-2">
+                  <div className="shrink-0 ms-2">
                     {paymentMethod === "apple_google" ? (
-                      <motion.div
-                        initial={shouldReduceMotion ? { scale: 1 } : { scale: 0 }}
-                        animate={{ scale: 1 }}
-                        className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-600 text-white shadow-xs"
-                      >
-                        <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={3}>
+                      <div className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-600 text-white shadow-xs">
+                        <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={3}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                         </svg>
-                      </motion.div>
+                      </div>
                     ) : (
-                      <div className="h-5 w-5 rounded-full border-2 border-gray-300 dark:border-emerald-950 bg-white dark:bg-gray-800" />
+                      <div className="h-4 w-4 rounded-full border-2 border-gray-300 dark:border-emerald-950 bg-white dark:bg-gray-800" />
                     )}
                   </div>
                 </motion.div>
 
-                {/* 5. Efectivo contra entrega (Cash on Delivery) */}
+                {/* 5. Efectivo al recibir (Cash on Delivery) */}
                 <motion.div
-                  whileHover={shouldReduceMotion ? {} : { scale: 1.01 }}
-                  whileTap={shouldReduceMotion ? {} : { scale: 0.99 }}
+                  whileHover={shouldReduceMotion ? {} : { scale: 1.008 }}
+                  whileTap={shouldReduceMotion ? {} : { scale: 0.992 }}
                   onClick={() => setPaymentMethod("cod")}
-                  className={`flex cursor-pointer items-start justify-between rounded-2xl border p-4.5 transition-all duration-200 ${
+                  className={`flex cursor-pointer items-center justify-between rounded-xl sm:rounded-2xl border p-3 sm:p-3.5 transition-all duration-200 ${
                     paymentMethod === "cod"
-                      ? "border-emerald-500 bg-emerald-50/60 shadow-[0_0_20px_-3px_rgba(22,163,74,0.18)] ring-2 ring-emerald-500/25 dark:border-emerald-500 dark:bg-emerald-950/40"
+                      ? "border-emerald-500 bg-emerald-50/60 shadow-xs ring-2 ring-emerald-500/25 dark:border-emerald-500 dark:bg-emerald-950/40"
                       : "border-gray-200/80 bg-white hover:border-gray-300 dark:border-emerald-950 dark:bg-[#05130b]"
                   }`}
                 >
-                  <div className="flex items-start gap-3.5">
-                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-amber-50 text-amber-600 shadow-xs dark:bg-amber-950/60 dark:text-amber-400">
-                      <DollarLineIcon className="h-6 w-6" />
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
+                    <div className="flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-xl bg-amber-50 text-amber-600 shadow-2xs dark:bg-amber-950/60 dark:text-amber-400">
+                      <DollarLineIcon className="h-5 w-5" />
                     </div>
-                    <div>
+                    <div className="min-w-0 flex-1 pe-2">
                       <span className="font-outfit text-sm font-black text-gray-900 dark:text-white">
                         {t("paymentSection.cod")}
                       </span>
-                      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                      <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400 truncate sm:whitespace-normal">
                         {t("paymentSection.codDesc")}
                       </p>
                     </div>
                   </div>
-                  <div className="mt-1 ms-2">
+                  <div className="shrink-0 ms-2">
                     {paymentMethod === "cod" ? (
-                      <motion.div
-                        initial={shouldReduceMotion ? { scale: 1 } : { scale: 0 }}
-                        animate={{ scale: 1 }}
-                        className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-600 text-white shadow-xs"
-                      >
-                        <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={3}>
+                      <div className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-600 text-white shadow-xs">
+                        <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={3}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                         </svg>
-                      </motion.div>
+                      </div>
                     ) : (
-                      <div className="h-5 w-5 rounded-full border-2 border-gray-300 dark:border-emerald-950 bg-white dark:bg-gray-800" />
+                      <div className="h-4 w-4 rounded-full border-2 border-gray-300 dark:border-emerald-950 bg-white dark:bg-gray-800" />
                     )}
                   </div>
                 </motion.div>
@@ -1403,17 +1419,17 @@ export const CheckoutView: React.FC = () => {
             </div>
 
             {/* Secondary WhatsApp Checkout Button (Clean Outline Style) */}
-            <div className="pt-2">
+            <div className="pt-1">
               <a
                 href={getWhatsAppOrderUrl()}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group flex w-full items-center justify-center gap-2.5 rounded-2xl border-2 border-[#25D366]/40 bg-white py-3.5 text-xs font-black text-[#128C7E] shadow-xs transition-all hover:border-[#25D366] hover:bg-[#25D366]/10 dark:bg-[#071910] dark:text-emerald-300"
+                className="group flex w-full items-center justify-center gap-2 rounded-xl border border-[#25D366]/50 bg-white py-2.5 px-3 text-xs font-black text-[#128C7E] shadow-2xs transition-all hover:border-[#25D366] hover:bg-[#25D366]/10 dark:bg-[#071910] dark:text-emerald-300"
               >
                 <WhatsAppIcon className="h-4 w-4 fill-current transition-transform group-hover:scale-110" />
                 <span>{t("summary.orderViaWhatsApp")}</span>
               </a>
-              <p className="mt-1 text-center text-[11px] font-medium text-gray-400">
+              <p className="mt-1 text-center text-[10px] sm:text-[11px] font-medium text-gray-400">
                 {t("summary.whatsAppSubtitle")}
               </p>
             </div>
@@ -1422,19 +1438,19 @@ export const CheckoutView: React.FC = () => {
 
         {/* Right Column: Sticky Order Summary (5 Columns) */}
         <div className="lg:col-span-5">
-          <div className="sticky top-28 rounded-3xl border border-gray-200/80 bg-white p-6 shadow-[0_8px_30px_-6px_rgba(0,0,0,0.08)] backdrop-blur-sm dark:border-emerald-950/70 dark:bg-[#071910] dark:shadow-[0_8px_30px_-6px_rgba(0,0,0,0.4)]">
+          <div className="sticky top-28 rounded-2xl sm:rounded-3xl border border-gray-200/80 bg-white p-4 sm:p-6 shadow-[0_8px_30px_-6px_rgba(0,0,0,0.08)] backdrop-blur-sm dark:border-emerald-950/70 dark:bg-[#071910]">
             {/* Header */}
-            <div className="flex items-center justify-between pb-4 border-b border-gray-100 dark:border-emerald-950/60">
+            <div className="flex items-center justify-between pb-3 sm:pb-3.5 border-b border-gray-100 dark:border-emerald-950/60">
               <h3 className="font-outfit text-base font-black text-gray-900 dark:text-white">
                 {t("summary.title")}
               </h3>
-              <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-black text-emerald-700 dark:bg-emerald-950/80 dark:text-emerald-300">
+              <span className="rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-black text-emerald-700 dark:bg-emerald-950/80 dark:text-emerald-300">
                 {t("summary.itemsCount", { count: cart.length })}
               </span>
             </div>
 
             {/* Free Delivery Tracker (25 € threshold) */}
-            <div className="my-4 rounded-2xl border border-emerald-500/30 bg-emerald-50/60 p-3.5 dark:border-emerald-950/80 dark:bg-emerald-950/30">
+            <div className="my-3 rounded-xl border border-emerald-500/30 bg-emerald-50/60 p-2.5 sm:p-3 dark:border-emerald-950/80 dark:bg-emerald-950/30">
               <div className="flex items-center justify-between text-xs font-bold">
                 {amountNeededForFreeDelivery === 0 ? (
                   <span className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400">
@@ -1449,7 +1465,7 @@ export const CheckoutView: React.FC = () => {
                   </span>
                 )}
               </div>
-              <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-emerald-200/70 dark:bg-gray-800">
+              <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-emerald-200/70 dark:bg-gray-800">
                 <motion.div
                   className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-green-500"
                   initial={{ width: 0 }}
@@ -1464,21 +1480,21 @@ export const CheckoutView: React.FC = () => {
               </div>
             </div>
 
-            {/* Items list with Smart Height: no internal scroll if 5 or fewer items, smart max-height for large baskets */}
+            {/* Items list with Smart Height */}
             <div
               className={`divide-y divide-gray-100 dark:divide-emerald-950/60 ${
                 cart.length > 5
-                  ? "max-h-[380px] overflow-y-auto custom-scrollbar pe-1.5"
+                  ? "max-h-[340px] overflow-y-auto custom-scrollbar pe-1"
                   : "max-h-none"
               }`}
             >
               {cart.map((item) => (
                 <div
                   key={item.id}
-                  className="flex items-center justify-between py-3.5 text-xs"
+                  className="flex items-center justify-between py-2.5 sm:py-3 text-xs"
                 >
-                  <div className="flex items-center gap-3.5 min-w-0">
-                    <div className="h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-gray-100 dark:bg-gray-800 border border-gray-100 dark:border-emerald-950/60">
+                  <div className="flex items-center gap-2.5 min-w-0 flex-1 pe-2">
+                    <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-100 dark:border-emerald-950/60">
                       <img
                         src={item.imageUrl}
                         alt={item.name}
@@ -1486,30 +1502,30 @@ export const CheckoutView: React.FC = () => {
                         loading="lazy"
                       />
                     </div>
-                    <div className="truncate">
+                    <div className="min-w-0 truncate">
                       <h5 className="font-bold text-gray-900 dark:text-white truncate">
                         {item.name}
                       </h5>
-                      <span className="text-[11px] text-gray-500 dark:text-emerald-300/60">
+                      <span className="text-[10px] sm:text-[11px] text-gray-500 dark:text-emerald-300/60">
                         {item.unit} • {formatPrice(item.price, locale)}
                       </span>
                     </div>
                   </div>
 
                   {/* Quantity Stepper & Remove */}
-                  <div className="flex shrink-0 items-center gap-2 ms-2">
-                    <div className="flex items-center rounded-xl border border-gray-200/80 bg-gray-50/80 dark:border-emerald-950 dark:bg-emerald-950/40">
+                  <div className="flex shrink-0 items-center gap-1.5 ms-1">
+                    <div className="flex items-center rounded-lg border border-gray-200/80 bg-gray-50/80 dark:border-emerald-950 dark:bg-emerald-950/40">
                       <button
                         type="button"
                         onClick={() =>
                           updateQuantity(item.id, item.quantity - 1)
                         }
                         aria-label={`Disminuir cantidad de ${item.name}`}
-                        className="flex h-7 w-6 items-center justify-center font-black text-gray-600 hover:bg-gray-200/60 hover:text-emerald-600 dark:text-gray-300 dark:hover:bg-emerald-900/40"
+                        className="flex h-6 w-5 items-center justify-center font-black text-gray-600 hover:bg-gray-200/60 hover:text-emerald-600 dark:text-gray-300 dark:hover:bg-emerald-900/40"
                       >
                         -
                       </button>
-                      <span className="w-5 text-center font-black text-gray-900 dark:text-white text-[11px]">
+                      <span className="w-4 text-center font-black text-gray-900 dark:text-white text-[10px]">
                         {item.quantity}
                       </span>
                       <button
@@ -1518,13 +1534,13 @@ export const CheckoutView: React.FC = () => {
                           updateQuantity(item.id, item.quantity + 1)
                         }
                         aria-label={`Aumentar cantidad de ${item.name}`}
-                        className="flex h-7 w-6 items-center justify-center font-black text-gray-600 hover:bg-gray-200/60 hover:text-emerald-600 dark:text-gray-300 dark:hover:bg-emerald-900/40"
+                        className="flex h-6 w-5 items-center justify-center font-black text-gray-600 hover:bg-gray-200/60 hover:text-emerald-600 dark:text-gray-300 dark:hover:bg-emerald-900/40"
                       >
                         +
                       </button>
                     </div>
 
-                    <span className="font-outfit font-black text-gray-900 dark:text-white min-w-14 text-end">
+                    <span className="font-outfit font-black text-xs text-gray-900 dark:text-white min-w-12 text-end">
                       {formatPrice(item.price * item.quantity, locale)}
                     </span>
 
@@ -1532,7 +1548,7 @@ export const CheckoutView: React.FC = () => {
                       type="button"
                       onClick={() => removeFromCart(item.id)}
                       aria-label={`Eliminar ${item.name} de la cesta`}
-                      className="text-gray-400 hover:text-rose-500 transition px-1"
+                      className="text-gray-400 hover:text-rose-500 transition px-1 text-xs"
                       title="Eliminar artículo"
                     >
                       ✕
@@ -1543,10 +1559,10 @@ export const CheckoutView: React.FC = () => {
             </div>
 
             {/* Promo Code Box with Green Apply Button & Shake on Error */}
-            <div className="mt-5 border-t border-gray-100 pt-4 dark:border-emerald-950/60">
+            <div className="mt-4 border-t border-gray-100 pt-3.5 dark:border-emerald-950/60">
               {discountAmount > 0 ? (
-                <div className="flex items-center justify-between rounded-2xl border border-emerald-500/40 bg-emerald-50 px-3.5 py-2.5 text-xs text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300">
-                  <div className="flex items-center gap-2">
+                <div className="flex items-center justify-between rounded-xl border border-emerald-500/40 bg-emerald-50 px-3 py-2 text-xs text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300">
+                  <div className="flex items-center gap-1.5">
                     <CheckCircleIcon className="h-4 w-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
                     <span className="font-black">
                       {promoCode} (20% OFF)
@@ -1555,7 +1571,7 @@ export const CheckoutView: React.FC = () => {
                   <button
                     type="button"
                     onClick={handleRemoveCoupon}
-                    className="font-bold text-rose-500 hover:underline"
+                    className="font-bold text-rose-500 hover:underline text-[11px]"
                   >
                     ✕ Eliminar
                   </button>
@@ -1582,12 +1598,12 @@ export const CheckoutView: React.FC = () => {
                       value={couponInput}
                       onChange={(e) => setCouponInput(e.target.value)}
                       placeholder={t("summary.promoPlaceholder")}
-                      className="flex-1 rounded-xl border border-gray-200 bg-gray-50/70 px-3.5 py-2.5 text-xs font-black uppercase tracking-wider text-gray-800 focus:border-emerald-500 focus:bg-white focus:outline-none dark:border-emerald-950 dark:bg-[#05130b] dark:text-white"
+                      className="flex-1 rounded-xl border border-gray-200 bg-gray-50/70 px-3 py-2 text-xs font-black uppercase tracking-wider text-gray-800 focus:border-emerald-500 focus:bg-white focus:outline-none dark:border-emerald-950 dark:bg-[#05130b] dark:text-white"
                     />
                     {/* Brand Green Apply Button */}
                     <button
                       type="submit"
-                      className="rounded-xl bg-gradient-to-r from-emerald-600 to-green-600 px-4 py-2.5 text-xs font-black text-white shadow-md shadow-emerald-600/25 transition hover:from-emerald-700 hover:to-green-700 active:scale-95"
+                      className="rounded-xl bg-gradient-to-r from-emerald-600 to-green-600 px-3.5 py-2 text-xs font-black text-white shadow-md shadow-emerald-600/25 transition hover:from-emerald-700 hover:to-green-700 active:scale-95"
                     >
                       {t("summary.apply")}
                     </button>
@@ -1602,7 +1618,7 @@ export const CheckoutView: React.FC = () => {
             </div>
 
             {/* Financial Breakdown */}
-            <div className="mt-5 space-y-2.5 border-t border-gray-100 pt-4 text-xs font-semibold text-gray-600 dark:border-emerald-950/60 dark:text-gray-400">
+            <div className="mt-4 space-y-2 border-t border-gray-100 pt-3.5 text-xs font-semibold text-gray-600 dark:border-emerald-950/60 dark:text-gray-400">
               <div className="flex justify-between">
                 <span>{t("summary.subtotal")}</span>
                 <span className="font-bold text-gray-900 dark:text-white">

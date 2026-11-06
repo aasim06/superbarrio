@@ -1,14 +1,42 @@
 "use client";
 
 import React from "react";
-import { Link } from "@/i18n/navigation";
+import { Link, usePathname } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 import { BoltIcon, LeafIcon, RefreshIcon, ShieldCheckIcon } from "@/icons";
 import { motion, useReducedMotion } from "framer-motion";
 
 export const GroceryFooter: React.FC = () => {
+  const pathname = usePathname();
   const t = useTranslations("grocery");
   const shouldReduceMotion = useReducedMotion();
+
+  // If on checkout or order confirmation page, render a compact distraction-free trust footer
+  if (pathname.includes("/checkout") || pathname.includes("/order-success")) {
+    return (
+      <footer className="mt-8 border-t border-gray-200/80 bg-white/95 py-6 backdrop-blur-sm dark:border-emerald-950/80 dark:bg-[#071910] text-center">
+        <div className="mx-auto max-w-4xl px-4">
+          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs font-bold text-gray-500 dark:text-emerald-400/80">
+            <span className="flex items-center gap-1.5">
+              <ShieldCheckIcon className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+              Pago 100% Seguro SSL
+            </span>
+            <span className="flex items-center gap-1.5">
+              <BoltIcon className="h-4 w-4 text-amber-500 fill-current" />
+              Reparto Refrigerado
+            </span>
+            <span className="flex items-center gap-1.5">
+              <LeafIcon className="h-4 w-4 text-emerald-500" />
+              Garantía de Frescura
+            </span>
+          </div>
+          <p className="mt-3 text-[11px] text-gray-400 dark:text-gray-500">
+            © 2026 SuperBarrio España. Todos los derechos reservados.
+          </p>
+        </div>
+      </footer>
+    );
+  }
 
   const perks = [
     {
