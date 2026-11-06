@@ -22,7 +22,7 @@ export const WhatsAppFloatingButton: React.FC<WhatsAppFloatingButtonProps> = ({
 
   // Generate WhatsApp message based on cart state
   const generateWhatsAppUrl = () => {
-    let message = `*👋 ¡Hola SuperBarrio España!*\n`;
+    let message = `*¡Hola SuperBarrio España!*\n`;
     if (cart.length > 0) {
       message += `Me gustaría confirmar y realizar el siguiente pedido:\n\n`;
       cart.forEach((item, index) => {

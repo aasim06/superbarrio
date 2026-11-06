@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
-import { LeafIcon } from "@/icons";
+import { LeafIcon, ShieldCheckIcon } from "@/icons";
 
 export const NewsletterSection: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -20,7 +20,7 @@ export const NewsletterSection: React.FC = () => {
     setTimeout(() => {
       setIsSubmitting(false);
       toast.success(
-        "🎉 Welcome to SuperBarrio! Check your email for your $10 welcome voucher.",
+        "Welcome to SuperBarrio! Check your email for your $10 welcome voucher.",
         { duration: 4000 },
       );
       setEmail("");
@@ -84,8 +84,9 @@ export const NewsletterSection: React.FC = () => {
               </motion.button>
             </form>
 
-            <p className="mt-3 text-[11px] font-medium text-emerald-200/60">
-              🔒 Zero spam. Unsubscribe anytime with 1 click.
+            <p className="mt-3 inline-flex items-center gap-1.5 text-[11px] font-medium text-emerald-200/60">
+              <ShieldCheckIcon className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
+              <span>Zero spam. Unsubscribe anytime with 1 click.</span>
             </p>
           </div>
         </div>

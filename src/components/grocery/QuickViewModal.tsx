@@ -5,7 +5,7 @@ import { useGroceryCart } from "@/context/GroceryCartContext";
 import { formatPrice } from "@/utils/currency";
 import { useLocale, useTranslations } from "next-intl";
 import { motion, AnimatePresence } from "framer-motion";
-import { CartIcon, LeafIcon, ShieldCheckIcon } from "@/icons";
+import { CartIcon, LeafIcon, ShieldCheckIcon, HeartIcon, StarIcon } from "@/icons";
 import { toast } from "sonner";
 
 const FALLBACK_IMAGE =
@@ -38,17 +38,13 @@ export const QuickViewModal: React.FC = () => {
 
   const handleAddToCart = () => {
     addToCart(quickViewProduct, 1, imageRef.current);
-    toast.success(`Added "${quickViewProduct.name}" to basket!`, {
-      icon: "🛒",
-    });
+    toast.success(`Added "${quickViewProduct.name}" to basket!`);
   };
 
   const handleWishlistToggle = () => {
     const added = toggleWishlist(quickViewProduct.id);
     if (added) {
-      toast.success(`Added "${quickViewProduct.name}" to wishlist!`, {
-        icon: "❤️",
-      });
+      toast.success(`Added "${quickViewProduct.name}" to wishlist!`);
     } else {
       toast.info(`Removed "${quickViewProduct.name}" from wishlist.`);
     }
@@ -106,13 +102,13 @@ export const QuickViewModal: React.FC = () => {
                 onClick={handleWishlistToggle}
                 className="absolute end-3 top-3 flex h-10 w-10 items-center justify-center rounded-full bg-white/90 text-gray-400 shadow-md backdrop-blur-md transition hover:scale-110 active:scale-90 dark:bg-gray-900/90"
               >
-                <span
-                  className={`text-lg transition-colors ${
-                    wishlisted ? "text-rose-500" : "text-gray-400"
+                <HeartIcon
+                  className={`h-5 w-5 transition-colors ${
+                    wishlisted
+                      ? "fill-rose-500 text-rose-500"
+                      : "text-gray-400 hover:text-rose-500"
                   }`}
-                >
-                  {wishlisted ? "❤️" : "🤍"}
-                </span>
+                />
               </button>
             </div>
 
@@ -124,7 +120,8 @@ export const QuickViewModal: React.FC = () => {
                     {quickViewProduct.category.replace("-", " ")}
                   </span>
                   <span className="flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300">
-                    ★ {quickViewProduct.rating} ({quickViewProduct.reviewsCount})
+                    <StarIcon className="h-3 w-3 text-amber-500 fill-amber-500" />
+                    <span>{quickViewProduct.rating} ({quickViewProduct.reviewsCount})</span>
                   </span>
                 </div>
 

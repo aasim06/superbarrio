@@ -2,16 +2,26 @@
 
 import React from "react";
 import { motion, useReducedMotion } from "framer-motion";
+import {
+  LeafIcon,
+  BoltIcon,
+  TruckIcon,
+  ShieldCheckIcon,
+  FruitIcon,
+  BakeryIcon,
+  DairyIcon,
+  FlameIcon,
+} from "@/icons";
 
 const MARQUEE_ITEMS = [
-  { icon: "🌿", text: "100% Organic Produce" },
-  { icon: "⚡", text: "15-25 Min Ultra-Fast Delivery" },
-  { icon: "🚜", text: "Direct From Local Organic Farms" },
-  { icon: "🛡️", text: "Grade-A Hygiene Certified" },
-  { icon: "🥑", text: "100% Freshness Guarantee" },
-  { icon: "🥖", text: "Daily Oven-Fresh Breads" },
-  { icon: "🥛", text: "Pure Grass-Fed Dairy" },
-  { icon: "🌶️", text: "Zero Artificial Preservatives" },
+  { icon: LeafIcon, text: "100% Organic Produce", color: "text-emerald-600 dark:text-emerald-400" },
+  { icon: BoltIcon, text: "15-25 Min Ultra-Fast Delivery", color: "text-amber-500 dark:text-amber-400" },
+  { icon: TruckIcon, text: "Direct From Local Organic Farms", color: "text-emerald-600 dark:text-emerald-400" },
+  { icon: ShieldCheckIcon, text: "Grade-A Hygiene Certified", color: "text-emerald-600 dark:text-emerald-400" },
+  { icon: FruitIcon, text: "100% Freshness Guarantee", color: "text-amber-500 dark:text-amber-400" },
+  { icon: BakeryIcon, text: "Daily Oven-Fresh Breads", color: "text-amber-600 dark:text-amber-400" },
+  { icon: DairyIcon, text: "Pure Grass-Fed Dairy", color: "text-emerald-600 dark:text-emerald-400" },
+  { icon: FlameIcon, text: "Zero Artificial Preservatives", color: "text-rose-500 dark:text-rose-400" },
 ];
 
 export const MarqueeStrip: React.FC = () => {
@@ -42,18 +52,21 @@ export const MarqueeStrip: React.FC = () => {
           }}
           className="flex shrink-0 items-center gap-8 pe-8 hover:[animation-play-state:paused]"
         >
-          {duplicated.map((item, idx) => (
-            <div
-              key={idx}
-              className="flex items-center gap-2.5 text-xs sm:text-sm font-extrabold tracking-wide text-emerald-900 dark:text-emerald-200"
-            >
-              <span className="text-base">{item.icon}</span>
-              <span>{item.text}</span>
-              <span className="ms-6 text-emerald-400/40 dark:text-emerald-700">
-                •
-              </span>
-            </div>
-          ))}
+          {duplicated.map((item, idx) => {
+            const Icon = item.icon;
+            return (
+              <div
+                key={idx}
+                className="flex items-center gap-2.5 text-xs sm:text-sm font-extrabold tracking-wide text-emerald-900 dark:text-emerald-200"
+              >
+                <Icon className={`h-4 w-4 shrink-0 ${item.color}`} />
+                <span>{item.text}</span>
+                <span className="ms-6 text-emerald-400/40 dark:text-emerald-700">
+                  •
+                </span>
+              </div>
+            );
+          })}
         </motion.div>
       </div>
     </div>
@@ -61,4 +74,3 @@ export const MarqueeStrip: React.FC = () => {
 };
 
 export default MarqueeStrip;
-

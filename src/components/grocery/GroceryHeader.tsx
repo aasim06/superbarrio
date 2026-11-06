@@ -5,7 +5,7 @@ import { Link } from "@/i18n/navigation";
 import { useGroceryCart } from "@/context/GroceryCartContext";
 import { ThemeToggleButton } from "@/components/common/ThemeToggleButton";
 import GroceryLanguageSwitcher from "@/components/grocery/GroceryLanguageSwitcher";
-import { CartIcon, LeafIcon, SearchIcon } from "@/icons";
+import { CartIcon, LeafIcon, SearchIcon, BoltIcon } from "@/icons";
 import { useLocale, useTranslations } from "next-intl";
 import { formatPrice } from "@/utils/currency";
 import { motion, AnimatePresence } from "framer-motion";
@@ -100,7 +100,8 @@ export const GroceryHeader: React.FC = () => {
           <span>{t("topNotice")}</span>
           <span className="hidden sm:inline text-white/80">•</span>
           <span className="hidden sm:inline font-bold text-amber-200">
-            ⚡ 15-Min Instant Delivery • Code FRESH20 for 20% OFF
+            <BoltIcon className="inline h-3.5 w-3.5 me-1 text-amber-300 fill-current" />
+            15-Min Instant Delivery • Code FRESH20 for 20% OFF
           </span>
         </div>
       </div>

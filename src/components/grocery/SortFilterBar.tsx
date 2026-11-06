@@ -3,6 +3,7 @@
 import React from "react";
 import { useGroceryCart, SortOption } from "@/context/GroceryCartContext";
 import { useTranslations } from "next-intl";
+import { TagIcon } from "@/icons";
 
 interface SortFilterBarProps {
   totalCount: number;
@@ -49,7 +50,7 @@ export const SortFilterBar: React.FC<SortFilterBarProps> = ({ totalCount }) => {
               : "border border-gray-200/80 bg-white text-gray-700 hover:bg-gray-50 dark:border-emerald-950/80 dark:bg-[#071d12] dark:text-gray-300"
           }`}
         >
-          <span>🏷️</span>
+          <TagIcon className="h-3.5 w-3.5" />
           <span>On Sale</span>
         </button>
 
@@ -75,7 +76,7 @@ export const SortFilterBar: React.FC<SortFilterBarProps> = ({ totalCount }) => {
           <option value="featured">Featured / Popular</option>
           <option value="price-asc">Price: Low to High</option>
           <option value="price-desc">Price: High to Low</option>
-          <option value="rating-desc">Highest Rated ★</option>
+          <option value="rating-desc">Highest Rated</option>
           <option value="discount">Biggest Discount %</option>
         </select>
       </div>

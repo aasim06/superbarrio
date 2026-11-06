@@ -3,7 +3,7 @@
 import React, { useRef, useState } from "react";
 import { GroceryProduct } from "@/types/grocery";
 import { useGroceryCart } from "@/context/GroceryCartContext";
-import { LeafIcon } from "@/icons";
+import { LeafIcon, HeartIcon, EyeIcon, StarIcon } from "@/icons";
 import { useLocale, useTranslations } from "next-intl";
 import { formatPrice } from "@/utils/currency";
 import { motion, AnimatePresence } from "framer-motion";
@@ -45,9 +45,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const handleAdd = (e: React.MouseEvent) => {
     e.stopPropagation();
     addToCart(product, 1, imageRef.current);
-    toast.success(`Added ${product.name} to basket!`, {
-      icon: "🛒",
-    });
+    toast.success(`Added ${product.name} to basket!`);
   };
 
   const handleIncrement = (e: React.MouseEvent) => {
@@ -65,7 +63,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     e.stopPropagation();
     const added = toggleWishlist(product.id);
     if (added) {
-      toast.success(`Saved to wishlist! ❤️`, { duration: 1800 });
+      toast.success(`Saved to wishlist!`, { duration: 1800 });
     } else {
       toast.info(`Removed from wishlist.`, { duration: 1500 });
     }
@@ -140,26 +138,33 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               key={wishlisted ? "heart-active" : "heart-idle"}
               animate={
                 wishlisted
-                  ? { scale: [1, 1.4, 0.9, 1.2, 1] }
+                  ? { scale: [1, 1.3, 0.9, 1.15, 1] }
                   : { scale: 1 }
               }
-              transition={{ duration: 0.4 }}
-              className="text-sm select-none"
+              transition={{ duration: 0.35 }}
+              className="flex items-center justify-center select-none"
             >
-              {wishlisted ? "❤️" : "🤍"}
+              <HeartIcon
+                className={`h-4 w-4 transition-colors ${
+                  wishlisted
+                    ? "fill-rose-500 text-rose-500"
+                    : "text-gray-400 dark:text-gray-500 hover:text-rose-500"
+                }`}
+              />
             </motion.span>
           </motion.button>
 
           {/* Quick View Hover Eye Overlay */}
           <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center bg-black/20 opacity-0 backdrop-blur-[1px] transition-opacity duration-200 group-hover:opacity-100">
-            <span className="rounded-full bg-white/95 px-3 py-1 text-[11px] font-bold text-gray-800 shadow-md backdrop-blur-md dark:bg-gray-900/95 dark:text-white">
-              👁️ Quick View
+            <span className="flex items-center gap-1.5 rounded-full bg-white/95 px-3 py-1 text-[11px] font-bold text-gray-800 shadow-md backdrop-blur-md dark:bg-gray-900/95 dark:text-white">
+              <EyeIcon className="h-3.5 w-3.5 text-gray-700 dark:text-gray-300" />
+              <span>Quick View</span>
             </span>
           </div>
 
           {/* Bottom Floating Rating Tag */}
           <div className="absolute end-2.5 bottom-2.5 z-10 flex items-center gap-1 rounded-full bg-white/95 px-2 py-0.5 text-[10px] font-black text-gray-800 shadow-sm backdrop-blur-md dark:bg-gray-900/95 dark:text-gray-100">
-            <span className="text-amber-500">★</span>
+            <StarIcon className="h-3 w-3 text-amber-500 fill-amber-500" />
             <span>{product.rating}</span>
           </div>
         </div>

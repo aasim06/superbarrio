@@ -16,6 +16,11 @@ import {
   DollarLineIcon,
   CheckCircleIcon,
   ShieldCheckIcon,
+  CartIcon,
+  LeafIcon,
+  FruitIcon,
+  BoltIcon,
+  EsFlagIcon,
 } from "@/icons";
 import { useLocale, useTranslations } from "next-intl";
 import { formatPrice } from "@/utils/currency";
@@ -291,7 +296,7 @@ export const CheckoutView: React.FC = () => {
 
     const res = applyPromoCode(couponInput);
     if (res.success) {
-      toast.success(res.message, { icon: "🎉" });
+      toast.success(res.message);
       setCouponError("");
       setCouponInput("");
     } else {
@@ -418,7 +423,7 @@ export const CheckoutView: React.FC = () => {
   };
 
   const getWhatsAppOrderUrl = () => {
-    let msg = `*🛒 Nuevo Pedido en SuperBarrio España*\n\n`;
+    let msg = `*Nuevo Pedido en SuperBarrio España*\n\n`;
     cart.forEach((item, index) => {
       msg += `${index + 1}. *${item.name}* (${item.unit}) x ${item.quantity} = ${formatPrice(item.price * item.quantity, locale)}\n`;
     });
@@ -467,10 +472,10 @@ export const CheckoutView: React.FC = () => {
                   }
             }
             transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute -top-1 -start-1 flex h-10 w-10 items-center justify-center rounded-2xl bg-amber-100 text-lg shadow-md dark:bg-amber-950/70"
-            title="Naranjas frescas"
+            className="absolute -top-1 -start-1 flex h-10 w-10 items-center justify-center rounded-2xl bg-amber-50 text-amber-600 shadow-md border border-amber-200/60 dark:bg-amber-950/70 dark:border-amber-900/50 dark:text-amber-400"
+            title="Frutas frescas"
           >
-            🍊
+            <FruitIcon className="h-5 w-5" />
           </motion.div>
 
           <motion.div
@@ -483,10 +488,10 @@ export const CheckoutView: React.FC = () => {
                   }
             }
             transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute -bottom-1 -end-1 flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-100 text-lg shadow-md dark:bg-emerald-950/70"
-            title="Manzanas crujientes"
+            className="absolute -bottom-1 -end-1 flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600 shadow-md border border-emerald-200/60 dark:bg-emerald-950/70 dark:border-emerald-900/50 dark:text-emerald-400"
+            title="Productos naturales"
           >
-            🍏
+            <LeafIcon className="h-5 w-5" />
           </motion.div>
 
           {/* Center Shopping Basket */}
@@ -617,7 +622,7 @@ export const CheckoutView: React.FC = () => {
           aria-expanded={isMobileSummaryOpen}
         >
           <div className="flex items-center gap-2">
-            <span className="text-base">🛒</span>
+            <CartIcon className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
             <span>
               {isMobileSummaryOpen ? "Ocultar resumen" : "Ver resumen del pedido"} ({cart.length})
             </span>
@@ -776,7 +781,7 @@ export const CheckoutView: React.FC = () => {
                   </label>
                   <div className="relative mt-1.5 flex items-center">
                     <span className="absolute start-3.5 inline-flex items-center gap-1.5 text-xs font-black text-emerald-700 dark:text-emerald-400">
-                      <span>🇪🇸</span>
+                      <EsFlagIcon className="h-3.5 w-4.5 rounded-[3px] shadow-2xs object-cover" />
                       <span>+34</span>
                     </span>
                     <input
@@ -1124,8 +1129,9 @@ export const CheckoutView: React.FC = () => {
                 })}
               </div>
 
-              <p className="mt-3 text-[11px] font-semibold text-emerald-700 dark:text-emerald-400">
-                ⚡ {t("slotSection.expressNotice")}
+              <p className="mt-3 flex items-center gap-1.5 text-[11px] font-semibold text-emerald-700 dark:text-emerald-400">
+                <BoltIcon className="h-3.5 w-3.5 text-amber-500 fill-current shrink-0" />
+                <span>{t("slotSection.expressNotice")}</span>
               </p>
             </motion.div>
 
@@ -1541,7 +1547,7 @@ export const CheckoutView: React.FC = () => {
               {discountAmount > 0 ? (
                 <div className="flex items-center justify-between rounded-2xl border border-emerald-500/40 bg-emerald-50 px-3.5 py-2.5 text-xs text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300">
                   <div className="flex items-center gap-2">
-                    <span>🎉</span>
+                    <CheckCircleIcon className="h-4 w-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
                     <span className="font-black">
                       {promoCode} (20% OFF)
                     </span>
@@ -1650,8 +1656,9 @@ export const CheckoutView: React.FC = () => {
             </div>
 
             {/* Satisfaction Guarantee */}
-            <div className="mt-5 rounded-2xl bg-gray-50/80 p-3 text-[11px] font-medium text-gray-500 dark:bg-[#05130b] dark:text-emerald-400/70">
-              🛡️ {t("summary.guarantee")}
+            <div className="mt-5 flex items-center gap-2 rounded-2xl bg-gray-50/80 p-3 text-[11px] font-medium text-gray-600 dark:bg-[#05130b] dark:text-emerald-300/80">
+              <ShieldCheckIcon className="h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
+              <span>{t("summary.guarantee")}</span>
             </div>
           </div>
         </div>

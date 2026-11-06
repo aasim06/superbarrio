@@ -11,6 +11,12 @@ import {
   MapPinIcon,
   CheckCircleIcon,
   ShieldCheckIcon,
+  CreditCardIcon,
+  DollarLineIcon,
+  DownloadIcon,
+  RefreshIcon,
+  CartIcon,
+  BoltIcon,
 } from "@/icons";
 import { useLocale, useTranslations } from "next-intl";
 import { formatPrice } from "@/utils/currency";
@@ -186,19 +192,27 @@ export const OrderSuccessView: React.FC = () => {
   const getPaymentMethodDisplay = (method?: string) => {
     switch (method) {
       case "bizum":
-        return { label: "Bizum (Móvil)", icon: "📲", color: "text-[#00A99D]" };
+        return {
+          label: "Bizum (Móvil)",
+          icon: <BoltIcon className="h-4 w-4" />,
+          color: "text-[#00A99D]",
+        };
       case "card":
         return {
           label: isEs ? "Tarjeta Bancaria (3D Secure)" : "Credit/Debit Card",
-          icon: "💳",
+          icon: <CreditCardIcon className="h-4 w-4" />,
           color: "text-emerald-600 dark:text-emerald-400",
         };
       case "paypal":
-        return { label: "PayPal", icon: "🅿️", color: "text-blue-600" };
+        return {
+          label: "PayPal",
+          icon: <span className="font-black text-xs">P</span>,
+          color: "text-blue-600",
+        };
       case "apple_google":
         return {
           label: "Apple Pay / Google Pay",
-          icon: " / G",
+          icon: <span className="font-bold text-xs">Pay</span>,
           color: "text-gray-900 dark:text-white",
         };
       case "cod":
@@ -207,7 +221,7 @@ export const OrderSuccessView: React.FC = () => {
           label: isEs
             ? "Efectivo contra entrega (al recibir)"
             : "Cash on Delivery",
-          icon: "💵",
+          icon: <DollarLineIcon className="h-4 w-4" />,
           color: "text-amber-600 dark:text-amber-400",
         };
     }
@@ -230,8 +244,8 @@ export const OrderSuccessView: React.FC = () => {
   // WhatsApp formatted share link
   const getShareWhatsAppUrl = () => {
     const text = isEs
-      ? `¡Hola! Acabo de hacer un pedido de alimentos frescos en SuperBarrio España.\n\n📦 *Nº de Pedido:* #${orderId}\n💶 *Total:* ${formatPrice(total, locale)}\n🕒 *Franja de entrega:* ${slot}\n📍 *Dirección:* ${address}\n\n¿Podrían confirmarme la hora aproximada de llegada? ¡Muchas gracias!`
-      : `Hi! I just placed a fresh grocery order at SuperBarrio Spain.\n\n📦 *Order ID:* #${orderId}\n💶 *Total:* ${formatPrice(total, locale)}\n🕒 *Delivery Slot:* ${slot}\n📍 *Address:* ${address}\n\nCould you please update me on arrival? Thank you!`;
+      ? `¡Hola! Acabo de hacer un pedido de alimentos frescos en SuperBarrio España.\n\n*Nº de Pedido:* #${orderId}\n*Total:* ${formatPrice(total, locale)}\n*Franja de entrega:* ${slot}\n*Dirección:* ${address}\n\n¿Podrían confirmarme la hora aproximada de llegada? ¡Muchas gracias!`
+      : `Hi! I just placed a fresh grocery order at SuperBarrio Spain.\n\n*Order ID:* #${orderId}\n*Total:* ${formatPrice(total, locale)}\n*Delivery Slot:* ${slot}\n*Address:* ${address}\n\nCould you please update me on arrival? Thank you!`;
 
     return `https://wa.me/34612345678?text=${encodeURIComponent(text)}`;
   };
@@ -242,7 +256,7 @@ export const OrderSuccessView: React.FC = () => {
     pastOrder.items.forEach((it) => {
       addToCart(it, it.quantity);
     });
-    toast.success(t("reorderedSuccess"), { icon: "🛒" });
+    toast.success(t("reorderedSuccess"));
     router.push("/grocery/checkout");
   };
 
@@ -374,7 +388,7 @@ export const OrderSuccessView: React.FC = () => {
                     : "text-gray-600 hover:bg-gray-200/60 dark:text-gray-400 dark:hover:bg-emerald-950/60"
                 }`}
               >
-                <span>📦</span>
+                <BoxIcon className="h-3.5 w-3.5" />
                 <span>
                   {t("tabHistory", { count: pastOrders.length || 1 })}
                 </span>
@@ -635,9 +649,10 @@ export const OrderSuccessView: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => window.print()}
-                  className="w-full sm:w-auto rounded-2xl border border-gray-200 bg-white px-5 py-3 text-xs font-bold text-gray-700 shadow-xs transition hover:bg-gray-50 dark:border-emerald-950 dark:bg-[#071910] dark:text-gray-200"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-2xl border border-gray-200 bg-white px-5 py-3 text-xs font-bold text-gray-700 shadow-xs transition hover:bg-gray-50 dark:border-emerald-950 dark:bg-[#071910] dark:text-gray-200"
                 >
-                  🖨️ {t("printReceipt")}
+                  <DownloadIcon className="h-4 w-4" />
+                  <span>{t("printReceipt")}</span>
                 </button>
               </div>
             </div>
@@ -725,9 +740,10 @@ export const OrderSuccessView: React.FC = () => {
                             <button
                               type="button"
                               onClick={() => handleReorder(pOrder)}
-                              className="rounded-xl bg-gradient-to-r from-emerald-600 to-green-600 px-3.5 py-1.5 text-xs font-black text-white shadow-xs transition hover:scale-105 active:scale-95"
+                              className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-green-600 px-3.5 py-1.5 text-xs font-black text-white shadow-xs transition hover:scale-105 active:scale-95"
                             >
-                              ↻ {t("reorder")}
+                              <RefreshIcon className="h-3.5 w-3.5" />
+                              <span>{t("reorder")}</span>
                             </button>
                           </div>
                         </div>
@@ -765,8 +781,9 @@ export const OrderSuccessView: React.FC = () => {
                                   </div>
                                 ))}
                               </div>
-                              <div className="mt-2 text-[11px] text-gray-400">
-                                📍 Entrega: {pOrder.address}
+                              <div className="mt-2 flex items-center gap-1.5 text-[11px] text-gray-500 dark:text-gray-400">
+                                <MapPinIcon className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
+                                <span>Entrega: {pOrder.address}</span>
                               </div>
                             </motion.div>
                           )}

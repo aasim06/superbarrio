@@ -2,7 +2,7 @@
 
 import React from "react";
 import { motion } from "framer-motion";
-import { ShieldCheckIcon } from "@/icons";
+import { ShieldCheckIcon, StarIcon } from "@/icons";
 
 interface Testimonial {
   id: number;
@@ -83,7 +83,7 @@ export const TestimonialsSection: React.FC = () => {
               <div className="flex items-center justify-between pb-3">
                 <div className="flex items-center gap-1 text-amber-500 text-sm">
                   {Array.from({ length: item.stars }).map((_, i) => (
-                    <span key={i}>★</span>
+                    <StarIcon key={i} className="h-3.5 w-3.5 fill-amber-500 text-amber-500" />
                   ))}
                 </div>
                 <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-600 dark:text-emerald-400">

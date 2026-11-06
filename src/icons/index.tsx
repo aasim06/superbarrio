@@ -78,3 +78,5 @@ export { default as TruckIcon } from "./truck.svg";
 export { default as HomeIcon } from "./home.svg";
 export { default as MapPinIcon } from "./map-pin.svg";
 export { default as StarIcon } from "./star.svg";
+export { default as HeartIcon } from "./heart.svg";
+export { default as TagIcon } from "./tag.svg";

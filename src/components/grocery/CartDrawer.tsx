@@ -6,6 +6,7 @@ import { useGroceryCart } from "@/context/GroceryCartContext";
 import {
   CartIcon,
   CheckCircleIcon,
+  FruitIcon,
   LeafIcon,
   TrashBinIcon,
   WhatsAppIcon,
@@ -50,7 +51,7 @@ export const CartDrawer: React.FC = () => {
     if (!inputCoupon.trim()) return;
     const res = applyPromoCode(inputCoupon);
     if (res.success) {
-      toast.success(res.message, { icon: "🎉" });
+      toast.success(res.message);
       setInputCoupon("");
     } else {
       toast.error(res.message);
@@ -63,7 +64,7 @@ export const CartDrawer: React.FC = () => {
   };
 
   const getWhatsAppOrderUrl = () => {
-    let msg = `*🛒 New Order from SuperBarrio*\n\n`;
+    let msg = `*New Order from SuperBarrio*\n\n`;
     cart.forEach((item, index) => {
       msg += `${index + 1}. *${item.name}* (${item.unit}) x ${item.quantity} = ${formatPrice(item.price * item.quantity, locale)}\n`;
     });
@@ -178,11 +179,11 @@ export const CartDrawer: React.FC = () => {
                   <div className="flex h-full flex-col items-center justify-center text-center py-10">
                     <div className="relative mx-auto flex h-28 w-28 items-center justify-center">
                       <div className="absolute inset-0 rounded-full bg-emerald-500/10 blur-xl dark:bg-emerald-500/15" />
-                      <div className="absolute -top-1 -start-1 flex h-8 w-8 items-center justify-center rounded-xl bg-amber-100 text-sm shadow-xs dark:bg-amber-950/70">
-                        🍊
+                      <div className="absolute -top-1 -start-1 flex h-8 w-8 items-center justify-center rounded-xl bg-amber-50 text-amber-600 shadow-xs border border-amber-200/60 dark:bg-amber-950/70 dark:border-amber-900/50 dark:text-amber-400">
+                        <FruitIcon className="h-4 w-4" />
                       </div>
-                      <div className="absolute -bottom-1 -end-1 flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-100 text-sm shadow-xs dark:bg-emerald-950/70">
-                        🍏
+                      <div className="absolute -bottom-1 -end-1 flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 shadow-xs border border-emerald-200/60 dark:bg-emerald-950/70 dark:border-emerald-900/50 dark:text-emerald-400">
+                        <LeafIcon className="h-4 w-4" />
                       </div>
                       <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-gradient-to-tr from-emerald-600 to-green-500 text-white shadow-xl shadow-emerald-600/30">
                         <CartIcon className="h-10 w-10 stroke-[1.8]" />
@@ -291,7 +292,7 @@ export const CartDrawer: React.FC = () => {
                     {discountRate > 0 ? (
                       <div className="flex items-center justify-between rounded-2xl border border-emerald-500/40 bg-emerald-50/90 px-3.5 py-2.5 text-xs text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300">
                         <div className="flex items-center gap-2">
-                          <span>🎉</span>
+                          <CheckCircleIcon className="h-4 w-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
                           <span className="font-extrabold tracking-wide">
                             {promoCode} (20% OFF Applied)
                           </span>

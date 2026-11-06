@@ -5,6 +5,7 @@ import { useGroceryCart } from "@/context/GroceryCartContext";
 import ProductCard from "@/components/grocery/ProductCard";
 import { GROCERY_PRODUCTS } from "@/data/groceryData";
 import { motion } from "framer-motion";
+import { TimeIcon, ShootingStarIcon } from "@/icons";
 
 export const RecentlyViewedSection: React.FC = () => {
   const { recentlyViewed, activeCategory } = useGroceryCart();
@@ -30,7 +31,7 @@ export const RecentlyViewedSection: React.FC = () => {
           <div className="flex items-center justify-between pb-5">
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-base">🕒</span>
+                <TimeIcon className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
                 <h3 className="font-outfit text-lg sm:text-xl font-black text-gray-900 dark:text-white">
                   Recently Viewed
                 </h3>
@@ -60,7 +61,7 @@ export const RecentlyViewedSection: React.FC = () => {
         <div className="flex items-center justify-between pb-5">
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-base">✨</span>
+              <ShootingStarIcon className="h-5 w-5 text-amber-500 fill-amber-500" />
               <h3 className="font-outfit text-lg sm:text-xl font-black text-gray-900 dark:text-white">
                 You May Also Like
               </h3>

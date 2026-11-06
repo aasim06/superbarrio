@@ -10,6 +10,7 @@ import {
   LeafIcon,
   ShieldCheckIcon,
   StarIcon,
+  ShootingStarIcon,
 } from "@/icons";
 import { useLocale, useTranslations } from "next-intl";
 import { formatPrice } from "@/utils/currency";
@@ -185,7 +186,7 @@ export const GroceryHeroBanner: React.FC = () => {
           bgGradient: "from-[#ef4444] to-[#b91c1c]",
           imgUrl:
             "https://images.unsplash.com/photo-1569460275917-763435165c01?w=400&auto=format&fit=crop&q=80",
-          accentBadge: "🌶️ Mild Chili",
+          accentBadge: "Mild Chili",
           priceNum: 2.2,
         },
         {
@@ -234,7 +235,7 @@ export const GroceryHeroBanner: React.FC = () => {
           bgGradient: "from-[#16a34a] to-[#14532d]",
           imgUrl:
             "https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=400&auto=format&fit=crop&q=80",
-          accentBadge: "🌱 100% Organic",
+          accentBadge: "100% Organic",
           priceNum: 1.85,
         },
         {
@@ -283,7 +284,7 @@ export const GroceryHeroBanner: React.FC = () => {
           bgGradient: "from-[#d97706] to-[#92400e]",
           imgUrl:
             "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=400&auto=format&fit=crop&q=80",
-          accentBadge: "🍞 Oven Fresh",
+          accentBadge: "Oven Fresh",
           priceNum: 3.75,
         },
         {
@@ -470,9 +471,9 @@ export const GroceryHeroBanner: React.FC = () => {
                     <ArrowRightIcon className="h-4 w-4 rtl:rotate-180 transition-transform duration-300 group-hover/btn:translate-x-1" />
                   </MagneticButton>
 
-                  <span className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-950/40 px-3.5 py-1.5 text-xs font-semibold text-emerald-200 backdrop-blur-sm">
-                    <span className="flex h-2 w-2 rounded-full bg-emerald-400 animate-ping" />
-                    <span>⚡ {t("expressDelivery")}</span>
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-950/40 px-3.5 py-1.5 text-xs font-semibold text-emerald-200 backdrop-blur-sm">
+                    <BoltIcon className="h-3.5 w-3.5 text-amber-400 fill-current" />
+                    <span>{t("expressDelivery")}</span>
                   </span>
                 </motion.div>
               </div>
@@ -483,7 +484,7 @@ export const GroceryHeroBanner: React.FC = () => {
                 <div className="mb-4 pe-2 hidden sm:flex flex-col items-end text-end select-none">
                   <div className="flex items-center gap-1.5 font-serif italic text-white/95 text-base sm:text-lg tracking-wide">
                     <span>{t(slide.doodleTextKey)}</span>
-                    <span className="text-amber-300 text-sm">✨</span>
+                    <ShootingStarIcon className="h-4 w-4 text-amber-300 fill-amber-300" />
                   </div>
                   <svg
                     className="w-24 h-3 text-white/50 -scale-x-100"
@@ -802,9 +803,9 @@ export const GroceryHeroBanner: React.FC = () => {
             <StarIcon className="h-5 w-5 fill-current" />
           </div>
           <div>
-            <h4 className="font-outfit text-sm sm:text-base font-extrabold text-gray-900 dark:text-white flex items-center gap-1">
+            <h4 className="font-outfit text-sm sm:text-base font-extrabold text-gray-900 dark:text-white flex items-center gap-1.5">
               <AnimatedCounter to={4.9} decimals={1} />
-              <span className="text-amber-500 text-xs">★</span>
+              <StarIcon className="h-3 w-3 text-amber-500 fill-amber-500 inline" />
             </h4>
             <p className="text-[11px] font-medium text-gray-500 dark:text-emerald-300/70">
               Customer Rating
