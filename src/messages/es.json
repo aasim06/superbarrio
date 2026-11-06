@@ -1,0 +1,997 @@
+{
+  "common": {
+    "home": "Inicio",
+    "edit": "Editar",
+    "close": "Cerrar",
+    "saveChanges": "Guardar Cambios",
+    "viewMore": "Ver Más",
+    "delete": "Eliminar",
+    "filter": "Filtrar",
+    "seeAll": "Ver todo"
+  },
+  "sidebar": {
+    "groups": {
+      "menu": "Menú",
+      "support": "Soporte",
+      "others": "Otros"
+    },
+    "badges": {
+      "new": "nuevo",
+      "pro": "pro"
+    },
+    "items": {
+      "dashboard": "Panel de Control",
+      "grocery": "Tienda de Comestibles",
+      "ecommerceHome": "Comercio Electrónico",
+      "analytics": "Analítica",
+      "marketing": "Marketing",
+      "crm": "CRM",
+      "stocks": "Acciones",
+      "saas": "SaaS",
+      "logistics": "Logística",
+      "ai": "IA",
+      "sales": "Ventas",
+      "finance": "Finanzas",
+      "aiAssistant": "Asistente de IA",
+      "textGenerator": "Generador de Texto",
+      "imageGenerator": "Generador de Imágenes",
+      "codeGenerator": "Generador de Código",
+      "videoGenerator": "Generador de Video",
+      "aiSettings": "Configuración de IA",
+      "ecommerce": "Comercio Electrónico",
+      "products": "Productos",
+      "addProduct": "Agregar Producto",
+      "billing": "Facturación",
+      "invoices": "Facturas",
+      "singleInvoice": "Factura Individual",
+      "createInvoice": "Crear Factura",
+      "transactions": "Transacciones",
+      "singleTransaction": "Transacción Individual",
+      "calendar": "Calendario",
+      "userProfile": "Perfil de Usuario",
+      "task": "Tarea",
+      "taskList": "Lista",
+      "kanban": "Kanban",
+      "forms": "Formularios",
+      "formElements": "Elementos de Formulario",
+      "formLayout": "Diseño de Formulario",
+      "tables": "Tablas",
+      "basicTables": "Tablas Básicas",
+      "dataTables": "Tablas de Datos",
+      "pages": "Páginas",
+      "fileManager": "Administrador de Archivos",
+      "pricingTables": "Tablas de Precios",
+      "faq": "Preguntas Frecuentes",
+      "apiKeys": "Claves API",
+      "integrations": "Integraciones",
+      "blankPage": "Página en Blanco",
+      "error404": "Error 404",
+      "error500": "Error 500",
+      "error503": "Error 503",
+      "comingSoon": "Próximamente",
+      "maintenance": "Mantenimiento",
+      "successPage": "Éxito",
+      "layouts": "Diseños",
+      "layoutOne": "Diseño Uno",
+      "layoutTwo": "Diseño Dos",
+      "layoutThree": "Diseño Tres",
+      "layoutFour": "Diseño Cuatro",
+      "layoutFive": "Diseño Cinco",
+      "layoutSix": "Diseño Seis",
+      "charts": "Gráficos",
+      "lineChart": "Gráfico de Líneas",
+      "barChart": "Gráfico de Barras",
+      "pieChart": "Gráfico Circular",
+      "radarChart": "Gráfico de Radar",
+      "radialChart": "Gráfico Radial",
+      "maps": "Mapas",
+      "mapsGoogle": "Mapas",
+      "vectorMap": "Mapa Vectorial",
+      "uiElements": "Elementos de UI",
+      "alerts": "Alertas",
+      "avatar": "Avatar",
+      "badge": "Insignia",
+      "breadcrumb": "Miga de pan",
+      "buttons": "Botones",
+      "buttonsGroup": "Grupo de Botones",
+      "cards": "Tarjetas",
+      "carousel": "Carrusel",
+      "dropdowns": "Menús Desplegables",
+      "images": "Imágenes",
+      "links": "Enlaces",
+      "listView": "Lista",
+      "modals": "Modales",
+      "notificationUi": "Notificación",
+      "pagination": "Paginación",
+      "popovers": "Mensajes Emergentes",
+      "progressbar": "Barra de Progreso",
+      "ribbons": "Cintas",
+      "spinners": "Indicadores de Carga",
+      "tabs": "Pestañas",
+      "tooltips": "Información sobre Herramientas",
+      "videos": "Videos",
+      "authentication": "Autenticación",
+      "signIn": "Iniciar Sesión",
+      "signUp": "Registrarse",
+      "resetPassword": "Restablecer Contraseña",
+      "twoStepVerification": "Verificación en Dos Pasos",
+      "chat": "Chat",
+      "supportMenu": "Soporte",
+      "supportList": "Lista de Soporte",
+      "supportReply": "Respuesta de Soporte",
+      "email": "Correo",
+      "inbox": "Bandeja de Entrada",
+      "inboxDetails": "Detalles"
+    },
+    "widget": {
+      "title": "Panel Tailwind CSS #1",
+      "description": "Plantilla de administración líder en Tailwind CSS con más de 500 componentes de UI y páginas.",
+      "purchasePlan": "Adquirir Plan"
+    }
+  },
+  "header": {
+    "searchPlaceholder": "Buscar o escribir comando...",
+    "toggleSidebar": "Alternar barra lateral",
+    "notifications": {
+      "title": "Notificación",
+      "requestsPermission": "solicita permiso para cambiar",
+      "project": "Proyecto",
+      "minAgo": "hace {count} min",
+      "hrAgo": "hace {count} h",
+      "viewAll": "Ver todas las notificaciones"
+    }
+  },
+  "userDropdown": {
+    "editProfile": "Editar perfil",
+    "accountSettings": "Configuración de cuenta",
+    "support": "Soporte",
+    "language": "Idioma",
+    "signOut": "Cerrar sesión"
+  },
+  "ecommerce": {
+    "title": "Panel de Comercio Electrónico",
+    "metrics": {
+      "customers": "Clientes",
+      "orders": "Pedidos",
+      "revenue": "Ingresos",
+      "growth": "Crecimiento"
+    },
+    "months": {
+      "jan": "Ene",
+      "feb": "Feb",
+      "mar": "Mar",
+      "apr": "Abr",
+      "may": "May",
+      "jun": "Jun",
+      "jul": "Jul",
+      "aug": "Ago",
+      "sep": "Sep",
+      "oct": "Oct",
+      "nov": "Nov",
+      "dec": "Dic"
+    },
+    "monthlySales": {
+      "title": "Ventas Mensuales",
+      "subtitle": "Rendimiento de ventas por mes",
+      "series": "Ventas"
+    },
+    "monthlyTarget": {
+      "title": "Objetivo Mensual",
+      "target": "Meta de Ingresos",
+      "subtitle": "Objetivo establecido para cada mes",
+      "earned": "Ganó {amount} hoy, superior al promedio diario.",
+      "revenue": "Ingresos",
+      "today": "Hoy"
+    },
+    "statistics": {
+      "title": "Estadísticas de Ventas",
+      "subtitle": "Resumen de ingresos e inventario",
+      "sales": "Ventas",
+      "revenue": "Ingresos",
+      "monthly": "Mensual",
+      "quarterly": "Trimestral",
+      "annually": "Anual",
+      "selectDateRange": "Seleccionar rango de fechas"
+    },
+    "recentOrders": {
+      "title": "Pedidos Recientes",
+      "customer": "Cliente",
+      "product": "Producto",
+      "amount": "Monto",
+      "status": "Estado",
+      "date": "Fecha",
+      "products": "Productos",
+      "category": "Categoría",
+      "price": "Precio",
+      "variants": "{count, plural, one {# Variante} other {# Variantes}}",
+      "categories": {
+        "laptop": "Portátiles",
+        "watch": "Relojes",
+        "smartphone": "Teléfonos",
+        "electronics": "Electrónica",
+        "accessories": "Accesorios"
+      },
+      "statuses": {
+        "delivered": "Entregado",
+        "pending": "Pendiente",
+        "canceled": "Cancelado"
+      }
+    },
+    "demographic": {
+      "title": "Clientes por País",
+      "subtitle": "Distribución por departamentos y zonas",
+      "customers": "{count} Clientes",
+      "usa": "EE. UU.",
+      "france": "Francia"
+    }
+  },
+  "analytics": {
+    "metrics": {
+      "uniqueVisitors": "Unique Visitors",
+      "totalPageviews": "Total Pageviews",
+      "bounceRate": "Bounce Rate",
+      "visitDuration": "Visit Duration",
+      "vsLastMonth": "Vs last month"
+    },
+    "barChart": {
+      "title": "Analítica",
+      "subtitle": "Visitor analytics of last 30 days"
+    },
+    "topChannels": {
+      "title": "Top Channels",
+      "source": "Source",
+      "visitors": "Visitors",
+      "channelsReport": "Channels Report"
+    },
+    "topPages": {
+      "title": "Top Pages",
+      "source": "Source",
+      "pageview": "Pageview",
+      "channelsReport": "Channels Report"
+    },
+    "activeUsers": {
+      "title": "Active Users",
+      "liveVisitors": "Live visitors",
+      "avgDaily": "Avg, Daily",
+      "avgWeekly": "Avg, Weekly",
+      "avgMonthly": "Avg, Monthly"
+    },
+    "acquisitionChannels": {
+      "title": "Acquisition Channels"
+    },
+    "session": {
+      "title": "Sessions By Device"
+    },
+    "recentOrders": {
+      "title": "Recent Orders",
+      "products": "Productos",
+      "category": "Category",
+      "country": "Country",
+      "cr": "CR",
+      "value": "Value",
+      "categories": {
+        "uiKits": "UI Kits",
+        "templates": "Templates",
+        "saas": "SaaS"
+      },
+      "crDashboard": "Panel de Control"
+    }
+  },
+  "notFound": {
+    "error": "ERROR",
+    "message": "¡No pudimos encontrar la página que buscas!",
+    "backHome": "Volver a la Página Principal"
+  },
+  "marketing": {
+    "metrics": {
+      "avgClientRating": "Avg. Client Rating",
+      "instagramFollowers": "Instagram Followers",
+      "totalRevenue": "Total Revenue",
+      "vsLastMonth": "Vs last month"
+    },
+    "impressionChart": {
+      "title": "Impression & Data Traffic",
+      "totalRevenue": "Total Revenue",
+      "sales": "Ventas",
+      "revenue": "Revenue"
+    },
+    "featuredCampaign": {
+      "title": "Featured Campaigns",
+      "viewMore": "Ver Más",
+      "delete": "Eliminar",
+      "products": "Productos",
+      "campaign": "Campaign",
+      "status": "Status",
+      "adsCampaign": "Ads campaign",
+      "campaigns": {
+        "growBrand": "Grow your brand by...",
+        "betterIdeas": "Make Better Ideas...",
+        "increaseTraffic": "Increase your website tra..."
+      },
+      "statuses": {
+        "success": "Éxito",
+        "pending": "Pending",
+        "failed": "Failed"
+      }
+    },
+    "trafficStats": {
+      "title": "Traffic Stats",
+      "viewMore": "Ver Más",
+      "delete": "Eliminar",
+      "newSubscribers": "New Subscribers",
+      "conversionRate": "Conversion Rate",
+      "pageBounceRate": "Page Bounce Rate",
+      "thenLastWeek": "then last Week",
+      "newSales": "New Sales"
+    },
+    "trafficSource": {
+      "title": "Top Traffic Source",
+      "viewMore": "Ver Más",
+      "delete": "Eliminar",
+      "viewAll": "View All"
+    }
+  },
+  "crm": {
+    "metrics": {
+      "activeDeal": "Active Deal",
+      "revenueTotal": "Revenue Total",
+      "closedDeals": "Closed Deals",
+      "lastMonth": "last month"
+    },
+    "statistics": {
+      "title": "Statistics",
+      "subtitle": "Target you’ve set for each month",
+      "avgYearlyProfit": "Avg. Yearly Profit",
+      "sales": "Ventas",
+      "revenue": "Revenue"
+    },
+    "estimatedRevenue": {
+      "title": "Estimated Revenue",
+      "subtitle": "Target you’ve set for each month",
+      "goals": "June Goals",
+      "marketing": "Marketing",
+      "sales": "Ventas"
+    },
+    "salesCategory": {
+      "title": "Sales Category",
+      "affiliate": "Affiliate",
+      "direct": "Direct",
+      "adsense": "Adsense",
+      "affiliateProgram": "Affiliate Program",
+      "directBuy": "Direct Buy",
+      "products": "Productos",
+      "total": "Total",
+      "usedOf": "Used of"
+    },
+    "upcomingSchedule": {
+      "title": "Upcoming Schedule",
+      "schedules": {
+        "item1": {
+          "title": "Business Analytics Press",
+          "description": "Exploring the Future of Data-Driven +6 more"
+        },
+        "item2": {
+          "title": "Business Sprint",
+          "description": "Techniques from Business Sprint +2 more"
+        },
+        "item3": {
+          "title": "Customer Review Meeting",
+          "description": "Insights from the Customer Review Meeting +8 more"
+        }
+      }
+    },
+    "recentOrders": {
+      "title": "Recent Orders",
+      "dealId": "Deal ID",
+      "customer": "Customer",
+      "productService": "Product/Service",
+      "dealValue": "Deal Value",
+      "closeDate": "Close Date",
+      "status": "Status",
+      "action": "Action",
+      "products": {
+        "softwareLicense": "Software License",
+        "cloudHosting": "Cloud Hosting",
+        "webDomain": "Web Domain",
+        "sslCertificate": "SSL Certificate",
+        "premiumSupport": "Premium Support"
+      },
+      "statuses": {
+        "complete": "Complete",
+        "pending": "Pending",
+        "cancel": "Cancel"
+      }
+    }
+  },
+  "stocks": {
+    "title": "Acciones",
+    "dividend": {
+      "title": "Dividend",
+      "series": "Dividend",
+      "viewMore": "Ver Más",
+      "delete": "Eliminar"
+    },
+    "portfolioPerformance": {
+      "title": "Portfolio Performance",
+      "subtitle": "Here is your performance stats of each month",
+      "series": "Portfolio Performance"
+    },
+    "trendingStocks": {
+      "title": "Trending Stocks",
+      "shortStock": "Short Stock",
+      "buyStock": "Buy Stock"
+    },
+    "watchlist": {
+      "title": "My Watchlist",
+      "viewMore": "Ver Más",
+      "delete": "Eliminar"
+    },
+    "latestTransactions": {
+      "title": "Latest Transactions",
+      "searchPlaceholder": "Search...",
+      "table": {
+        "name": "Name",
+        "date": "Date",
+        "price": "Price",
+        "category": "Category",
+        "status": "Status"
+      },
+      "actions": {
+        "bought": "Bought {symbol}",
+        "sell": "Sell {symbol}"
+      },
+      "categories": {
+        "finance": "Finanzas"
+      },
+      "statuses": {
+        "success": "Éxito",
+        "pending": "Pending",
+        "failed": "Failed"
+      }
+    }
+  },
+  "saas": {
+    "title": "SaaS",
+    "metrics": {
+      "overview": "Overview",
+      "totalRevenue": "Total Revenue",
+      "activeUsers": "Active Users",
+      "clv": "Customer Lifetime Value",
+      "cac": "Customer Acquisition Cost"
+    },
+    "churnRate": {
+      "title": "Churn Rate",
+      "subtitle": "Downgrade to Free plan",
+      "thanLastWeek": "than last Week",
+      "series": "Churn Rate",
+      "viewMore": "Ver Más",
+      "delete": "Eliminar"
+    },
+    "userGrowth": {
+      "title": "User Growth",
+      "subtitle": "New signups website + mobile",
+      "thanLastWeek": "than last Week",
+      "series": "Revenue",
+      "viewMore": "Ver Más",
+      "delete": "Eliminar"
+    },
+    "conversionFunnel": {
+      "title": "Conversion Funnel",
+      "viewMore": "Ver Más",
+      "delete": "Eliminar",
+      "series": {
+        "adImpressions": "Ad Impressions",
+        "websiteSession": "Website Session",
+        "appDownload": "App Download",
+        "newUsers": "New Users"
+      }
+    },
+    "recentInvoices": {
+      "title": "Recent Invoices",
+      "table": {
+        "serialNo": "Serial No:",
+        "closeDate": "Close Date",
+        "user": "User",
+        "amount": "Amount",
+        "status": "Status"
+      },
+      "statuses": {
+        "complete": "Complete",
+        "pending": "Pending",
+        "cancelled": "Cancelled"
+      }
+    },
+    "productPerformance": {
+      "title": "Product Performance",
+      "viewMore": "Ver Más",
+      "delete": "Eliminar",
+      "tabs": {
+        "dailySales": "Daily Sales",
+        "onlineSales": "Online Sales",
+        "newUsers": "New Users"
+      },
+      "digitalProduct": "Digital Product",
+      "physicalProduct": "Physical Product",
+      "avgDailySales": "Average Daily Sales",
+      "totalOnlineSales": "Total Online Sales",
+      "addedLastMonth": "Added last month",
+      "totalNewUsers": "Total New Users",
+      "series": {
+        "sales": "Ventas",
+        "revenue": "Revenue"
+      }
+    },
+    "activities": {
+      "title": "Activities",
+      "viewMore": "Ver Más",
+      "delete": "Eliminar",
+      "newInvoice": "New invoice",
+      "createdInvoice": "created invoice"
+    }
+  },
+  "logistics": {
+    "title": "Logística",
+    "metrics": {
+      "totalOrders": "Total Orders",
+      "ordersInTransit": "Orders in Transit"
+    },
+    "deliveryStatistics": {
+      "title": "Delivery Statistics",
+      "subtitle": "Total number of deliveries 70.5K",
+      "monthly": "Monthly",
+      "yearly": "Yearly",
+      "shipment": "Shipment",
+      "delivery": "Delivery"
+    },
+    "revenueEarned": {
+      "totalRevenue": "Total revenue earned",
+      "shippedQuantities": "Shipped quantities",
+      "newSales": "New Sales"
+    },
+    "deliveryVehicle": {
+      "title": "Delivery Vehicles",
+      "subtitle": "Vehicles operating on the road",
+      "thanLastWeek": "than last Week",
+      "onRoute": "On-route"
+    },
+    "trackingDelivery": {
+      "title": "Tracking Delivery",
+      "subtitle": "Last viewed delivery history"
+    },
+    "trackingProgress": {
+      "trackingId": "Tracking ID",
+      "inTransit": "In Transit",
+      "pickedUp": "Picked up",
+      "delivered": "Delivered"
+    },
+    "deliveryMan": {
+      "courier": "Courier"
+    },
+    "deliveriesActivity": {
+      "title": "Delivery Activities",
+      "subtitle": "Track your recent shipping activities",
+      "tabs": {
+        "all": "All",
+        "delivered": "Delivered",
+        "inTransit": "In-Transit",
+        "pending": "Pending",
+        "processing": "Processing"
+      },
+      "filter": {
+        "button": "Filtrar",
+        "category": "Category",
+        "searchCategory": "Search category...",
+        "company": "Company",
+        "searchCompany": "Search company...",
+        "apply": "Apply"
+      },
+      "table": {
+        "orderId": "Order ID",
+        "category": "Category",
+        "company": "Company",
+        "arrivalTime": "Arrival Time",
+        "route": "Route",
+        "price": "Price",
+        "status": "Status"
+      },
+      "categories": {
+        "furniture": "Furniture",
+        "clothing": "Clothing",
+        "books": "Books",
+        "automotive": "Automotive",
+        "electronics": "Electronics",
+        "health": "Health",
+        "toys": "Toys",
+        "kitchen": "Kitchen",
+        "beauty": "Beauty",
+        "sports": "Sports"
+      },
+      "statuses": {
+        "delivered": "Delivered",
+        "inTransit": "In Transit",
+        "canceled": "Canceled"
+      },
+      "pagination": {
+        "showing": "Showing",
+        "to": "to",
+        "of": "of",
+        "page": "Page"
+      }
+    }
+  },
+  "aiDashboard": {
+    "stats": {
+      "users": "Users",
+      "projects": "Projects",
+      "revenue": "Revenue",
+      "paidUsers": "Paid Users",
+      "last30Days": "Last 30 Days"
+    },
+    "userRevenue": {
+      "title": "Users & Revenue Statistics",
+      "subtitle": "Visualize month-to-month progress and engagement.",
+      "users": "Users",
+      "revenue": "Revenue",
+      "monthly": "Monthly",
+      "quarterly": "Quarterly",
+      "annually": "Annually"
+    },
+    "apiToken": {
+      "title": "API Token Usages",
+      "totalApiTokenUsed": "Total API Token Used",
+      "tokenUsed": "Token used",
+      "configuredKey": "{count, plural, one {# API key configured} other {# API keys configured}}",
+      "viewAllUsageDetails": "View All Usage Details"
+    },
+    "userAnalytics": {
+      "title": "User Analytics",
+      "subtitle": "Platform user insights",
+      "totalUsers": "Total Users",
+      "freeUsers": "Free Users",
+      "paidUsers": "Paid Users",
+      "ofTotalUser": "of total user",
+      "thisMonth": "This Month",
+      "fromLastMonth": "from last month",
+      "thisYear": "This Year",
+      "fromLastYear": "from last year"
+    },
+    "projectAnalytics": {
+      "title": "Projects Analytics",
+      "subtitle": "View detailed project insights",
+      "totalProjects": "Total Projects",
+      "today": "Today",
+      "yesterday": "Yesterday",
+      "projectCreated": "Project created",
+      "thisMonth": "This Month",
+      "fromLastMonth": "from last month",
+      "thisYear": "This Year",
+      "fromLastYear": "from last year"
+    },
+    "recentTransactions": {
+      "title": "Recent Transactions",
+      "searchPlaceholder": "Search...",
+      "filter": "Filtrar",
+      "table": {
+        "paidBy": "Paid By",
+        "packageName": "Package Name",
+        "price": "Price",
+        "paidDate": "Paid Date",
+        "status": "Status",
+        "actions": "Actions"
+      },
+      "packages": {
+        "starterMonthly": "Starter - Monthly",
+        "growthYearly": "Growth - Yearly",
+        "premiumMonthly": "Premium - Monthly"
+      },
+      "statuses": {
+        "active": "Active",
+        "expired": "Expired"
+      },
+      "pagination": {
+        "previous": "Previous",
+        "next": "Next",
+        "pageOf": "Page {current} of {total}"
+      }
+    }
+  },
+  "sales": {
+    "salesStats": {
+      "title": "Sales Dashboard",
+      "subtitle": "Track revenue, performance, and sales growth in real-time",
+      "selectDateRange": "Select date range",
+      "export": "Export",
+      "totalRevenue": "Total Revenue",
+      "totalSales": "Total Sales",
+      "conversionRate": "Conversion Rate",
+      "refundRate": "Refund Rate",
+      "vsLastMonth": "vs last month",
+      "newSales": "New Sales"
+    },
+    "userRevenueStats": {
+      "title": "Users & Revenue Statistics",
+      "subtitle": "Visualize month-to-month progress and engagement.",
+      "daily": "Daily",
+      "weekly": "Weekly",
+      "monthly": "Monthly",
+      "onlineSales": "Online Sales",
+      "offlineSales": "Offline Sales"
+    },
+    "userRetention": {
+      "title": "User Retention",
+      "subtitle": "User engagement over time",
+      "increasedVsLastWeek": "Increased vs last week"
+    },
+    "salesByChannel": {
+      "title": "Sales by Channel",
+      "subtitle": "Channel performance overview",
+      "increasedVsLastWeek": "Increased vs last week",
+      "channels": {
+        "website": "Website",
+        "email": "Correo",
+        "socialMedia": "Social Media"
+      },
+      "table": {
+        "channels": "Channels",
+        "metric": "Metric",
+        "total": "Total"
+      }
+    },
+    "salesByCountry": {
+      "title": "Sales by Country",
+      "subtitle": "Country-wise sales overview",
+      "countries": {
+        "usa": "USA",
+        "france": "France",
+        "japan": "Japan",
+        "germany": "Germany"
+      }
+    },
+    "topProducts": {
+      "title": "Top Products",
+      "table": {
+        "productName": "Product Name",
+        "category": "Category",
+        "sales": "Ventas",
+        "earnings": "Earnings",
+        "stocks": "Acciones",
+        "status": "Status"
+      },
+      "products": {
+        "classicDenimJacket": "Classic Denim Jacket",
+        "slimFitChinos": "Slim Fit Chinos",
+        "organicCottonTShirt": "Organic Cotton T-Shirt",
+        "leatherAnkleBoots": "Leather Ankle Boots"
+      },
+      "variants": {
+        "threeSizes": "3 Sizes",
+        "fourColors": "4 Colors",
+        "fiveColors": "5 Colors",
+        "sixSizes": "6 Sizes"
+      },
+      "categories": {
+        "jacket": "Jacket",
+        "pants": "Pants",
+        "tShirt": "T-Shirt",
+        "footwear": "Footwear"
+      },
+      "statuses": {
+        "inStock": "In Stock",
+        "lowStock": "Low Stock",
+        "outOfStock": "Out of Stock"
+      }
+    }
+  },
+  "finance": {
+    "totalBalanceOverview": {
+      "title": "Total Balance",
+      "overview": "Overview of your current funds",
+      "thanLastMonth": "than last month",
+      "primaryAccount": "Primary Account:",
+      "seeDetails": "See Details",
+      "transfer": "Transfer",
+      "received": "Received",
+      "balance": "Balance"
+    },
+    "stats": {
+      "totalBalance": "Total Balance",
+      "monthlyIncome": "Monthly Income",
+      "totalSpent": "Total Spent",
+      "savingRate": "Saving Rate",
+      "thanLastMonth": "than last month",
+      "goalProgress": "Goal: 30% - 3.9% to go"
+    },
+    "cashflow": {
+      "title": "Cashflow Overview",
+      "totalRevenue": "Total Revenue",
+      "income": "Income",
+      "expense": "Expense"
+    },
+    "spending": {
+      "title": "Spending",
+      "yearly": "Yearly",
+      "monthly": "Monthly",
+      "total": "Total",
+      "categories": {
+        "activity": "Activity",
+        "onlinePurchases": "Online Purchases",
+        "groceries": "Groceries",
+        "digitalGoods": "Digital Goods",
+        "stationery": "Stationery",
+        "others": "Otros"
+      }
+    },
+    "quickSend": {
+      "title": "Quick send",
+      "sendFrom": "Send From",
+      "currency": "Currency",
+      "amount": "Amount",
+      "sendMoney": "Send Money"
+    },
+    "myCards": {
+      "title": "My Cards",
+      "addCard": "Add Card",
+      "virtualCard": "Virtual Card",
+      "recentTransactions": "Recent Transactions",
+      "seeAllTransactions": "See All Transactions",
+      "transactions": {
+        "paymentReceived": "Payment Received",
+        "cashbackDesc": "Cashback from Stellar Rewards",
+        "netflixSubscription": "Netflix Subscription",
+        "netflixDesc": "September subscription charge",
+        "moneyReceived": "Money received",
+        "paypalDesc": "Payment received via PayPal",
+        "googleAds": "Google Ads",
+        "googleAdsDesc": "Payment received form google ads"
+      }
+    },
+    "transactionsTable": {
+      "title": "Recent Transactions",
+      "searchPlaceholder": "Search...",
+      "filter": "Filtrar",
+      "table": {
+        "orderId": "Order ID",
+        "activity": "Activity",
+        "price": "Price",
+        "date": "Date",
+        "status": "Status"
+      },
+      "activities": {
+        "hotelBooking": "Hotel Booking",
+        "onlineShopping": "Online Shopping",
+        "gamePurchase": "Game Purchase",
+        "utilityBillPayment": "Utility Bill Payment",
+        "onlineCourseEnrollment": "Online Course Enrollment"
+      },
+      "statuses": {
+        "completed": "Completed",
+        "inProgress": "In Progress"
+      }
+    }
+  },
+  "grocery": {
+    "brandName": "SuperBarrio",
+    "badge": "SUPERMERCADO",
+    "tagline": "Productos frescos diarios",
+    "topNotice": "Entregas frescas de granja • Envío exprés gratis en pedidos superiores a 25 € • ¡Usa el código FRESH20 para un 20% de descuento!",
+    "searchPlaceholder": "Buscar frutas frescas, verduras, leche, pan...",
+    "searchMobilePlaceholder": "Buscar comestibles...",
+    "heroTitle": "Verduras, Frutas y Abarrotes Frescos de Granja",
+    "heroSubtitle": "Bondad orgánica seleccionada a mano entregada fresca y crujiente en su puerta. Calidad garantizada a los mejores precios.",
+    "expressDelivery": "Entrega Exprés en 25 Minutos",
+    "useCoupon": "Usar Cupón:",
+    "freeDeliveryBadge": "Envío gratis en compras de más de 25 €",
+    "qualityChecked": "100% Calidad Garantizada",
+    "dailyDeal": "Oferta del Día",
+    "dailyDealTitle": "Lácteos y Desayunos Esenciales",
+    "dailyDealDesc": "Leche pura, mantequilla, pan artesanal y huevos de granja con 15% de descuento.",
+    "startingFrom": "Desde",
+    "shopByCategory": "Comprar por Categoría",
+    "departments": "Departamentos",
+    "allCategories": "Todos los Artículos",
+    "popularEssentials": "Artículos Básicos Populares",
+    "categoryItems": "Artículos de la Categoría",
+    "showingItems": "Mostrando {count} artículos disponibles en inventario",
+    "clearSearch": "Limpiar búsqueda",
+    "noItemsTitle": "No se encontraron artículos",
+    "noItemsDesc": "Intenta buscar otra cosa como \"manzanas\", \"leche\" o \"pan\".",
+    "showAll": "Ver todos los artículos",
+    "addToCart": "Agregar",
+    "basket": "Cesta",
+    "myBasket": "Mi Cesta de Compras",
+    "emptyBasketTitle": "Tu cesta está vacía",
+    "emptyBasketDesc": "¡Agrega frutas frescas, verduras y lácteos para comenzar!",
+    "startShopping": "Comenzar a Comprar",
+    "clearAll": "Vaciar todo",
+    "subtotal": "Subtotal de Artículos",
+    "deliveryFee": "Costo de Envío",
+    "free": "GRATIS",
+    "total": "Monto Total",
+    "proceedToCheckout": "Continuar al Pago",
+    "orderViaWhatsApp": "Ordenar por WhatsApp",
+    "freeDeliveryUnlocked": "¡Desbloqueaste Envío Exprés GRATIS!",
+    "addMoreForFree": "Agrega {amount} más para",
+    "freeDeliveryText": "envío GRATIS",
+    "adminDashboard": "Panel de Administración",
+    "storefront": "Tienda",
+    "cashOnDelivery": "Pago contra entrega disponible",
+    "poweredBy": "Desarrollado por el sistema de diseño TailAdmin",
+    "whatsappOrder": "Ordenar por WhatsApp",
+    "perks": {
+      "fresh": "100% Fresco de Granja",
+      "freshDesc": "Directamente de agricultores locales de confianza cada mañana.",
+      "speed": "Entrega en 25-35 Min",
+      "speedDesc": "Entrega inmediata a domicilio en paquetes con control de temperatura.",
+      "hygiene": "Seguro e Higiénico",
+      "hygieneDesc": "Triple lavado y desinfectado con UV antes del despacho.",
+      "replacement": "Reemplazo Inmediato",
+      "replacementDesc": "¿No satisfecho? Reemplazo o reembolso al instante sin preguntas."
+    },
+    "shopNow": "Comprar Ahora",
+    "shopDeal": "Aprovechar Oferta",
+    "organicBadge": "100% Granja Orgánica",
+    "flashSale": "Venta Flash",
+    "copied": "¡Copiado!",
+    "limitedTime": "Termina en 6 hrs",
+    "slide2Badge": "Cosecha de Temporada",
+    "slide2Title": "Frutas Exóticas Dulces y Colección de Fresas",
+    "slide2Subtitle": "Fresas, aguacates maduros, cítricos y frutas de temporada ricas en antioxidantes al 30% de descuento.",
+    "slide3Badge": "Despensa y Especias",
+    "slide3Title": "Granos Orgánicos Puros, Aceites y Especias",
+    "slide3Subtitle": "Aceites virgen extra prensados en frío, arroz basmati añejo y especias naturales para comidas saludables.",
+    "liveDispatch": "Despacho en Vivo • Entrega 20-30 Min",
+    "heroQuality1": "100% Granja Orgánica",
+    "heroQuality2": "Cadena de Frío Garantizada",
+    "heroQuality3": "Reemplazo Inmediato",
+    "customerRating": "4.9 (2.4k+ Reseñas)",
+    "quickCategories": "Explorar Rápido:",
+    "deal1Title": "Lácteos y Desayunos Esenciales",
+    "deal1Desc": "Leche pura, mantequilla, pan artesanal y huevos de granja.",
+    "deal1Badge": "Oferta Flash Diaria",
+    "deal2Title": "Cosecha de Frutas Exóticas y Fresas",
+    "deal2Desc": "Fresas, aguacates maduros, cítricos y bayas frescas.",
+    "deal2Badge": "Especial de Fin de Semana",
+    "dealExpires": "Termina en",
+    "claimDeal": "Aprovechar Oferta",
+    "exploreFruits": "Ver Frutas",
+    "quickVeg": "Verduras",
+    "quickFruit": "Frutas",
+    "quickDairy": "Lácteos",
+    "quickBakery": "Panadería",
+    "snacksHeroKicker": "SABROSO • NUTRITIVO • SIEMPRE FRESCO",
+    "snacksHeroTitle": "Snacks que alimentan tus buenos días.",
+    "snacksHeroSubtitle": "CrunchyBites te ofrece deliciosos y saludables snacks elaborados con ingredientes reales. Perfectos para el trabajo, la escuela o en casa.",
+    "produceHeroKicker": "FRESCO • ORGÁNICO • DIRECTO DE GRANJA",
+    "produceHeroTitle": "Frutas y verduras que dan vida a tu mesa.",
+    "produceHeroSubtitle": "Verduras orgánicas seleccionadas a mano, tomates frescos y cosecha de granja entregada crujiente en 25 minutos.",
+    "bakeryHeroKicker": "HORNEADO ARTESANAL • 100% PURO • FRESCO DEL DÍA",
+    "bakeryHeroTitle": "Desayunos que comienzan tus mejores días.",
+    "bakeryHeroSubtitle": "Leche pura de granja, pan artesanal de masa madre y huevos frescos entregados directamente a tu puerta.",
+    "realIngredientsBadge": "Ingredientes reales. Sabor auténtico.",
+    "kickerSnacks": "SABROSO • NUTRITIVO • SIEMPRE FRESCO",
+    "titleSnacks1": "Snacks que",
+    "titleSnacks2": "alimentan tus",
+    "titleSnacks3": "buenos días.",
+    "descSnacks": "SuperBarrio te ofrece deliciosos y saludables snacks elaborados con ingredientes reales. Perfectos para el trabajo, la escuela o en casa.",
+    "kickerProduce": "100% ORGÁNICO • FRESCO Y PURO • COSECHA DIARIA",
+    "titleProduce1": "Verduras que",
+    "titleProduce2": "alimentan tus",
+    "titleProduce3": "días saludables.",
+    "descProduce": "Verduras orgánicas seleccionadas a mano, hojas crujientes y frutas de huerto maduradas al sol entregadas en 25 minutos.",
+    "kickerBakery": "ARTESANAL • RECIÉN HORNEADO • LÁCTEOS PUROS",
+    "titleBakery1": "Desayunos que",
+    "titleBakery2": "alimentan tus",
+    "titleBakery3": "mejores mañanas.",
+    "descBakery": "Leche pura de granja, pan artesanal de masa madre y huevos frescos de campo entregados a tu puerta.",
+    "shopNowBtn": "Comprar Ahora",
+    "handwrittenNote": "Ingredientes reales. Sabor auténtico.",
+    "trust1Title": "Entrega en 25 Min",
+    "trust1Desc": "Cadena de frío garantizada",
+    "trust2Title": "100% Ingredientes Reales",
+    "trust2Desc": "Sin aditivos artificiales",
+    "trust3Title": "Reemplazo Inmediato",
+    "trust3Desc": "Garantía de devolución total",
+    "trust4Title": "4.9 Estrellas",
+    "trust4Desc": "Más de 12,000 hogares"
+  }
+}
