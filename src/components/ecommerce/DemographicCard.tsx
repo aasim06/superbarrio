@@ -69,10 +69,10 @@ export default function DemographicCard() {
   };
 
   const deliveryZones = [
-    { zone: "Valencia / Sector B", orders: 482, onTime: "99.2%" },
-    { zone: "Model Town & Gulberg", orders: 395, onTime: "98.5%" },
-    { zone: "DHA Phase 5 & 6", orders: 320, onTime: "97.8%" },
-    { zone: "Johar Town & Cantt", orders: 285, onTime: "98.1%" },
+    { zone: "Madrid Centro & Salamanca", orders: 482, onTime: "99.2%" },
+    { zone: "Barcelona Eixample & Gràcia", orders: 395, onTime: "98.5%" },
+    { zone: "Valencia Ciutat Vella & Ruzafa", orders: 320, onTime: "97.8%" },
+    { zone: "Sevilla Triana & Nervión", orders: 285, onTime: "98.1%" },
   ];
 
   return (

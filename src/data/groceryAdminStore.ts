@@ -4,14 +4,18 @@ import { GROCERY_PRODUCTS } from "./groceryData";
 // Initial realistic seeded orders for SuperBarrio
 export const SEEDED_ORDERS: CustomerOrder[] = [
   {
-    orderId: "ORD-9841",
-    customerName: "Maria Garcia",
-    phone: "+52 55 1234 5678",
-    address: "Av. Reforma 420, Apt 5B",
-    city: "Main District",
-    notes: "Leave with security if not answering",
-    deliverySlot: "Express (25 - 35 mins)",
-    paymentMethod: "cod",
+    orderId: "ES-9841",
+    customerName: "María García Fernández",
+    phone: "+34 612 345 678",
+    address: "Calle Gran Vía, 28, 3º B",
+    streetAddress: "Calle Gran Vía, 28",
+    apartment: "3º B",
+    postalCode: "28013",
+    city: "Madrid",
+    province: "Madrid",
+    notes: "Dejar en portería si no estoy",
+    deliverySlot: "Hoy - 17:00 - 20:00 (Tarde)",
+    paymentMethod: "bizum",
     items: [
       { ...GROCERY_PRODUCTS[0], quantity: 2 }, // Tomatoes
       { ...GROCERY_PRODUCTS[1], quantity: 1 }, // Bananas
@@ -25,18 +29,22 @@ export const SEEDED_ORDERS: CustomerOrder[] = [
     createdAt: "2026-11-04T02:25:00.000Z",
   },
   {
-    orderId: "ORD-9842",
-    customerName: "Carlos Rodriguez",
-    phone: "+52 55 8765 4321",
-    address: "Calle Los Pinos 88",
-    city: "Sector Norte",
-    notes: "Ring the bell twice",
-    deliverySlot: "Evening (06:00 PM - 09:00 PM)",
+    orderId: "ES-9842",
+    customerName: "Carlos Rodríguez López",
+    phone: "+34 685 412 963",
+    address: "Passeig de Gràcia, 45, 2º 1ª",
+    streetAddress: "Passeig de Gràcia, 45",
+    apartment: "2º 1ª",
+    postalCode: "08007",
+    city: "Barcelona",
+    province: "Barcelona",
+    notes: "Llamar al telefonillo 2º 1ª",
+    deliverySlot: "Hoy - 20:00 - 22:00 (Noche)",
     paymentMethod: "card",
     items: [
       { ...GROCERY_PRODUCTS[9], quantity: 2 }, // Chicken
       { ...GROCERY_PRODUCTS[10], quantity: 1 }, // Olive Oil
-      { ...GROCERY_PRODUCTS[11], quantity: 1 }, // Basmati Rice
+      { ...GROCERY_PRODUCTS[11], quantity: 1 }, // Rice
     ] as CartItem[],
     subtotal: 28.55,
     deliveryFee: 0,
@@ -45,13 +53,17 @@ export const SEEDED_ORDERS: CustomerOrder[] = [
     createdAt: "2026-11-04T02:42:00.000Z",
   },
   {
-    orderId: "ORD-9843",
-    customerName: "Sofia Martinez",
-    phone: "+52 55 2468 1357",
-    address: "Paseo de la Victoria 104",
-    city: "Centro",
-    deliverySlot: "Express (25 - 35 mins)",
-    paymentMethod: "wallet",
+    orderId: "ES-9843",
+    customerName: "Sofía Martínez Ruiz",
+    phone: "+34 647 852 369",
+    address: "Calle Colón, 14, 4º A",
+    streetAddress: "Calle Colón, 14",
+    apartment: "4º A",
+    postalCode: "46004",
+    city: "Valencia",
+    province: "Valencia",
+    deliverySlot: "Mañana - 09:00 - 12:00 (Mañana)",
+    paymentMethod: "paypal",
     items: [
       { ...GROCERY_PRODUCTS[8], quantity: 2 }, // Croissants
       { ...GROCERY_PRODUCTS[12], quantity: 2 }, // Orange Juice
@@ -65,12 +77,16 @@ export const SEEDED_ORDERS: CustomerOrder[] = [
     createdAt: "2026-11-04T02:52:00.000Z",
   },
   {
-    orderId: "ORD-9844",
-    customerName: "Alejandro Hernandez",
-    phone: "+52 55 3691 8274",
-    address: "Blvd. Jardines 512",
-    city: "Residencial Campestre",
-    deliverySlot: "Morning (08:00 AM - 11:00 AM)",
+    orderId: "ES-9844",
+    customerName: "Alejandro Hernández Navarro",
+    phone: "+34 693 147 258",
+    address: "Calle Sierpes, 62, 1º B",
+    streetAddress: "Calle Sierpes, 62",
+    apartment: "1º B",
+    postalCode: "41004",
+    city: "Sevilla",
+    province: "Sevilla",
+    deliverySlot: "Mañana - 12:00 - 15:00 (Mediodía)",
     paymentMethod: "cod",
     items: [
       { ...GROCERY_PRODUCTS[6], quantity: 1 }, // Cheese
@@ -85,13 +101,17 @@ export const SEEDED_ORDERS: CustomerOrder[] = [
     createdAt: "2026-11-04T02:57:00.000Z",
   },
   {
-    orderId: "ORD-9845",
-    customerName: "Isabella Torres",
-    phone: "+52 55 9517 5324",
-    address: "Av. Universidad 710",
-    city: "Zona Rosa",
-    deliverySlot: "Express (25 - 35 mins)",
-    paymentMethod: "card",
+    orderId: "ES-9845",
+    customerName: "Isabella Torres Moreno",
+    phone: "+34 621 789 456",
+    address: "Calle Larios, 8, 5º D",
+    streetAddress: "Calle Larios, 8",
+    apartment: "5º D",
+    postalCode: "29015",
+    city: "Málaga",
+    province: "Málaga",
+    deliverySlot: "Hoy - 17:00 - 20:00 (Tarde)",
+    paymentMethod: "bizum",
     items: [
       { ...GROCERY_PRODUCTS[2], quantity: 2 }, // Apples
       { ...GROCERY_PRODUCTS[4], quantity: 3 }, // Milk
@@ -103,12 +123,16 @@ export const SEEDED_ORDERS: CustomerOrder[] = [
     createdAt: "2026-11-04T01:25:00.000Z",
   },
   {
-    orderId: "ORD-9846",
-    customerName: "David Morales",
-    phone: "+52 55 7531 9842",
-    address: "Calle Hidalgo 21",
-    city: "Sector Sur",
-    deliverySlot: "Afternoon (01:00 PM - 04:00 PM)",
+    orderId: "ES-9846",
+    customerName: "David Morales Gil",
+    phone: "+34 674 123 987",
+    address: "Paseo de la Independencia, 19, 3º C",
+    streetAddress: "Paseo de la Independencia, 19",
+    apartment: "3º C",
+    postalCode: "50004",
+    city: "Zaragoza",
+    province: "Zaragoza",
+    deliverySlot: "Mañana - 17:00 - 20:00 (Tarde)",
     paymentMethod: "cod",
     items: [
       { ...GROCERY_PRODUCTS[9], quantity: 3 }, // Chicken
@@ -122,13 +146,17 @@ export const SEEDED_ORDERS: CustomerOrder[] = [
     createdAt: "2026-11-04T00:20:00.000Z",
   },
   {
-    orderId: "ORD-9847",
-    customerName: "Camila Flores",
-    phone: "+52 55 8426 9713",
-    address: "Privada Las Palmas 14",
-    city: "Las Flores",
-    deliverySlot: "Express (25 - 35 mins)",
-    paymentMethod: "wallet",
+    orderId: "ES-9847",
+    customerName: "Camila Flores Sanz",
+    phone: "+34 639 852 147",
+    address: "Gran Vía de les Corts Catalanes, 580",
+    streetAddress: "Gran Vía de les Corts Catalanes, 580",
+    apartment: "Principal 2ª",
+    postalCode: "08011",
+    city: "Barcelona",
+    province: "Barcelona",
+    deliverySlot: "Hoy - 20:00 - 22:00 (Noche)",
+    paymentMethod: "apple_google",
     items: [
       { ...GROCERY_PRODUCTS[5], quantity: 2 }, // Eggs
       { ...GROCERY_PRODUCTS[8], quantity: 1 }, // Croissants
@@ -141,12 +169,16 @@ export const SEEDED_ORDERS: CustomerOrder[] = [
     createdAt: "2026-11-03T23:00:00.000Z",
   },
   {
-    orderId: "ORD-9848",
-    customerName: "Mateo Sanchez",
-    phone: "+52 55 1593 7531",
-    address: "Calle Morelos 305",
-    city: "Centro",
-    deliverySlot: "Express (25 - 35 mins)",
+    orderId: "ES-9848",
+    customerName: "Mateo Sánchez Vidal",
+    phone: "+34 615 963 852",
+    address: "Calle de Alcalá, 112, 1º Izq",
+    streetAddress: "Calle de Alcalá, 112",
+    apartment: "1º Izq",
+    postalCode: "28009",
+    city: "Madrid",
+    province: "Madrid",
+    deliverySlot: "Mañana - 09:00 - 12:00 (Mañana)",
     paymentMethod: "card",
     items: [
       { ...GROCERY_PRODUCTS[3], quantity: 2 }, // Broccoli
@@ -220,22 +252,33 @@ export function simulateNewOrder(): CustomerOrder {
     "Ricardo Morales",
   ];
   const randomCities = [
+    "Madrid",
+    "Barcelona",
     "Valencia",
-    "Model Town",
-    "Gulberg III",
-    "DHA Phase 5",
-    "Johar Town",
-    "Bahria Town",
+    "Sevilla",
+    "Zaragoza",
+    "Málaga",
   ];
-  const randomPayment: Array<"cod" | "card" | "wallet"> = [
-    "cod",
+  const randomStreets = [
+    "Calle Gran Vía",
+    "Passeig de Gràcia",
+    "Calle de Alcalá",
+    "Calle Colón",
+    "Calle Sierpes",
+    "Calle Larios",
+  ];
+  const randomPayment: Array<"card" | "bizum" | "paypal" | "apple_google" | "cod"> = [
     "card",
-    "wallet",
+    "bizum",
+    "paypal",
+    "apple_google",
+    "cod",
   ];
   const randomSlots = [
-    "Express (25 - 35 mins)",
-    "Morning (08:00 AM - 11:00 AM)",
-    "Evening (06:00 PM - 09:00 PM)",
+    "Hoy - 17:00 - 20:00 (Tarde)",
+    "Hoy - 20:00 - 22:00 (Noche)",
+    "Mañana - 09:00 - 12:00 (Mañana)",
+    "Mañana - 12:00 - 15:00 (Mediodía)",
   ];
 
   const randomItemsCount = Math.floor(Math.random() * 3) + 2;
@@ -256,13 +299,21 @@ export function simulateNewOrder(): CustomerOrder {
   );
   const deliveryFee = subtotal >= 25 ? 0 : 2.5;
   const total = Number((subtotal + deliveryFee).toFixed(2));
+  const chosenCity = randomCities[Math.floor(Math.random() * randomCities.length)];
+  const chosenStreet = randomStreets[Math.floor(Math.random() * randomStreets.length)];
+  const streetNum = Math.floor(Math.random() * 120) + 1;
+  const aptNum = `${Math.floor(Math.random() * 6) + 1}º ${["A", "B", "C", "D"][Math.floor(Math.random() * 4)]}`;
 
   const newOrder: CustomerOrder = {
-    orderId: `ORD-${Math.floor(100000 + Math.random() * 900000)}`,
+    orderId: `ES-${Math.floor(100000 + Math.random() * 900000)}`,
     customerName: randomNames[Math.floor(Math.random() * randomNames.length)],
-    phone: `+52 55 ${Math.floor(1000 + Math.random() * 9000)} ${Math.floor(1000 + Math.random() * 9000)}`,
-    address: `Street ${Math.floor(Math.random() * 40) + 1}, Block ${String.fromCharCode(65 + Math.floor(Math.random() * 6))}`,
-    city: randomCities[Math.floor(Math.random() * randomCities.length)],
+    phone: `+34 6${Math.floor(10 + Math.random() * 89)} ${Math.floor(100 + Math.random() * 899)} ${Math.floor(100 + Math.random() * 899)}`,
+    address: `${chosenStreet}, ${streetNum}, ${aptNum}, ${chosenCity}`,
+    streetAddress: `${chosenStreet}, ${streetNum}`,
+    apartment: aptNum,
+    postalCode: "28013",
+    city: chosenCity,
+    province: chosenCity,
     deliverySlot: randomSlots[Math.floor(Math.random() * randomSlots.length)],
     paymentMethod:
       randomPayment[Math.floor(Math.random() * randomPayment.length)],

@@ -241,7 +241,7 @@ export const GROCERY_PRODUCTS: GroceryProduct[] = [
     imageUrl:
       "https://images.unsplash.com/photo-1586201375761-83865001e31c?w=600&auto=format&fit=crop&q=80",
     description: "Aromatic extra-long grain aged basmati rice for fragrant biryani and pilaf.",
-    origin: "Punjab Farms",
+    origin: "Delta del Ebro, España",
   },
   {
     id: "g-15",
