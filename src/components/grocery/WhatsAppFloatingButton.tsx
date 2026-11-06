@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { usePathname } from "@/i18n/navigation";
 import { WhatsAppIcon } from "@/icons";
 import { useGroceryCart } from "@/context/GroceryCartContext";
 import { useLocale, useTranslations } from "next-intl";
@@ -14,11 +15,17 @@ interface WhatsAppFloatingButtonProps {
 export const WhatsAppFloatingButton: React.FC<WhatsAppFloatingButtonProps> = ({
   phoneNumber = "34612345678",
 }) => {
+  const pathname = usePathname();
   const t = useTranslations("grocery");
   const locale = useLocale();
   const { cart, total, discountAmount, promoCode } = useGroceryCart();
   const [isHovered, setIsHovered] = useState(false);
   const shouldReduceMotion = useReducedMotion();
+
+  // Hide on checkout & order-success to keep checkout funnel 100% focused and unblocked
+  if (pathname.includes("/checkout") || pathname.includes("/order-success")) {
+    return null;
+  }
 
   // Generate WhatsApp message based on cart state
   const generateWhatsAppUrl = () => {

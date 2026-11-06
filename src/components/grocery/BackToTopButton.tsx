@@ -1,13 +1,20 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { usePathname } from "@/i18n/navigation";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { ArrowUpIcon } from "@/icons";
 
 export const BackToTopButton: React.FC = () => {
+  const pathname = usePathname();
   const [scrollProgress, setScrollProgress] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
   const shouldReduceMotion = useReducedMotion();
+
+  // Hide on checkout & order-success to keep checkout funnel 100% focused
+  if (pathname.includes("/checkout") || pathname.includes("/order-success")) {
+    return null;
+  }
 
   useEffect(() => {
     const handleScroll = () => {

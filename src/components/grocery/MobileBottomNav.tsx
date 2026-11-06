@@ -1,14 +1,21 @@
 "use client";
 
 import React from "react";
+import { usePathname } from "@/i18n/navigation";
 import { useGroceryCart } from "@/context/GroceryCartContext";
 import { CartIcon, HomeIcon, SearchIcon, StoreIcon } from "@/icons";
 import { useTranslations } from "next-intl";
 import { motion, AnimatePresence } from "framer-motion";
 
 export const MobileBottomNav: React.FC = () => {
+  const pathname = usePathname();
   const t = useTranslations("grocery");
   const { totalItems, setIsCartOpen } = useGroceryCart();
+
+  // Do not render bottom nav on checkout or order confirmation pages
+  if (pathname.includes("/checkout") || pathname.includes("/order-success")) {
+    return null;
+  }
 
   const handleHome = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });

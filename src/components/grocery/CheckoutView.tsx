@@ -539,7 +539,7 @@ export const CheckoutView: React.FC = () => {
   const vatAmount = Number((total - total / 1.1).toFixed(2));
 
   return (
-    <div className="mx-auto w-full max-w-[1920px] px-4 py-6 sm:px-6 md:py-10 lg:px-8 xl:px-10">
+    <div className="mx-auto w-full max-w-[1920px] px-4 py-6 sm:px-6 md:py-10 lg:px-8 xl:px-10 pb-28 lg:pb-10">
       {/* 1. Top Navigation & Progress Stepper */}
       <div className="mb-8">
         <div className="flex items-center justify-between pb-4">
@@ -1665,7 +1665,7 @@ export const CheckoutView: React.FC = () => {
       </div>
 
       {/* Mobile Sticky Bottom Place Order Bar */}
-      <div className="lg:hidden fixed bottom-0 inset-x-0 z-40 border-t border-gray-200/90 bg-white/95 px-4 py-3 shadow-2xl backdrop-blur-xl dark:border-emerald-950/90 dark:bg-[#071910]/95">
+      <div className="lg:hidden fixed bottom-0 inset-x-0 z-50 border-t border-gray-200/90 bg-white/95 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-2xl backdrop-blur-xl dark:border-emerald-950/90 dark:bg-[#071910]/95">
         <div className="flex items-center justify-between gap-3">
           <div>
             <span className="block text-[10px] font-bold text-gray-400 uppercase">
