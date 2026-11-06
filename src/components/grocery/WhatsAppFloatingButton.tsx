@@ -5,6 +5,7 @@ import { WhatsAppIcon } from "@/icons";
 import { useGroceryCart } from "@/context/GroceryCartContext";
 import { useLocale, useTranslations } from "next-intl";
 import { formatPrice } from "@/utils/currency";
+import { motion } from "framer-motion";
 
 interface WhatsAppFloatingButtonProps {
   phoneNumber?: string;
@@ -37,19 +38,21 @@ export const WhatsAppFloatingButton: React.FC<WhatsAppFloatingButtonProps> = ({
 
   return (
     <div className="fixed bottom-6 end-6 z-40 flex items-center">
-      <a
+      <motion.a
         href={generateWhatsAppUrl()}
         target="_blank"
         rel="noopener noreferrer"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
-        className="group relative flex items-center gap-2.5 rounded-full bg-[#25D366] p-3 text-white shadow-lg transition-all duration-300 hover:scale-105 hover:bg-[#20ba59] hover:shadow-xl sm:px-4 sm:py-3"
+        whileHover={{ scale: 1.08 }}
+        whileTap={{ scale: 0.94 }}
+        className="group relative flex items-center gap-3 rounded-full bg-gradient-to-r from-[#25D366] to-[#1ebe5b] p-3.5 text-white shadow-[0_10px_25px_-5px_rgba(37,211,102,0.5)] transition-shadow duration-300 hover:shadow-[0_14px_30px_-5px_rgba(37,211,102,0.65)] sm:px-4.5 sm:py-3.5"
         aria-label="Order or chat on WhatsApp"
         title="Chat on WhatsApp"
       >
         {/* Pulsing online badge */}
         <span className="absolute -top-1 -end-1 flex h-3.5 w-3.5">
-          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-300 opacity-75" />
           <span className="relative inline-flex h-3.5 w-3.5 rounded-full border-2 border-white bg-emerald-500" />
         </span>
 
@@ -58,24 +61,23 @@ export const WhatsAppFloatingButton: React.FC<WhatsAppFloatingButtonProps> = ({
 
         {/* Text Label */}
         <div className="hidden sm:block text-start">
-          <span className="block text-[10px] font-medium leading-none text-emerald-100">
+          <span className="block text-[10px] font-bold tracking-wide uppercase text-emerald-100">
             WhatsApp
           </span>
-          <span className="block text-xs font-bold leading-tight">
+          <span className="block font-outfit text-xs font-black leading-tight">
             {t("whatsappOrder")}
           </span>
         </div>
 
         {/* Floating Tooltip for mobile */}
         {isHovered && (
-          <div className="absolute -top-10 end-0 whitespace-nowrap rounded-lg bg-gray-900 px-2.5 py-1 text-[11px] font-medium text-white shadow-md sm:hidden">
+          <div className="absolute -top-10 end-0 whitespace-nowrap rounded-xl bg-gray-900 px-3 py-1.5 text-[11px] font-bold text-white shadow-lg sm:hidden">
             {t("whatsappOrder")}
           </div>
         )}
-      </a>
+      </motion.a>
     </div>
   );
 };
 
 export default WhatsAppFloatingButton;
-

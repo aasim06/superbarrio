@@ -3,9 +3,22 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { CartItem, GroceryProduct } from "@/types/grocery";
 
+export interface FlyingCartItem {
+  id: string;
+  imageUrl: string;
+  startX: number;
+  startY: number;
+  endX: number;
+  endY: number;
+}
+
 interface GroceryCartContextType {
   cart: CartItem[];
-  addToCart: (product: GroceryProduct, quantity?: number) => void;
+  addToCart: (
+    product: GroceryProduct,
+    quantity?: number,
+    startElement?: HTMLElement | null,
+  ) => void;
   updateQuantity: (productId: string, quantity: number) => void;
   removeFromCart: (productId: string) => void;
   clearCart: () => void;
@@ -21,6 +34,14 @@ interface GroceryCartContextType {
   setActiveCategory: (cat: string) => void;
   searchQuery: string;
   setSearchQuery: (query: string) => void;
+  // Flying cart & bounce animation state
+  flyingItems: FlyingCartItem[];
+  isBasketBouncing: boolean;
+  triggerFlyToCart: (
+    imageUrl: string | undefined,
+    startElement: HTMLElement | null,
+  ) => void;
+  onFlyingItemComplete: (id: string) => void;
 }
 
 const GroceryCartContext = createContext<GroceryCartContextType | undefined>(
@@ -37,6 +58,10 @@ export const GroceryCartProvider: React.FC<{ children: React.ReactNode }> = ({
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [activeCategory, setActiveCategory] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
+
+  // Animation states
+  const [flyingItems, setFlyingItems] = useState<FlyingCartItem[]>([]);
+  const [isBasketBouncing, setIsBasketBouncing] = useState(false);
 
   const freeDeliveryThreshold = 25.0;
 
@@ -64,7 +89,54 @@ export const GroceryCartProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   }, [cart, isLoaded]);
 
-  const addToCart = (product: GroceryProduct, quantity: number = 1) => {
+  const triggerFlyToCart = (
+    imageUrl: string | undefined,
+    startElement: HTMLElement | null,
+  ) => {
+    if (!startElement) return;
+
+    const basketBtn = document.getElementById("header-basket-btn");
+    const startRect = startElement.getBoundingClientRect();
+
+    let targetX = window.innerWidth - 60;
+    let targetY = 24;
+
+    if (basketBtn) {
+      const targetRect = basketBtn.getBoundingClientRect();
+      targetX = targetRect.left + targetRect.width / 2 - 28;
+      targetY = targetRect.top + targetRect.height / 2 - 28;
+    }
+
+    const newItem: FlyingCartItem = {
+      id: `${Date.now()}-${Math.random()}`,
+      imageUrl: imageUrl || "",
+      startX: startRect.left + startRect.width / 2 - 28,
+      startY: startRect.top + startRect.height / 2 - 28,
+      endX: targetX,
+      endY: targetY,
+    };
+
+    setFlyingItems((prev) => [...prev, newItem]);
+  };
+
+  const onFlyingItemComplete = (id: string) => {
+    setFlyingItems((prev) => prev.filter((item) => item.id !== id));
+    // Trigger bounce on basket
+    setIsBasketBouncing(true);
+    setTimeout(() => {
+      setIsBasketBouncing(false);
+    }, 600);
+  };
+
+  const addToCart = (
+    product: GroceryProduct,
+    quantity: number = 1,
+    startElement?: HTMLElement | null,
+  ) => {
+    if (startElement) {
+      triggerFlyToCart(product.imageUrl, startElement);
+    }
+
     setCart((prevCart) => {
       const existing = prevCart.find((item) => item.id === product.id);
       if (existing) {
@@ -102,7 +174,8 @@ export const GroceryCartProvider: React.FC<{ children: React.ReactNode }> = ({
   const subtotal = Number(
     cart.reduce((sum, item) => sum + item.price * item.quantity, 0).toFixed(2),
   );
-  const deliveryFee = subtotal === 0 || subtotal >= freeDeliveryThreshold ? 0 : 2.5;
+  const deliveryFee =
+    subtotal === 0 || subtotal >= freeDeliveryThreshold ? 0 : 2.5;
   const total = Number((subtotal + deliveryFee).toFixed(2));
   const amountNeededForFreeDelivery = Math.max(
     0,
@@ -129,6 +202,10 @@ export const GroceryCartProvider: React.FC<{ children: React.ReactNode }> = ({
         setActiveCategory,
         searchQuery,
         setSearchQuery,
+        flyingItems,
+        isBasketBouncing,
+        triggerFlyToCart,
+        onFlyingItemComplete,
       }}
     >
       {children}
@@ -154,6 +231,10 @@ const fallbackContext: GroceryCartContextType = {
   setActiveCategory: () => {},
   searchQuery: "",
   setSearchQuery: () => {},
+  flyingItems: [],
+  isBasketBouncing: false,
+  triggerFlyToCart: () => {},
+  onFlyingItemComplete: () => {},
 };
 
 export const useGroceryCart = () => {

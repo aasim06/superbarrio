@@ -4,6 +4,8 @@ import GroceryHeader from "@/components/grocery/GroceryHeader";
 import CartDrawer from "@/components/grocery/CartDrawer";
 import GroceryFooter from "@/components/grocery/GroceryFooter";
 import WhatsAppFloatingButton from "@/components/grocery/WhatsAppFloatingButton";
+import FlyingCartOverlay from "@/components/grocery/FlyingCartOverlay";
+import SmoothScrollProvider from "@/components/grocery/SmoothScrollProvider";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -18,14 +20,17 @@ export default function GroceryLayout({
   children: React.ReactNode;
 }) {
   return (
-    <GroceryCartProvider>
-      <div className="flex min-h-screen flex-col bg-gray-50 text-gray-800 antialiased dark:bg-gray-950 dark:text-gray-100">
-        <GroceryHeader />
-        <main className="flex-1">{children}</main>
-        <CartDrawer />
-        <WhatsAppFloatingButton />
-        <GroceryFooter />
-      </div>
-    </GroceryCartProvider>
+    <SmoothScrollProvider>
+      <GroceryCartProvider>
+        <div className="flex min-h-screen flex-col bg-[#f8faf9] text-gray-800 antialiased selection:bg-emerald-500 selection:text-white transition-colors duration-300 dark:bg-[#04130b] dark:text-gray-100">
+          <GroceryHeader />
+          <main className="flex-1">{children}</main>
+          <CartDrawer />
+          <WhatsAppFloatingButton />
+          <FlyingCartOverlay />
+          <GroceryFooter />
+        </div>
+      </GroceryCartProvider>
+    </SmoothScrollProvider>
   );
 }

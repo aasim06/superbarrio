@@ -8,45 +8,67 @@ import GroceryLanguageSwitcher from "@/components/grocery/GroceryLanguageSwitche
 import { CartIcon, LeafIcon, SearchIcon } from "@/icons";
 import { useLocale, useTranslations } from "next-intl";
 import { formatPrice } from "@/utils/currency";
+import { motion, AnimatePresence } from "framer-motion";
 
 export const GroceryHeader: React.FC = () => {
   const t = useTranslations("grocery");
   const locale = useLocale();
-  const { totalItems, total, setIsCartOpen, searchQuery, setSearchQuery } =
-    useGroceryCart();
+  const {
+    totalItems,
+    total,
+    setIsCartOpen,
+    searchQuery,
+    setSearchQuery,
+    isBasketBouncing,
+  } = useGroceryCart();
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-gray-200 bg-white/95 backdrop-blur-md dark:border-gray-800 dark:bg-gray-900/95">
-      {/* Top Notification Bar */}
-      <div className="bg-brand-50 px-4 py-1.5 text-center text-xs font-medium text-brand-700 dark:bg-brand-950/40 dark:text-brand-300">
-        {t("topNotice")}
+    <header className="sticky top-0 z-40 w-full border-b border-gray-200/70 bg-white/80 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] backdrop-blur-xl transition-colors duration-300 dark:border-emerald-950/60 dark:bg-[#071910]/85 dark:shadow-[0_4px_25px_-5px_rgba(0,0,0,0.4)]">
+      {/* Top Notification Announcement Bar */}
+      <div className="relative overflow-hidden bg-gradient-to-r from-emerald-600 via-green-600 to-emerald-700 px-4 py-1.5 text-center text-xs font-semibold tracking-wide text-white shadow-inner">
+        <div className="flex items-center justify-center gap-2">
+          <span className="inline-block h-2 w-2 rounded-full bg-amber-300 animate-ping" />
+          <span>{t("topNotice")}</span>
+          <span className="hidden sm:inline text-white/80">•</span>
+          <span className="hidden sm:inline font-bold text-amber-200">
+            ⚡ 15-Min Instant Delivery
+          </span>
+        </div>
       </div>
 
       {/* Main Header Row */}
-      <div className="mx-auto flex w-full max-w-[1920px] items-center justify-between gap-3 px-4 py-3 sm:px-6 md:gap-6 md:py-4 lg:px-8 xl:px-10">
+      <div className="mx-auto flex w-full max-w-[1920px] items-center justify-between gap-3 px-4 py-3 sm:px-6 md:gap-6 md:py-3.5 lg:px-8 xl:px-10">
         {/* Brand / Logo */}
-        <Link href="/grocery" className="flex items-center gap-2.5">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-500 text-white shadow-theme-xs">
-            <LeafIcon className="h-5 w-5" />
+        <Link
+          href="/grocery"
+          className="group flex items-center gap-3 transition-transform duration-200 active:scale-95"
+        >
+          <div className="relative flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-green-600 text-white shadow-[0_6px_16px_-2px_rgba(22,163,74,0.4)] transition-all duration-300 group-hover:scale-105 group-hover:shadow-[0_8px_20px_-2px_rgba(22,163,74,0.5)]">
+            <LeafIcon className="h-6 w-6 transition-transform duration-300 group-hover:rotate-12" />
+            <span className="absolute -top-1 -end-1 flex h-3 w-3">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-75" />
+              <span className="relative inline-flex h-3 w-3 rounded-full bg-amber-500 border border-white dark:border-gray-900" />
+            </span>
           </div>
+
           <div>
-            <div className="flex items-center gap-1.5">
-              <span className="text-xl font-bold tracking-tight text-gray-900 dark:text-white">
-                Super<span className="text-brand-500">Barrio</span>
+            <div className="flex items-center gap-2">
+              <span className="font-outfit text-2xl font-black tracking-tight text-gray-900 dark:text-white">
+                Super<span className="text-emerald-600 dark:text-emerald-400">Barrio</span>
               </span>
-              <span className="rounded-full bg-brand-100 px-2 py-0.5 text-[10px] font-semibold text-brand-700 dark:bg-brand-900/50 dark:text-brand-300 uppercase">
+              <span className="rounded-full bg-emerald-100/90 px-2.5 py-0.5 text-[10px] font-extrabold tracking-wider text-emerald-800 uppercase shadow-xs dark:bg-emerald-950/80 dark:text-emerald-300">
                 {t("badge")}
               </span>
             </div>
-            <p className="text-[11px] text-gray-500 dark:text-gray-400">
+            <p className="text-[11px] font-medium text-gray-500 dark:text-emerald-200/60">
               {t("tagline")}
             </p>
           </div>
         </Link>
 
-        {/* Search Bar */}
-        <div className="relative hidden max-w-md flex-1 md:block">
-          <div className="pointer-events-none absolute inset-y-0 start-0 flex items-center ps-3 text-gray-400">
+        {/* Search Bar with Glassmorphic styling */}
+        <div className="relative hidden max-w-lg flex-1 md:block">
+          <div className="pointer-events-none absolute inset-y-0 start-0 flex items-center ps-3.5 text-gray-400 dark:text-emerald-400/60">
             <svg
               className="h-4 w-4"
               fill="none"
@@ -66,12 +88,12 @@ export const GroceryHeader: React.FC = () => {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder={t("searchPlaceholder")}
-            className="w-full rounded-xl border border-gray-200 bg-gray-50 py-2.5 pe-4 ps-10 text-sm text-gray-800 placeholder-gray-400 transition-colors focus:border-brand-500 focus:bg-white focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder-gray-500 dark:focus:border-brand-500"
+            className="w-full rounded-2xl border border-gray-200/80 bg-gray-50/80 py-2.5 pe-4 ps-11 text-sm font-medium text-gray-800 placeholder-gray-400 shadow-xs backdrop-blur-sm transition-all duration-200 focus:border-emerald-500 focus:bg-white focus:shadow-[0_0_0_3px_rgba(22,163,74,0.15)] focus:outline-none dark:border-emerald-950/80 dark:bg-gray-900/60 dark:text-white dark:placeholder-gray-500 dark:focus:border-emerald-500 dark:focus:bg-gray-900"
           />
           {searchQuery && (
             <button
               onClick={() => setSearchQuery("")}
-              className="absolute inset-y-0 end-0 flex items-center pe-3 text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+              className="absolute inset-y-0 end-0 flex items-center pe-3.5 text-xs text-gray-400 transition hover:text-gray-700 dark:hover:text-white"
             >
               ✕
             </button>
@@ -79,45 +101,66 @@ export const GroceryHeader: React.FC = () => {
         </div>
 
         {/* Location & Header Actions */}
-        <div className="flex items-center gap-2 sm:gap-3">
+        <div className="flex items-center gap-2.5 sm:gap-3">
           {/* Language Switcher (ES / EN) */}
           <GroceryLanguageSwitcher />
 
           {/* Theme Toggle Button */}
           <ThemeToggleButton />
 
-          {/* Cart Basket Button */}
-          <button
+          {/* Animated Cart Basket Button with Bounce effect */}
+          <motion.button
+            id="header-basket-btn"
             onClick={() => setIsCartOpen(true)}
-            className="relative inline-flex items-center gap-2 rounded-xl bg-brand-500 px-3.5 py-2 text-xs font-semibold text-white shadow-theme-xs transition hover:bg-brand-600 sm:px-4 sm:py-2.5 sm:text-sm"
+            animate={
+              isBasketBouncing
+                ? {
+                    scale: [1, 1.25, 0.9, 1.15, 1],
+                    rotate: [0, -6, 6, -3, 0],
+                  }
+                : { scale: 1, rotate: 0 }
+            }
+            transition={{ duration: 0.5, ease: "easeOut" }}
+            whileHover={{ scale: 1.04 }}
+            whileTap={{ scale: 0.96 }}
+            className="group relative inline-flex items-center gap-2.5 rounded-2xl bg-gradient-to-r from-emerald-600 via-green-600 to-emerald-700 px-4 py-2.5 text-xs font-bold text-white shadow-[0_8px_20px_-4px_rgba(22,163,74,0.45)] transition-all duration-300 hover:shadow-[0_12px_24px_-4px_rgba(22,163,74,0.55)] sm:text-sm"
           >
             <div className="relative">
-              <CartIcon className="h-5 w-5" />
-              {totalItems > 0 && (
-                <span className="absolute -end-2.5 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-orange-500 text-[11px] font-bold text-white shadow-theme-xs">
-                  {totalItems}
-                </span>
-              )}
+              <CartIcon className="h-5 w-5 transition-transform duration-300 group-hover:scale-110" />
+              <AnimatePresence>
+                {totalItems > 0 && (
+                  <motion.span
+                    key={totalItems}
+                    initial={{ scale: 0.3, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0.3, opacity: 0 }}
+                    transition={{ type: "spring", stiffness: 500, damping: 25 }}
+                    className="absolute -end-3 -top-2.5 flex h-5 w-5 items-center justify-center rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-[11px] font-black text-white shadow-[0_2px_8px_rgba(245,158,11,0.6)]"
+                  >
+                    {totalItems}
+                  </motion.span>
+                )}
+              </AnimatePresence>
             </div>
-            <span className="hidden sm:inline">{t("basket")}</span>
-            <span className="hidden rounded bg-brand-700/60 px-1.5 py-0.5 text-xs font-bold md:inline">
+            <span className="hidden sm:inline tracking-wide">{t("basket")}</span>
+            <span className="hidden rounded-xl bg-black/20 px-2 py-0.5 text-xs font-extrabold md:inline">
               {formatPrice(total, locale)}
             </span>
-          </button>
+          </motion.button>
         </div>
       </div>
 
       {/* Mobile Search Bar */}
-      <div className="border-t border-gray-100 px-4 py-2 md:hidden dark:border-gray-800">
+      <div className="border-t border-gray-100 px-4 py-2.5 md:hidden dark:border-emerald-950/60 dark:bg-[#071910]/95">
         <div className="relative">
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder={t("searchMobilePlaceholder")}
-            className="w-full rounded-lg border border-gray-200 bg-gray-50 py-2 pe-3 ps-8 text-xs text-gray-800 placeholder-gray-400 focus:border-brand-500 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+            className="w-full rounded-xl border border-gray-200/80 bg-gray-50/80 py-2 pe-3 ps-9 text-xs font-medium text-gray-800 placeholder-gray-400 focus:border-emerald-500 focus:outline-none dark:border-emerald-900/60 dark:bg-gray-900/80 dark:text-white"
           />
-          <span className="pointer-events-none absolute inset-y-0 start-0 flex items-center ps-2.5 text-gray-400">
+          <span className="pointer-events-none absolute inset-y-0 start-0 flex items-center ps-3 text-gray-400">
             <SearchIcon className="h-3.5 w-3.5" />
           </span>
         </div>

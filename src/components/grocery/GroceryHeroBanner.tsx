@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useGroceryCart } from "@/context/GroceryCartContext";
 import {
   AngleLeftIcon,
@@ -13,6 +13,7 @@ import {
 } from "@/icons";
 import { useLocale, useTranslations } from "next-intl";
 import { formatPrice } from "@/utils/currency";
+import { motion, AnimatePresence, useInView } from "framer-motion";
 
 interface ProductPouch {
   name: string;
@@ -39,6 +40,109 @@ interface HeroSlide {
   pouches: [ProductPouch, ProductPouch, ProductPouch];
 }
 
+// Magnetic Button with spring physics for "Shop Now"
+const MagneticButton: React.FC<{
+  children: React.ReactNode;
+  onClick: () => void;
+  accentColor: string;
+}> = ({ children, onClick, accentColor }) => {
+  const ref = useRef<HTMLButtonElement>(null);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLButtonElement>) => {
+    if (!ref.current) return;
+    const { clientX, clientY } = e;
+    const { left, top, width, height } = ref.current.getBoundingClientRect();
+    const centerX = left + width / 2;
+    const centerY = top + height / 2;
+    const deltaX = (clientX - centerX) * 0.28;
+    const deltaY = (clientY - centerY) * 0.28;
+    setPosition({ x: deltaX, y: deltaY });
+  };
+
+  const handleMouseLeave = () => {
+    setPosition({ x: 0, y: 0 });
+  };
+
+  return (
+    <motion.button
+      ref={ref}
+      type="button"
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      animate={{ x: position.x, y: position.y }}
+      transition={{ type: "spring", stiffness: 220, damping: 16, mass: 0.1 }}
+      whileHover={{ scale: 1.05 }}
+      whileTap={{ scale: 0.95 }}
+      onClick={onClick}
+      className="group/btn relative inline-flex items-center gap-2.5 rounded-full px-8 py-3.5 text-sm sm:text-base font-black text-white shadow-xl transition-shadow duration-300"
+      style={{
+        backgroundColor: accentColor,
+        boxShadow: `0 14px 34px ${accentColor}55`,
+      }}
+    >
+      {children}
+    </motion.button>
+  );
+};
+
+// Animated Counter component that animates smoothly when scrolled into view
+const AnimatedCounter: React.FC<{
+  from?: number;
+  to: number;
+  duration?: number;
+  decimals?: number;
+  suffix?: string;
+  prefix?: string;
+}> = ({
+  from = 0,
+  to,
+  duration = 2,
+  decimals = 0,
+  suffix = "",
+  prefix = "",
+}) => {
+  const ref = useRef<HTMLSpanElement>(null);
+  const isInView = useInView(ref, { once: true, margin: "-30px" });
+  const [displayValue, setDisplayValue] = useState(from);
+
+  useEffect(() => {
+    if (!isInView) return;
+    let startTime: number | null = null;
+    let animationFrame: number;
+
+    const updateCounter = (timestamp: number) => {
+      if (!startTime) startTime = timestamp;
+      const progress = Math.min((timestamp - startTime) / (duration * 1000), 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      const current = from + (to - from) * eased;
+      setDisplayValue(current);
+
+      if (progress < 1) {
+        animationFrame = requestAnimationFrame(updateCounter);
+      } else {
+        setDisplayValue(to);
+      }
+    };
+
+    animationFrame = requestAnimationFrame(updateCounter);
+    return () => cancelAnimationFrame(animationFrame);
+  }, [isInView, from, to, duration]);
+
+  const formatted =
+    decimals > 0
+      ? displayValue.toFixed(decimals)
+      : Math.floor(displayValue).toLocaleString();
+
+  return (
+    <span ref={ref}>
+      {prefix}
+      {formatted}
+      {suffix}
+    </span>
+  );
+};
+
 export const GroceryHeroBanner: React.FC = () => {
   const t = useTranslations("grocery");
   const locale = useLocale();
@@ -48,7 +152,7 @@ export const GroceryHeroBanner: React.FC = () => {
   const [isPaused, setIsPaused] = useState(false);
 
   const slides: HeroSlide[] = [
-    // Slide 1: The Iconic Snacks Theme (Matching the user's reference design)
+    // Slide 1: Iconic Snacks & Munchies Theme
     {
       id: "snacks-theme",
       category: "snacks",
@@ -57,7 +161,7 @@ export const GroceryHeroBanner: React.FC = () => {
       title2Key: "titleSnacks2",
       title3Key: "titleSnacks3",
       descKey: "descSnacks",
-      accentColor: "#ea384c", // Iconic warm coral red from reference
+      accentColor: "#ea384c", // Warm coral red
       doodleTextKey: "handwrittenNote",
       pouches: [
         {
@@ -146,7 +250,7 @@ export const GroceryHeroBanner: React.FC = () => {
       ],
     },
 
-    // Slide 3: Artisanal Bakery & Breakfast Theme
+    // Slide 3: Artisanal Bakery & Breakfast Essentials Theme
     {
       id: "bakery-theme",
       category: "bakery",
@@ -196,12 +300,12 @@ export const GroceryHeroBanner: React.FC = () => {
     },
   ];
 
-  // Auto-advance banner every 7 seconds
+  // Auto-advance banner every 6.5 seconds
   useEffect(() => {
     if (isPaused) return;
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % slides.length);
-    }, 7000);
+    }, 6500);
 
     return () => clearInterval(timer);
   }, [isPaused, slides.length]);
@@ -232,20 +336,42 @@ export const GroceryHeroBanner: React.FC = () => {
         onMouseEnter={() => setIsPaused(true)}
         onMouseLeave={() => setIsPaused(false)}
       >
-        {/* Atmospheric Forest Green Radial Lighting */}
+        {/* Animated Radial Lighting Glow Background */}
         <div
-          className="pointer-events-none absolute inset-0 opacity-95 transition-opacity duration-1000"
+          className="pointer-events-none absolute inset-0 opacity-95 transition-all duration-1000"
           style={{
             background:
               "radial-gradient(ellipse 95% 85% at 75% 35%, #144f30 0%, #09331e 45%, #051a10 100%)",
           }}
         />
 
-        {/* Ambient Sunlight Flare from Top-Right */}
-        <div className="pointer-events-none absolute -end-20 -top-20 h-96 w-96 rounded-full bg-emerald-300/10 blur-3xl" />
-        <div className="pointer-events-none absolute start-1/3 -top-16 h-72 w-72 rounded-full bg-amber-400/5 blur-3xl" />
+        {/* Ambient Glowing Floating Flares */}
+        <motion.div
+          animate={{
+            scale: [1, 1.25, 1],
+            opacity: [0.12, 0.22, 0.12],
+            x: [0, 20, 0],
+            y: [0, -15, 0],
+          }}
+          transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
+          className="pointer-events-none absolute -end-16 -top-16 h-[420px] w-[420px] rounded-full bg-emerald-300/20 blur-3xl"
+        />
+        <motion.div
+          animate={{
+            scale: [1, 1.2, 1],
+            opacity: [0.08, 0.18, 0.08],
+            x: [0, -15, 0],
+          }}
+          transition={{
+            duration: 9,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: 1,
+          }}
+          className="pointer-events-none absolute start-1/4 -top-20 h-80 w-80 rounded-full bg-amber-400/15 blur-3xl"
+        />
 
-        {/* Subtle Botanical Leaf Silhouette Accents */}
+        {/* Botanical Leaf Accents */}
         <div className="pointer-events-none absolute -start-10 -top-10 text-emerald-400/10 blur-[1px]">
           <LeafIcon className="h-64 w-64 -rotate-45" />
         </div>
@@ -263,274 +389,320 @@ export const GroceryHeroBanner: React.FC = () => {
           }}
         />
 
-        {/* Banner Content Container */}
-        <div className="relative z-10 flex min-h-[460px] sm:min-h-[500px] lg:min-h-[520px] w-full flex-col justify-between p-6 sm:p-10 lg:p-14">
-          {/* Main Flex Row: Text on Left, Products on Right */}
-          <div className="flex flex-1 flex-col justify-between gap-8 lg:flex-row lg:items-center">
-            {/* Left Column: Bold Typography & Action Button */}
-            <div className="max-w-xl flex-1 select-none">
-              {/* Spaced Kicker Tagline */}
-              <p className="text-xs sm:text-[13px] font-extrabold tracking-[0.25em] text-white/80 uppercase">
-                {t(slide.kickerKey)}
-              </p>
-
-              {/* Massive Modern Headline with Vibrant Accent */}
-              <h1 className="mt-4 text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-black tracking-tight text-white leading-[1.06]">
-                <span className="block">{t(slide.title1Key)}</span>
-                <span className="block">{t(slide.title2Key)}</span>
-                <span
-                  className="block transition-colors duration-500"
-                  style={{ color: slide.accentColor }}
+        {/* Banner Content Container with AnimatePresence Crossfade */}
+        <div className="relative z-10 flex min-h-[470px] sm:min-h-[510px] lg:min-h-[530px] w-full flex-col justify-between p-6 sm:p-10 lg:p-14">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={slide.id}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -12 }}
+              transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+              className="flex flex-1 flex-col justify-between gap-8 lg:flex-row lg:items-center"
+            >
+              {/* Left Column: Bold Typography & Magnetic Action Button */}
+              <div className="max-w-xl flex-1 select-none">
+                {/* Spaced Kicker Tagline */}
+                <motion.p
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.1, duration: 0.4 }}
+                  className="text-xs sm:text-[13px] font-extrabold tracking-[0.25em] text-white/80 uppercase"
                 >
-                  {t(slide.title3Key)}
-                </span>
-              </h1>
+                  {t(slide.kickerKey)}
+                </motion.p>
 
-              {/* Wholesome Narrative Paragraph */}
-              <p className="mt-4 text-xs sm:text-sm lg:text-[15px] text-gray-200/90 leading-relaxed max-w-lg">
-                {t(slide.descKey)}
-              </p>
+                {/* Massive Modern Headline with Vibrant Accent */}
+                <h1 className="mt-4 font-outfit text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-black tracking-tight text-white leading-[1.06]">
+                  <motion.span
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.15, duration: 0.45 }}
+                    className="block"
+                  >
+                    {t(slide.title1Key)}
+                  </motion.span>
+                  <motion.span
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.22, duration: 0.45 }}
+                    className="block"
+                  >
+                    {t(slide.title2Key)}
+                  </motion.span>
+                  <motion.span
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.29, duration: 0.45 }}
+                    className="block transition-colors duration-500"
+                    style={{ color: slide.accentColor }}
+                  >
+                    {t(slide.title3Key)}
+                  </motion.span>
+                </h1>
 
-              {/* Red Rounded Pill Action Button */}
-              <div className="mt-7 flex flex-wrap items-center gap-4">
-                <button
-                  type="button"
-                  onClick={() => scrollToCatalog(slide.category)}
-                  className="group/btn inline-flex items-center gap-2.5 rounded-full px-8 py-3.5 text-sm sm:text-base font-extrabold text-white shadow-xl transition-all duration-300 hover:scale-105 active:scale-95"
-                  style={{
-                    backgroundColor: slide.accentColor,
-                    boxShadow: `0 12px 30px ${slide.accentColor}50`,
-                  }}
+                {/* Narrative Paragraph */}
+                <motion.p
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.35, duration: 0.5 }}
+                  className="mt-4 text-xs sm:text-sm lg:text-[15px] text-gray-200/90 leading-relaxed max-w-lg"
                 >
-                  <span>{t("shopNowBtn")}</span>
-                  <ArrowRightIcon className="h-4 w-4 rtl:rotate-180 transition-transform duration-300 group-hover/btn:translate-x-1" />
-                </button>
+                  {t(slide.descKey)}
+                </motion.p>
 
-                <span className="inline-flex items-center gap-2 text-xs font-semibold text-emerald-200/80">
-                  <span className="flex h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-                  <span>{t("expressDelivery")}</span>
-                </span>
+                {/* Action Area with Magnetic Button & Express Delivery Pill */}
+                <motion.div
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.42, duration: 0.45 }}
+                  className="mt-7 flex flex-wrap items-center gap-4"
+                >
+                  <MagneticButton
+                    onClick={() => scrollToCatalog(slide.category)}
+                    accentColor={slide.accentColor}
+                  >
+                    <span>{t("shopNowBtn")}</span>
+                    <ArrowRightIcon className="h-4 w-4 rtl:rotate-180 transition-transform duration-300 group-hover/btn:translate-x-1" />
+                  </MagneticButton>
+
+                  <span className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-950/40 px-3.5 py-1.5 text-xs font-semibold text-emerald-200 backdrop-blur-sm">
+                    <span className="flex h-2 w-2 rounded-full bg-emerald-400 animate-ping" />
+                    <span>⚡ {t("expressDelivery")}</span>
+                  </span>
+                </motion.div>
               </div>
-            </div>
 
-            {/* Right Column: Staged Hero Products on Rustic Wooden Surface */}
-            <div className="relative flex-1 flex flex-col items-center lg:items-end justify-end mt-4 lg:mt-0">
-              {/* Playful Handwritten Script Accent at Top Right */}
-              <div className="mb-4 pe-2 hidden sm:flex flex-col items-end text-end select-none">
-                <div className="flex items-center gap-1.5 font-serif italic text-white/95 text-base sm:text-lg tracking-wide">
-                  <span>{t(slide.doodleTextKey)}</span>
-                  <span className="text-amber-300 text-sm">✨</span>
-                </div>
-                {/* Hand-drawn underline doodle stroke */}
-                <svg
-                  className="w-24 h-3 text-white/50 -scale-x-100"
-                  viewBox="0 0 100 15"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                >
-                  <path d="M5 10 Q 50 2, 95 8" strokeLinecap="round" />
-                </svg>
-              </div>
-
-              {/* 3 Stand-Up Product Pouches Standing Side-by-Side on Wood */}
-              <div className="relative flex items-end justify-center gap-2.5 sm:gap-4 pb-2">
-                {/* POUCH 1: Left (Slightly tilted) */}
-                <div
-                  onClick={() => scrollToCatalog(slide.category)}
-                  className="group/pouch relative flex flex-col justify-between h-56 sm:h-64 lg:h-72 w-28 sm:w-36 lg:w-40 rounded-2xl p-3 sm:p-4 text-white cursor-pointer transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl -rotate-2 select-none shadow-[0_15px_30px_rgba(0,0,0,0.6)]"
-                  style={{
-                    background: `linear-gradient(175deg, ${slide.pouches[0].color} 0%, #0d3820 100%)`,
-                  }}
-                >
-                  {/* Pouch Top Notch & Crimp Seal */}
-                  <div className="flex items-center justify-between border-b border-black/25 pb-1.5 opacity-80">
-                    <span className="h-1.5 w-1.5 rounded-full bg-white/40" />
-                    <span className="text-[9px] font-black tracking-widest uppercase">
-                      SuperBarrio
-                    </span>
-                    <span className="h-1.5 w-1.5 rounded-full bg-white/40" />
+              {/* Right Column: Floating Parallax Product Cards */}
+              <div className="relative flex-1 flex flex-col items-center lg:items-end justify-end mt-4 lg:mt-0">
+                {/* Handwritten Script Accent */}
+                <div className="mb-4 pe-2 hidden sm:flex flex-col items-end text-end select-none">
+                  <div className="flex items-center gap-1.5 font-serif italic text-white/95 text-base sm:text-lg tracking-wide">
+                    <span>{t(slide.doodleTextKey)}</span>
+                    <span className="text-amber-300 text-sm">✨</span>
                   </div>
-
-                  {/* Title & Info */}
-                  <div className="text-center my-1">
-                    <h3 className="text-[11px] sm:text-xs font-black leading-tight">
-                      {slide.pouches[0].name}
-                    </h3>
-                    <p className="text-[9px] text-white/80 mt-0.5">
-                      {slide.pouches[0].subname}
-                    </p>
-                  </div>
-
-                  {/* Circular Product Window with Real Food Photo */}
-                  <div className="relative mx-auto h-16 w-16 sm:h-20 sm:w-20 lg:h-24 lg:w-24 overflow-hidden rounded-full border-2 border-white/60 shadow-inner bg-black/20 my-1">
-                    <img
-                      src={slide.pouches[0].imgUrl}
-                      alt={slide.pouches[0].name}
-                      className="h-full w-full object-cover transition-transform duration-500 group-hover/pouch:scale-110"
-                      loading="lazy"
-                    />
-                  </div>
-
-                  {/* Bottom Weight & Price */}
-                  <div className="flex items-center justify-between border-t border-white/20 pt-1.5 text-[10px]">
-                    <span className="text-white/80">{slide.pouches[0].weight}</span>
-                    <span className="font-extrabold text-amber-300">
-                      {formatPrice(slide.pouches[0].priceNum, locale)}
-                    </span>
-                  </div>
-
-                  {/* Stand Shadow onto Wooden Table */}
-                  <div className="absolute -bottom-2 inset-x-2 h-3 rounded-full bg-black/60 blur-sm pointer-events-none" />
+                  <svg
+                    className="w-24 h-3 text-white/50 -scale-x-100"
+                    viewBox="0 0 100 15"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                  >
+                    <path d="M5 10 Q 50 2, 95 8" strokeLinecap="round" />
+                  </svg>
                 </div>
 
-                {/* POUCH 2: Center (Hero, Taller, Elevated) */}
-                <div
-                  onClick={() => scrollToCatalog(slide.category)}
-                  className="group/pouch relative z-10 flex flex-col justify-between h-64 sm:h-76 lg:h-84 w-32 sm:w-44 lg:w-48 rounded-2xl p-3.5 sm:p-5 text-white cursor-pointer transition-all duration-500 hover:-translate-y-3 hover:shadow-2xl scale-105 select-none shadow-[0_25px_40px_rgba(0,0,0,0.7)]"
-                  style={{
-                    background: `linear-gradient(175deg, ${slide.pouches[1].color} 0%, #7f1d1d 100%)`,
-                  }}
-                >
-                  {/* Pouch Top Crimp */}
-                  <div className="flex items-center justify-between border-b border-black/25 pb-2 opacity-90">
-                    <span className="h-2 w-2 rounded-full bg-white/40" />
-                    <span className="text-[10px] font-black tracking-widest uppercase">
-                      SuperBarrio™ Original
-                    </span>
-                    <span className="h-2 w-2 rounded-full bg-white/40" />
-                  </div>
-
-                  {/* Title & Badge */}
-                  <div className="text-center my-1.5">
-                    {slide.pouches[1].accentBadge && (
-                      <span className="inline-block rounded-full bg-white/20 px-2 py-0.5 text-[9px] font-bold text-white mb-1">
-                        {slide.pouches[1].accentBadge}
+                {/* 3 Floating Product Pouches with Parallax Physics */}
+                <div className="relative flex items-end justify-center gap-2.5 sm:gap-4 pb-2">
+                  {/* POUCH 1: Left (Floating softly with gentle tilt) */}
+                  <motion.div
+                    animate={{
+                      y: [0, -10, 0],
+                      rotate: [-2, -0.5, -2],
+                    }}
+                    transition={{
+                      duration: 4.2,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                    }}
+                    whileHover={{ scale: 1.05, y: -16 }}
+                    onClick={() => scrollToCatalog(slide.category)}
+                    className="group/pouch relative flex flex-col justify-between h-56 sm:h-64 lg:h-72 w-28 sm:w-36 lg:w-40 rounded-2xl p-3 sm:p-4 text-white cursor-pointer select-none shadow-[0_20px_35px_rgba(0,0,0,0.6)]"
+                    style={{
+                      background: `linear-gradient(175deg, ${slide.pouches[0].color} 0%, #0d3820 100%)`,
+                    }}
+                  >
+                    <div className="flex items-center justify-between border-b border-black/25 pb-1.5 opacity-80">
+                      <span className="h-1.5 w-1.5 rounded-full bg-white/40" />
+                      <span className="text-[9px] font-black tracking-widest uppercase">
+                        SuperBarrio
                       </span>
-                    )}
-                    <h3 className="text-xs sm:text-sm font-black leading-tight">
-                      {slide.pouches[1].name}
-                    </h3>
-                    <p className="text-[10px] text-white/80 mt-0.5">
-                      {slide.pouches[1].subname}
-                    </p>
-                  </div>
+                      <span className="h-1.5 w-1.5 rounded-full bg-white/40" />
+                    </div>
 
-                  {/* Circular Product Window with Real Food Photo */}
-                  <div className="relative mx-auto h-20 w-20 sm:h-24 sm:w-24 lg:h-28 lg:w-28 overflow-hidden rounded-full border-2 border-white/80 shadow-md bg-black/30 my-1">
-                    <img
-                      src={slide.pouches[1].imgUrl}
-                      alt={slide.pouches[1].name}
-                      className="h-full w-full object-cover transition-transform duration-500 group-hover/pouch:scale-110"
-                      loading="eager"
-                    />
-                  </div>
+                    <div className="text-center my-1">
+                      <h3 className="text-[11px] sm:text-xs font-black leading-tight">
+                        {slide.pouches[0].name}
+                      </h3>
+                      <p className="text-[9px] text-white/80 mt-0.5">
+                        {slide.pouches[0].subname}
+                      </p>
+                    </div>
 
-                  {/* Bottom Weight & Price */}
-                  <div className="flex items-center justify-between border-t border-white/25 pt-2 text-[11px]">
-                    <span className="text-white/90 font-medium">
-                      {slide.pouches[1].weight}
-                    </span>
-                    <span className="font-black text-amber-300 text-xs sm:text-sm">
-                      {formatPrice(slide.pouches[1].priceNum, locale)}
-                    </span>
-                  </div>
-
-                  {/* Stand Shadow onto Wooden Table */}
-                  <div className="absolute -bottom-3 inset-x-3 h-4 rounded-full bg-black/80 blur-md pointer-events-none" />
-                </div>
-
-                {/* POUCH 3: Right (Slightly tilted) */}
-                <div
-                  onClick={() => scrollToCatalog(slide.category)}
-                  className="group/pouch relative flex flex-col justify-between h-56 sm:h-64 lg:h-72 w-28 sm:w-36 lg:w-40 rounded-2xl p-3 sm:p-4 text-white cursor-pointer transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl rotate-2 select-none shadow-[0_15px_30px_rgba(0,0,0,0.6)]"
-                  style={{
-                    background: `linear-gradient(175deg, ${slide.pouches[2].color} 0%, #713f12 100%)`,
-                  }}
-                >
-                  {/* Pouch Top Crimp */}
-                  <div className="flex items-center justify-between border-b border-black/25 pb-1.5 opacity-80">
-                    <span className="h-1.5 w-1.5 rounded-full bg-white/40" />
-                    <span className="text-[9px] font-black tracking-widest uppercase">
-                      SuperBarrio
-                    </span>
-                    <span className="h-1.5 w-1.5 rounded-full bg-white/40" />
-                  </div>
-
-                  {/* Title & Info */}
-                  <div className="text-center my-1">
-                    <h3 className="text-[11px] sm:text-xs font-black leading-tight">
-                      {slide.pouches[2].name}
-                    </h3>
-                    <p className="text-[9px] text-white/80 mt-0.5">
-                      {slide.pouches[2].subname}
-                    </p>
-                  </div>
-
-                  {/* Circular Product Window with Real Food Photo */}
-                  <div className="relative mx-auto h-16 w-16 sm:h-20 sm:w-20 lg:h-24 lg:w-24 overflow-hidden rounded-full border-2 border-white/60 shadow-inner bg-black/20 my-1">
-                    <img
-                      src={slide.pouches[2].imgUrl}
-                      alt={slide.pouches[2].name}
-                      className="h-full w-full object-cover transition-transform duration-500 group-hover/pouch:scale-110"
-                      loading="lazy"
-                    />
-                  </div>
-
-                  {/* Bottom Weight & Price */}
-                  <div className="flex items-center justify-between border-t border-white/20 pt-1.5 text-[10px]">
-                    <span className="text-white/80">{slide.pouches[2].weight}</span>
-                    <span className="font-extrabold text-amber-300">
-                      {formatPrice(slide.pouches[2].priceNum, locale)}
-                    </span>
-                  </div>
-
-                  {/* Stand Shadow onto Wooden Table */}
-                  <div className="absolute -bottom-2 inset-x-2 h-3 rounded-full bg-black/60 blur-sm pointer-events-none" />
-                </div>
-
-                {/* Foreground Rustic Table Garnish: Bowls & Fresh Ingredients Scattered */}
-                <div className="pointer-events-none absolute -bottom-3 inset-x-0 z-20 hidden sm:flex items-end justify-between px-1 md:px-3">
-                  {/* Left: Mini Rustic Bowl of Golden Crispy Chips */}
-                  <div className="relative flex items-center filter drop-shadow-[0_8px_12px_rgba(0,0,0,0.85)]">
-                    <div className="h-8 w-14 sm:h-9 sm:w-16 overflow-hidden rounded-full border border-amber-800/40 bg-[#1e0f06] shadow-inner">
+                    <div className="relative mx-auto h-16 w-16 sm:h-20 sm:w-20 lg:h-24 lg:w-24 overflow-hidden rounded-full border-2 border-white/60 shadow-inner bg-black/20 my-1">
                       <img
-                        src="https://images.unsplash.com/photo-1621447504864-d8686e12698c?w=160&auto=format&fit=crop&q=80"
-                        alt="Chips in bowl"
-                        className="h-full w-full object-cover scale-125"
+                        src={slide.pouches[0].imgUrl}
+                        alt={slide.pouches[0].name}
+                        className="h-full w-full object-cover transition-transform duration-500 group-hover/pouch:scale-110"
                         loading="lazy"
                       />
                     </div>
-                  </div>
 
-                  {/* Center: Fresh Red Chili Pepper & Peanuts */}
-                  <div className="relative flex items-center gap-1 pb-0.5 filter drop-shadow-[0_6px_10px_rgba(0,0,0,0.9)]">
-                    <span className="text-xl -rotate-12 transform select-none" title="Chili">
-                      🌶️
-                    </span>
-                    <span className="text-xs select-none">
-                      🥜
-                    </span>
-                  </div>
+                    <div className="flex items-center justify-between border-t border-white/20 pt-1.5 text-[10px]">
+                      <span className="text-white/80">
+                        {slide.pouches[0].weight}
+                      </span>
+                      <span className="font-extrabold text-amber-300">
+                        {formatPrice(slide.pouches[0].priceNum, locale)}
+                      </span>
+                    </div>
 
-                  {/* Right: Rustic Mini Dish of Mixed Whole Nuts */}
-                  <div className="relative flex items-center filter drop-shadow-[0_8px_12px_rgba(0,0,0,0.85)]">
-                    <div className="h-8 w-14 sm:h-9 sm:w-16 overflow-hidden rounded-full border border-amber-800/40 bg-[#1e0f06] shadow-inner">
+                    {/* Dynamic Floor Shadow */}
+                    <motion.div
+                      animate={{ scale: [1, 0.85, 1], opacity: [0.6, 0.35, 0.6] }}
+                      transition={{
+                        duration: 4.2,
+                        repeat: Infinity,
+                        ease: "easeInOut",
+                      }}
+                      className="absolute -bottom-2.5 inset-x-2 h-3 rounded-full bg-black/70 blur-sm pointer-events-none"
+                    />
+                  </motion.div>
+
+                  {/* POUCH 2: Center Hero (Taller, Center Floating) */}
+                  <motion.div
+                    animate={{
+                      y: [0, -16, 0],
+                    }}
+                    transition={{
+                      duration: 3.6,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                      delay: 0.2,
+                    }}
+                    whileHover={{ scale: 1.08, y: -22 }}
+                    onClick={() => scrollToCatalog(slide.category)}
+                    className="group/pouch relative z-10 flex flex-col justify-between h-64 sm:h-76 lg:h-84 w-32 sm:w-44 lg:w-48 rounded-2xl p-3.5 sm:p-5 text-white cursor-pointer scale-105 select-none shadow-[0_30px_50px_rgba(0,0,0,0.75)]"
+                    style={{
+                      background: `linear-gradient(175deg, ${slide.pouches[1].color} 0%, #7f1d1d 100%)`,
+                    }}
+                  >
+                    <div className="flex items-center justify-between border-b border-black/25 pb-2 opacity-90">
+                      <span className="h-2 w-2 rounded-full bg-white/40" />
+                      <span className="text-[10px] font-black tracking-widest uppercase">
+                        SuperBarrio™ Fresh
+                      </span>
+                      <span className="h-2 w-2 rounded-full bg-white/40" />
+                    </div>
+
+                    <div className="text-center my-1.5">
+                      {slide.pouches[1].accentBadge && (
+                        <span className="inline-block rounded-full bg-white/20 px-2 py-0.5 text-[9px] font-bold text-white mb-1 shadow-xs">
+                          {slide.pouches[1].accentBadge}
+                        </span>
+                      )}
+                      <h3 className="text-xs sm:text-sm font-black leading-tight">
+                        {slide.pouches[1].name}
+                      </h3>
+                      <p className="text-[10px] text-white/80 mt-0.5">
+                        {slide.pouches[1].subname}
+                      </p>
+                    </div>
+
+                    <div className="relative mx-auto h-20 w-20 sm:h-24 sm:w-24 lg:h-28 lg:w-28 overflow-hidden rounded-full border-2 border-white/80 shadow-md bg-black/30 my-1">
                       <img
-                        src="https://images.unsplash.com/photo-1536591375315-1b83683e32a7?w=160&auto=format&fit=crop&q=80"
-                        alt="Mixed nuts"
-                        className="h-full w-full object-cover scale-125"
+                        src={slide.pouches[1].imgUrl}
+                        alt={slide.pouches[1].name}
+                        className="h-full w-full object-cover transition-transform duration-500 group-hover/pouch:scale-110"
+                        loading="eager"
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between border-t border-white/25 pt-2 text-[11px]">
+                      <span className="text-white/90 font-medium">
+                        {slide.pouches[1].weight}
+                      </span>
+                      <span className="font-black text-amber-300 text-xs sm:text-sm">
+                        {formatPrice(slide.pouches[1].priceNum, locale)}
+                      </span>
+                    </div>
+
+                    {/* Dynamic Floor Shadow */}
+                    <motion.div
+                      animate={{ scale: [1, 0.8, 1], opacity: [0.8, 0.4, 0.8] }}
+                      transition={{
+                        duration: 3.6,
+                        repeat: Infinity,
+                        ease: "easeInOut",
+                        delay: 0.2,
+                      }}
+                      className="absolute -bottom-3 inset-x-3 h-4 rounded-full bg-black/90 blur-md pointer-events-none"
+                    />
+                  </motion.div>
+
+                  {/* POUCH 3: Right (Floating softly with gentle right tilt) */}
+                  <motion.div
+                    animate={{
+                      y: [0, -11, 0],
+                      rotate: [2, 0.5, 2],
+                    }}
+                    transition={{
+                      duration: 4.6,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                      delay: 0.5,
+                    }}
+                    whileHover={{ scale: 1.05, y: -16 }}
+                    onClick={() => scrollToCatalog(slide.category)}
+                    className="group/pouch relative flex flex-col justify-between h-56 sm:h-64 lg:h-72 w-28 sm:w-36 lg:w-40 rounded-2xl p-3 sm:p-4 text-white cursor-pointer select-none shadow-[0_20px_35px_rgba(0,0,0,0.6)]"
+                    style={{
+                      background: `linear-gradient(175deg, ${slide.pouches[2].color} 0%, #713f12 100%)`,
+                    }}
+                  >
+                    <div className="flex items-center justify-between border-b border-black/25 pb-1.5 opacity-80">
+                      <span className="h-1.5 w-1.5 rounded-full bg-white/40" />
+                      <span className="text-[9px] font-black tracking-widest uppercase">
+                        SuperBarrio
+                      </span>
+                      <span className="h-1.5 w-1.5 rounded-full bg-white/40" />
+                    </div>
+
+                    <div className="text-center my-1">
+                      <h3 className="text-[11px] sm:text-xs font-black leading-tight">
+                        {slide.pouches[2].name}
+                      </h3>
+                      <p className="text-[9px] text-white/80 mt-0.5">
+                        {slide.pouches[2].subname}
+                      </p>
+                    </div>
+
+                    <div className="relative mx-auto h-16 w-16 sm:h-20 sm:w-20 lg:h-24 lg:w-24 overflow-hidden rounded-full border-2 border-white/60 shadow-inner bg-black/20 my-1">
+                      <img
+                        src={slide.pouches[2].imgUrl}
+                        alt={slide.pouches[2].name}
+                        className="h-full w-full object-cover transition-transform duration-500 group-hover/pouch:scale-110"
                         loading="lazy"
                       />
                     </div>
-                  </div>
+
+                    <div className="flex items-center justify-between border-t border-white/20 pt-1.5 text-[10px]">
+                      <span className="text-white/80">
+                        {slide.pouches[2].weight}
+                      </span>
+                      <span className="font-extrabold text-amber-300">
+                        {formatPrice(slide.pouches[2].priceNum, locale)}
+                      </span>
+                    </div>
+
+                    {/* Dynamic Floor Shadow */}
+                    <motion.div
+                      animate={{ scale: [1, 0.85, 1], opacity: [0.6, 0.35, 0.6] }}
+                      transition={{
+                        duration: 4.6,
+                        repeat: Infinity,
+                        ease: "easeInOut",
+                        delay: 0.5,
+                      }}
+                      className="absolute -bottom-2.5 inset-x-2 h-3 rounded-full bg-black/70 blur-sm pointer-events-none"
+                    />
+                  </motion.div>
                 </div>
               </div>
-            </div>
-          </div>
+            </motion.div>
+          </AnimatePresence>
         </div>
 
-        {/* Carousel Slider Navigation Arrows (Floating at ends) */}
+        {/* Carousel Slider Navigation Arrows */}
         <button
           type="button"
           onClick={handlePrev}
@@ -567,64 +739,75 @@ export const GroceryHeroBanner: React.FC = () => {
         </div>
       </div>
 
-      {/* 2. Premium Quality & Guarantee Ribbon (Below Banner) */}
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4 rounded-2xl border border-gray-200/80 bg-white p-3.5 shadow-theme-xs sm:p-4 dark:border-gray-800 dark:bg-gray-900">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400">
+      {/* 2. Premium Live Counter & Guarantee Ribbon with Animated Numbers */}
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-40px" }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
+        className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4 rounded-3xl border border-gray-200/80 bg-white/80 p-4 shadow-[0_10px_25px_-5px_rgba(0,0,0,0.05)] backdrop-blur-sm sm:p-5 dark:border-emerald-950/60 dark:bg-[#071d12]/70 dark:shadow-[0_10px_30px_-5px_rgba(0,0,0,0.3)]"
+      >
+        {/* Metric 1: Express 15 Min Delivery */}
+        <div className="flex items-center gap-3.5">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600 shadow-xs dark:bg-emerald-950/60 dark:text-emerald-400">
             <BoltIcon className="h-5 w-5 fill-current" />
           </div>
           <div>
-            <h4 className="text-xs font-bold text-gray-900 dark:text-white">
-              {t("trust1Title")}
+            <h4 className="font-outfit text-sm sm:text-base font-extrabold text-gray-900 dark:text-white">
+              <AnimatedCounter to={15} suffix=" Mins" />
             </h4>
-            <p className="text-[11px] text-gray-500 dark:text-gray-400">
+            <p className="text-[11px] font-medium text-gray-500 dark:text-emerald-300/70">
               {t("trust1Desc")}
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-600 dark:bg-brand-950/40 dark:text-brand-400">
+        {/* Metric 2: 100% Farm Fresh Quality */}
+        <div className="flex items-center gap-3.5">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-green-50 text-green-600 shadow-xs dark:bg-green-950/60 dark:text-green-400">
             <LeafIcon className="h-5 w-5" />
           </div>
           <div>
-            <h4 className="text-xs font-bold text-gray-900 dark:text-white">
-              {t("trust2Title")}
+            <h4 className="font-outfit text-sm sm:text-base font-extrabold text-gray-900 dark:text-white">
+              <AnimatedCounter to={100} suffix="%" /> Fresh
             </h4>
-            <p className="text-[11px] text-gray-500 dark:text-gray-400">
+            <p className="text-[11px] font-medium text-gray-500 dark:text-emerald-300/70">
               {t("trust2Desc")}
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400">
+        {/* Metric 3: 12,000+ Happy Homes */}
+        <div className="flex items-center gap-3.5">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-amber-50 text-amber-600 shadow-xs dark:bg-amber-950/60 dark:text-amber-400">
             <ShieldCheckIcon className="h-5 w-5" />
           </div>
           <div>
-            <h4 className="text-xs font-bold text-gray-900 dark:text-white">
-              {t("trust3Title")}
+            <h4 className="font-outfit text-sm sm:text-base font-extrabold text-gray-900 dark:text-white">
+              <AnimatedCounter to={12450} suffix="+" />
             </h4>
-            <p className="text-[11px] text-gray-500 dark:text-gray-400">
-              {t("trust3Desc")}
+            <p className="text-[11px] font-medium text-gray-500 dark:text-emerald-300/70">
+              Happy Homes Served
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-rose-50 text-rose-600 dark:bg-rose-950/40 dark:text-rose-400">
+        {/* Metric 4: 4.9 Rating */}
+        <div className="flex items-center gap-3.5">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-orange-50 text-amber-500 shadow-xs dark:bg-amber-950/60 dark:text-amber-400">
             <StarIcon className="h-5 w-5 fill-current" />
           </div>
           <div>
-            <h4 className="text-xs font-bold text-gray-900 dark:text-white">
-              {t("trust4Title")}
+            <h4 className="font-outfit text-sm sm:text-base font-extrabold text-gray-900 dark:text-white flex items-center gap-1">
+              <AnimatedCounter to={4.9} decimals={1} />
+              <span className="text-amber-500 text-xs">★</span>
             </h4>
-            <p className="text-[11px] text-gray-500 dark:text-gray-400">
-              {t("trust4Desc")}
+            <p className="text-[11px] font-medium text-gray-500 dark:text-emerald-300/70">
+              Customer Rating
             </p>
           </div>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 };
