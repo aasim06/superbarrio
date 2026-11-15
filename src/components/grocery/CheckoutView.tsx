@@ -6,8 +6,6 @@ import { useGroceryCart } from "@/context/GroceryCartContext";
 import {
   SPAIN_PROVINCES,
   TOP_SPAIN_CITIES,
-  getSpainDeliverySlots,
-  SpainDeliverySlot,
 } from "@/data/spainCheckoutData";
 import { CustomerOrder, PaymentMethod } from "@/types/grocery";
 import { getProductLocalized } from "@/data/groceryData";
@@ -145,17 +143,7 @@ export const CheckoutSkeleton: React.FC = () => {
             </div>
           </div>
 
-          {/* Card 2: Slots */}
-          <div className="rounded-3xl border border-gray-200/80 bg-white p-6 shadow-sm dark:border-emerald-950/70 dark:bg-[#071910]">
-            <div className="h-5 w-44 rounded-md bg-gray-200 dark:bg-emerald-950/60 mb-4" />
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="h-18 rounded-2xl bg-gray-100 dark:bg-[#05130b]" />
-              ))}
-            </div>
-          </div>
-
-          {/* Card 3: Payment */}
+          {/* Card 2: Payment */}
           <div className="rounded-3xl border border-gray-200/80 bg-white p-6 shadow-sm dark:border-emerald-950/70 dark:bg-[#071910]">
             <div className="h-5 w-44 rounded-md bg-gray-200 dark:bg-emerald-950/60 mb-4" />
             <div className="space-y-3">
@@ -251,26 +239,6 @@ export const CheckoutView: React.FC = () => {
 
   // Per-field Zod validation errors
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
-
-  // Delivery Slots (Spain timing)
-  const slots: SpainDeliverySlot[] = React.useMemo(
-    () => getSpainDeliverySlots(locale),
-    [locale],
-  );
-
-  // Pick first available slot by default
-  const defaultSlot =
-    slots.find((s) => !s.disabled)?.id || "tomorrow-morning";
-  const [selectedSlot, setSelectedSlot] = useState<string>(defaultSlot);
-
-  const allTodayPassed = React.useMemo(
-    () => slots.filter((s) => s.dayType === "today").every((s) => s.disabled),
-    [slots],
-  );
-
-  const [selectedDay, setSelectedDay] = useState<"today" | "tomorrow">(
-    defaultSlot.startsWith("today") ? "today" : "tomorrow",
-  );
 
   // Payment Method
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("card");
@@ -401,10 +369,9 @@ export const CheckoutView: React.FC = () => {
       }
     }
 
-    const chosenSlotObj = slots.find((s) => s.id === selectedSlot);
-    const chosenSlotLabel = chosenSlotObj
-      ? `${chosenSlotObj.dayLabel} - ${chosenSlotObj.timeRange}`
-      : "Entrega Inmediata";
+    const chosenSlotLabel = isEs
+      ? "Entrega Express (25-35 min)"
+      : "Express Delivery (25-35 mins)";
 
     const fullStreetAddress = `${formData.street}${
       formData.apartment ? `, ${formData.apartment}` : ""
@@ -567,10 +534,7 @@ export const CheckoutView: React.FC = () => {
     if (formData.street) {
       msg += `*Dirección:* ${formData.street}${formData.apartment ? `, ${formData.apartment}` : ""}, ${formData.postalCode} ${formData.city} (${formData.province})\n`;
     }
-    const chosenSlotObj = slots.find((s) => s.id === selectedSlot);
-    if (chosenSlotObj) {
-      msg += `*Franja de entrega:* ${chosenSlotObj.dayLabel} (${chosenSlotObj.timeRange})\n`;
-    }
+    msg += `*Entrega:* ${isEs ? "Express (25-35 min)" : "Express (25-35 mins)"}\n`;
     msg += `\n¡Por favor confirmen la disponibilidad y hora de entrega! Muchas gracias.`;
 
     return `https://wa.me/34632250561?text=${encodeURIComponent(msg)}`;
@@ -1169,7 +1133,7 @@ export const CheckoutView: React.FC = () => {
               </div>
             </motion.div>
 
-            {/* Section 2: Preferred Delivery Slot with Day Tabs */}
+            {/* Section 2: Spain Payment Methods */}
             <motion.div
               variants={shouldReduceMotion ? {} : cardVariants}
               className="rounded-2xl sm:rounded-3xl border border-gray-200/80 bg-white p-4 sm:p-6 shadow-[0_4px_24px_-4px_rgba(0,0,0,0.06)] backdrop-blur-sm dark:border-emerald-950/70 dark:bg-[#071910]"
@@ -1177,127 +1141,6 @@ export const CheckoutView: React.FC = () => {
               <div className="flex items-center gap-3 pb-3 sm:pb-3.5 border-b border-gray-100 dark:border-emerald-950/60">
                 <span className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-xl bg-emerald-50 text-xs font-black text-emerald-600 shadow-xs dark:bg-emerald-950/60 dark:text-emerald-400">
                   2
-                </span>
-                <div>
-                  <h3 className="font-outfit text-base sm:text-lg font-black tracking-tight text-gray-900 dark:text-white">
-                    {t("slotSection.title")}
-                  </h3>
-                  <p className="text-xs text-gray-500 dark:text-emerald-300/70">
-                    {t("slotSection.subtitle")}
-                  </p>
-                </div>
-              </div>
-
-              {/* Day Tab Switcher (Hoy vs Mañana) */}
-              <div className="mt-3.5 flex rounded-xl bg-gray-100/90 p-1 dark:bg-[#05130b] border border-gray-200/60 dark:border-emerald-950/60">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSelectedDay("today");
-                    const firstToday = slots.find((s) => s.dayType === "today" && !s.disabled);
-                    if (firstToday) setSelectedSlot(firstToday.id);
-                  }}
-                  className={`flex-1 rounded-lg py-2 text-xs font-black transition-all ${
-                    selectedDay === "today"
-                      ? "bg-white text-emerald-700 shadow-xs dark:bg-emerald-900/60 dark:text-emerald-200"
-                      : "text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
-                  }`}
-                >
-                  {t("slotSection.today")} {allTodayPassed ? `(${t("slotSection.passed")})` : ""}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSelectedDay("tomorrow");
-                    const firstTomorrow = slots.find((s) => s.dayType === "tomorrow" && !s.disabled);
-                    if (firstTomorrow) setSelectedSlot(firstTomorrow.id);
-                  }}
-                  className={`flex-1 rounded-lg py-2 text-xs font-black transition-all ${
-                    selectedDay === "tomorrow"
-                      ? "bg-white text-emerald-700 shadow-xs dark:bg-emerald-900/60 dark:text-emerald-200"
-                      : "text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
-                  }`}
-                >
-                  {t("slotSection.tomorrow")}
-                </button>
-              </div>
-
-              {/* 4 Slots for Selected Day in 2-Column Responsive Grid */}
-              <div className="mt-3 grid grid-cols-1 gap-2.5 sm:grid-cols-2">
-                {slots
-                  .filter((s) => s.dayType === selectedDay)
-                  .map((slot) => {
-                    const isChecked = selectedSlot === slot.id;
-                    const isDisabled = slot.disabled;
-
-                    return (
-                      <motion.div
-                        key={slot.id}
-                        whileHover={!isDisabled && !shouldReduceMotion ? { scale: 1.01 } : {}}
-                        whileTap={!isDisabled && !shouldReduceMotion ? { scale: 0.99 } : {}}
-                        onClick={() => !isDisabled && setSelectedSlot(slot.id)}
-                        className={`relative flex items-center justify-between rounded-xl border p-3 transition-all duration-200 select-none ${
-                          isDisabled
-                            ? "opacity-45 bg-gray-100/60 border-gray-200 cursor-not-allowed dark:bg-gray-900/40 dark:border-emerald-950/40"
-                            : isChecked
-                            ? "cursor-pointer border-emerald-500 bg-emerald-50/70 shadow-xs ring-2 ring-emerald-500/25 dark:border-emerald-500 dark:bg-emerald-950/40"
-                            : "cursor-pointer border-gray-200/80 bg-white hover:border-emerald-300 dark:border-emerald-950 dark:bg-[#05130b] dark:hover:border-emerald-800"
-                        }`}
-                      >
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-2">
-                            <span className="font-outfit text-sm font-black text-gray-900 dark:text-white">
-                              {slot.timeRange}
-                            </span>
-                            {slot.periodLabel && (
-                              <span className="rounded-md bg-emerald-100/70 px-2 py-0.5 text-[10px] font-bold text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300">
-                                {slot.periodLabel}
-                              </span>
-                            )}
-                          </div>
-                          {isDisabled && (
-                            <span className="mt-0.5 block text-[10px] font-bold text-rose-500 dark:text-rose-400">
-                              {t("slotSection.passed")}
-                            </span>
-                          )}
-                        </div>
-
-                        {/* Custom Radio with Green Border & Check Icon */}
-                        <div className="ms-2 flex h-5 w-5 shrink-0 items-center justify-center">
-                          {isChecked ? (
-                            <motion.div
-                              initial={shouldReduceMotion ? { scale: 1 } : { scale: 0 }}
-                              animate={{ scale: 1 }}
-                              transition={{ type: "spring", stiffness: 350, damping: 20 }}
-                              className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-600 text-white shadow-xs"
-                            >
-                              <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={3}>
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                              </svg>
-                            </motion.div>
-                          ) : (
-                            <div className="h-4 w-4 rounded-full border-2 border-gray-300 dark:border-emerald-950 bg-white dark:bg-gray-800" />
-                          )}
-                        </div>
-                      </motion.div>
-                    );
-                  })}
-              </div>
-
-              <p className="mt-3 flex items-center gap-1.5 text-[11px] font-semibold text-emerald-700 dark:text-emerald-400">
-                <BoltIcon className="h-3.5 w-3.5 text-amber-500 fill-current shrink-0" />
-                <span>{t("slotSection.expressNotice")}</span>
-              </p>
-            </motion.div>
-
-            {/* Section 3: Spain Payment Methods */}
-            <motion.div
-              variants={shouldReduceMotion ? {} : cardVariants}
-              className="rounded-2xl sm:rounded-3xl border border-gray-200/80 bg-white p-4 sm:p-6 shadow-[0_4px_24px_-4px_rgba(0,0,0,0.06)] backdrop-blur-sm dark:border-emerald-950/70 dark:bg-[#071910]"
-            >
-              <div className="flex items-center gap-3 pb-3 sm:pb-3.5 border-b border-gray-100 dark:border-emerald-950/60">
-                <span className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-xl bg-emerald-50 text-xs font-black text-emerald-600 shadow-xs dark:bg-emerald-950/60 dark:text-emerald-400">
-                  3
                 </span>
                 <div>
                   <h3 className="font-outfit text-base sm:text-lg font-black tracking-tight text-gray-900 dark:text-white">
