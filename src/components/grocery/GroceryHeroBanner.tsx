@@ -440,12 +440,14 @@ export const GroceryHeroBanner: React.FC = () => {
       setMobileSlideIndex((prev) => {
         const next = (prev + 1) % mobileCards.length;
         if (mobileScrollRef.current) {
-          const { clientWidth } = mobileScrollRef.current;
-          const cardWidth = clientWidth * 0.87 + 12;
-          mobileScrollRef.current.scrollTo({
-            left: next * cardWidth,
-            behavior: "smooth",
-          });
+          const items = mobileScrollRef.current.children;
+          const target = items[next] as HTMLElement;
+          if (target) {
+            mobileScrollRef.current.scrollTo({
+              left: target.offsetLeft - 14,
+              behavior: "smooth",
+            });
+          }
         }
         return next;
       });
@@ -456,22 +458,33 @@ export const GroceryHeroBanner: React.FC = () => {
 
   const handleMobileScroll = () => {
     if (!mobileScrollRef.current) return;
-    const { scrollLeft, clientWidth } = mobileScrollRef.current;
-    const cardWidth = clientWidth * 0.87 + 12;
-    const newIdx = Math.round(scrollLeft / cardWidth);
-    if (newIdx >= 0 && newIdx < mobileCards.length && newIdx !== mobileSlideIndex) {
-      setMobileSlideIndex(newIdx);
+    const container = mobileScrollRef.current;
+    const items = Array.from(container.children) as HTMLElement[];
+    const scrollLeft = container.scrollLeft;
+    let closestIdx = 0;
+    let minDiff = Infinity;
+    items.forEach((item, idx) => {
+      const diff = Math.abs(item.offsetLeft - 14 - scrollLeft);
+      if (diff < minDiff) {
+        minDiff = diff;
+        closestIdx = idx;
+      }
+    });
+    if (closestIdx !== mobileSlideIndex) {
+      setMobileSlideIndex(closestIdx);
     }
   };
 
   const scrollToMobileSlide = (index: number) => {
     if (!mobileScrollRef.current) return;
-    const { clientWidth } = mobileScrollRef.current;
-    const cardWidth = clientWidth * 0.87 + 12;
-    mobileScrollRef.current.scrollTo({
-      left: index * cardWidth,
-      behavior: "smooth",
-    });
+    const items = mobileScrollRef.current.children;
+    const targetItem = items[index] as HTMLElement;
+    if (targetItem) {
+      mobileScrollRef.current.scrollTo({
+        left: targetItem.offsetLeft - 14,
+        behavior: "smooth",
+      });
+    }
     setMobileSlideIndex(index);
   };
 
@@ -496,14 +509,14 @@ export const GroceryHeroBanner: React.FC = () => {
           className="flex w-full gap-3 overflow-x-auto snap-x snap-mandatory no-scrollbar px-3.5 py-1 scroll-smooth"
         >
           {mobileCards.map((card, idx) => (
-            <div key={card.id} className="snap-center shrink-0">
+            <div key={card.id} className="snap-start shrink-0">
               {/* -------------------------------------------------------- */}
               {/* SLIDE 1: Warm Golden Yellow - Spanish Dairy              */}
               {/* -------------------------------------------------------- */}
               {card.type === "dairy" && (
                 <div
                   onClick={() => scrollToCatalog(card.category)}
-                  className="relative h-[210px] w-[87vw] max-w-[340px] rounded-[22px] bg-gradient-to-b from-[#fbb016] via-[#f7a600] to-[#f29100] p-3.5 flex flex-col justify-between overflow-hidden shadow-md cursor-pointer select-none active:scale-[0.99] transition-transform"
+                  className="relative h-[210px] w-[84vw] max-w-[325px] rounded-[22px] bg-gradient-to-b from-[#fbb016] via-[#f7a600] to-[#f29100] p-3.5 flex flex-col justify-between overflow-hidden shadow-md cursor-pointer select-none active:scale-[0.99] transition-transform"
                 >
                   {/* Subtle Decorative Stars / Sparkles in corners */}
                   <span className="pointer-events-none absolute top-2 right-4 text-[#c06800] text-sm select-none opacity-60">✦</span>
@@ -609,7 +622,7 @@ export const GroceryHeroBanner: React.FC = () => {
               {card.type === "beverages" && (
                 <div
                   onClick={() => scrollToCatalog(card.category)}
-                  className="relative h-[210px] w-[87vw] max-w-[340px] rounded-[22px] bg-gradient-to-b from-[#0d59fc] via-[#0548d8] to-[#02339d] p-3.5 flex flex-col justify-between overflow-hidden shadow-md cursor-pointer select-none active:scale-[0.99] transition-transform"
+                  className="relative h-[210px] w-[84vw] max-w-[325px] rounded-[22px] bg-gradient-to-b from-[#0d59fc] via-[#0548d8] to-[#02339d] p-3.5 flex flex-col justify-between overflow-hidden shadow-md cursor-pointer select-none active:scale-[0.99] transition-transform"
                 >
                   {/* Top Row: Heading + CTA Button (Left) and Circular Discount Sticker (Right) */}
                   <div className="relative z-10 flex items-start justify-between gap-2">
@@ -720,7 +733,7 @@ export const GroceryHeroBanner: React.FC = () => {
               {card.type === "produce" && (
                 <div
                   onClick={() => scrollToCatalog(card.category)}
-                  className="relative h-[210px] w-[87vw] max-w-[340px] rounded-[22px] bg-gradient-to-b from-[#10b981] via-[#059669] to-[#047857] p-3.5 flex flex-col justify-between overflow-hidden shadow-md cursor-pointer select-none active:scale-[0.99] transition-transform"
+                  className="relative h-[210px] w-[84vw] max-w-[325px] rounded-[22px] bg-gradient-to-b from-[#10b981] via-[#059669] to-[#047857] p-3.5 flex flex-col justify-between overflow-hidden shadow-md cursor-pointer select-none active:scale-[0.99] transition-transform"
                 >
                   <div className="relative z-10 flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0 pt-0.5">
@@ -813,7 +826,7 @@ export const GroceryHeroBanner: React.FC = () => {
               {card.type === "iberico" && (
                 <div
                   onClick={() => scrollToCatalog(card.category)}
-                  className="relative h-[210px] w-[87vw] max-w-[340px] rounded-[22px] bg-gradient-to-b from-[#be123c] via-[#9f1239] to-[#881337] p-3.5 flex flex-col justify-between overflow-hidden shadow-md cursor-pointer select-none active:scale-[0.99] transition-transform"
+                  className="relative h-[210px] w-[84vw] max-w-[325px] rounded-[22px] bg-gradient-to-b from-[#be123c] via-[#9f1239] to-[#881337] p-3.5 flex flex-col justify-between overflow-hidden shadow-md cursor-pointer select-none active:scale-[0.99] transition-transform"
                 >
                   <div className="relative z-10 flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0 pt-0.5">
@@ -880,7 +893,7 @@ export const GroceryHeroBanner: React.FC = () => {
               {card.type === "bakery" && (
                 <div
                   onClick={() => scrollToCatalog(card.category)}
-                  className="relative h-[210px] w-[87vw] max-w-[340px] rounded-[22px] bg-gradient-to-b from-[#ea580c] via-[#c2410c] to-[#9a3412] p-3.5 flex flex-col justify-between overflow-hidden shadow-md cursor-pointer select-none active:scale-[0.99] transition-transform"
+                  className="relative h-[210px] w-[84vw] max-w-[325px] rounded-[22px] bg-gradient-to-b from-[#ea580c] via-[#c2410c] to-[#9a3412] p-3.5 flex flex-col justify-between overflow-hidden shadow-md cursor-pointer select-none active:scale-[0.99] transition-transform"
                 >
                   <div className="relative z-10 flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0 pt-0.5">
@@ -946,19 +959,27 @@ export const GroceryHeroBanner: React.FC = () => {
 
         {/* Mobile Pagination Dots Matching Reference UI (Active Orange Pill + Gray Dots) */}
         <div className="flex items-center justify-center gap-1.5 pt-2 pb-0.5">
-          {mobileCards.map((_, idx) => (
-            <button
-              key={idx}
-              type="button"
-              onClick={() => scrollToMobileSlide(idx)}
-              className={`h-2 rounded-full transition-all duration-300 ${
-                mobileSlideIndex === idx
-                  ? "w-6 bg-[#f97316] shadow-xs"
-                  : "w-2 bg-gray-300 dark:bg-gray-700 hover:bg-gray-400"
-              }`}
-              title={`Banner ${idx + 1}`}
-            />
-          ))}
+          {mobileCards.map((_, idx) => {
+            const isActive = mobileSlideIndex === idx;
+            return (
+              <button
+                key={idx}
+                type="button"
+                onClick={() => scrollToMobileSlide(idx)}
+                style={{
+                  backgroundColor: isActive ? "#ea580c" : undefined,
+                  width: isActive ? "24px" : "8px",
+                  height: "8px",
+                }}
+                className={`rounded-full transition-all duration-300 ${
+                  isActive
+                    ? "bg-orange-500 shadow-xs"
+                    : "bg-gray-300 dark:bg-gray-700 hover:bg-gray-400"
+                }`}
+                title={`Banner ${idx + 1}`}
+              />
+            );
+          })}
         </div>
       </div>
 
