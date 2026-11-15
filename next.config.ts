@@ -23,6 +23,15 @@ const svgrLoader = {
 
 const nextConfig: NextConfig = {
   /* config options here */
+  experimental: {
+    optimizePackageImports: [
+      "lucide-react",
+      "framer-motion",
+      "sonner",
+      "clsx",
+      "tailwind-merge",
+    ],
+  },
   serverExternalPackages: [
     "@whiskeysockets/baileys",
     "link-preview-js",

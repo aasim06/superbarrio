@@ -37,12 +37,6 @@ export const ProductCard: React.FC<ProductCardProps> = React.memo(function Produ
 
   const imageRef = useRef<HTMLDivElement>(null);
   const [imageError, setImageError] = useState(false);
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-
-  const handleCardMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    setMousePos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
-  };
 
   const isEs = locale === "es";
   const localized = getProductLocalized(product, locale);
@@ -101,7 +95,6 @@ export const ProductCard: React.FC<ProductCardProps> = React.memo(function Produ
   return (
     <motion.div
       onClick={handleCardClick}
-      onMouseMove={handleCardMouseMove}
       whileHover={{ y: -6 }}
       transition={{ duration: 0.25, ease: "easeOut" }}
       role="button"
@@ -119,12 +112,9 @@ export const ProductCard: React.FC<ProductCardProps> = React.memo(function Produ
       }}
       className="group relative flex h-full flex-col justify-between rounded-2xl sm:rounded-3xl border border-gray-200/80 bg-white p-2.5 sm:p-4 shadow-sm transition-all duration-300 hover:border-emerald-300 hover:shadow-[0_16px_32px_-8px_rgba(22,163,74,0.18)] dark:border-emerald-950/60 dark:bg-[#071d12]/70 dark:hover:border-emerald-700/80 dark:hover:shadow-[0_16px_32px_-8px_rgba(34,197,94,0.15)] cursor-pointer select-none overflow-hidden focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:outline-none"
     >
-      {/* Cursor-follow Spotlight Soft Glow Effect */}
+      {/* High-Performance Pure CSS Ambient Glow on Hover (Zero Re-renders) */}
       <div
-        className="pointer-events-none absolute inset-0 rounded-2xl sm:rounded-3xl opacity-0 transition-opacity duration-300 group-hover:opacity-100 -z-0"
-        style={{
-          background: `radial-gradient(280px circle at ${mousePos.x}px ${mousePos.y}px, rgba(22, 163, 74, 0.16), transparent 70%)`,
-        }}
+        className="pointer-events-none absolute inset-0 rounded-2xl sm:rounded-3xl opacity-0 transition-opacity duration-300 group-hover:opacity-100 -z-0 bg-[radial-gradient(circle_at_50%_40%,rgba(22,163,74,0.14),transparent_70%)]"
       />
 
       <div className="relative z-10 flex flex-1 flex-col justify-between">

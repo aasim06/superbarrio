@@ -8,12 +8,18 @@ export const SmoothScrollProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   useEffect(() => {
-    // Check if user prefers reduced motion
+    // Check if user prefers reduced motion or is on mobile/touch device
     const prefersReducedMotion = window.matchMedia(
       "(prefers-reduced-motion: reduce)",
     ).matches;
 
-    if (prefersReducedMotion) return;
+    const isTouchOrMobile =
+      window.innerWidth < 1024 ||
+      "ontouchstart" in window ||
+      navigator.maxTouchPoints > 0;
+
+    // Keep native 120Hz GPU momentum scrolling on mobile/touch screens
+    if (prefersReducedMotion || isTouchOrMobile) return;
 
     const lenis = new Lenis({
       duration: 1.2,

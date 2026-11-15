@@ -31,26 +31,6 @@ const NewsletterSection = dynamic(
   { ssr: false },
 );
 
-const gridContainerVariants: Variants = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.04,
-      delayChildren: 0.05,
-    },
-  },
-};
-
-const gridItemVariants: Variants = {
-  hidden: { opacity: 0, y: 20 },
-  show: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.35, ease: [0.16, 1, 0.3, 1] },
-  },
-};
-
 export const GroceryCatalog: React.FC = () => {
   const t = useTranslations("grocery");
   const locale = useLocale();
@@ -224,19 +204,15 @@ export const GroceryCatalog: React.FC = () => {
               </button>
             </motion.div>
           ) : (
-            <motion.div
-              key={`grid-${activeCategory}-${searchQuery}-${sortBy}-${filterInStockOnly}-${filterOnSaleOnly}`}
-              variants={gridContainerVariants}
-              initial="hidden"
-              animate="show"
+            <div
               className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 sm:gap-4 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-5 2xl:grid-cols-5 gap-y-4 sm:gap-y-6"
             >
               {filteredProducts.map((product) => (
-                <motion.div key={product.id} variants={gridItemVariants}>
+                <div key={product.id}>
                   <ProductCard product={product} />
-                </motion.div>
+                </div>
               ))}
-            </motion.div>
+            </div>
           )}
         </AnimatePresence>
       </div>

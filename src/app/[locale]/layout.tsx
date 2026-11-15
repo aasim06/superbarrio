@@ -2,18 +2,18 @@ import { SidebarProvider } from "@/context/SidebarContext";
 import { ThemeProvider } from "@/context/ThemeContext";
 import { isRtl } from "@/i18n/languages";
 import { type Locale, routing } from "@/i18n/routing";
-import "flatpickr/dist/flatpickr.css";
 import { NextIntlClientProvider } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
 import { Outfit } from "next/font/google";
 import { notFound } from "next/navigation";
-import "simplebar-react/dist/simplebar.min.css";
-import "swiper/css/bundle";
 import "../globals.css";
 import type { Metadata, Viewport } from "next";
 
 const outfit = Outfit({
   subsets: ["latin"],
+  display: "swap",
+  preload: true,
+  fallback: ["system-ui", "-apple-system", "sans-serif"],
 });
 
 export const viewport: Viewport = {
