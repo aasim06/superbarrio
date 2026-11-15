@@ -48,7 +48,7 @@ export default function CustomSelect({
   const isSmall = size === "sm";
 
   return (
-    <div ref={containerRef} className={cn("relative w-full", className)}>
+    <div ref={containerRef} className={cn("relative w-full", isOpen ? "z-50" : "z-10", className)}>
       {/* Trigger Button - Clean & Icon-Free */}
       <button
         type="button"

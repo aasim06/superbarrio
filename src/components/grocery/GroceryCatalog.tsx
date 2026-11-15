@@ -174,7 +174,9 @@ export const GroceryCatalog: React.FC = () => {
         </div>
 
         {/* Sort & Filter Bar */}
-        <SortFilterBar totalCount={filteredProducts.length} />
+        <div className="relative z-30">
+          <SortFilterBar totalCount={filteredProducts.length} />
+        </div>
 
         {/* Empty State vs Animated Product Grid */}
         <AnimatePresence mode="wait">
@@ -205,7 +207,7 @@ export const GroceryCatalog: React.FC = () => {
             </motion.div>
           ) : (
             <div
-              className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 sm:gap-4 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-5 2xl:grid-cols-5 gap-y-4 sm:gap-y-6"
+              className="relative z-10 grid grid-cols-2 gap-2.5 sm:grid-cols-3 sm:gap-4 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-5 2xl:grid-cols-5 gap-y-4 sm:gap-y-6"
             >
               {filteredProducts.map((product) => (
                 <div key={product.id}>

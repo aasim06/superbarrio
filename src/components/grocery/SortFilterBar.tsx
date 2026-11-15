@@ -25,7 +25,7 @@ export const SortFilterBar: React.FC<SortFilterBarProps> = ({ totalCount }) => {
   } = useGroceryCart();
 
   return (
-    <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-3 border-y border-gray-200/80 bg-white/60 px-3 py-2 sm:px-4 sm:py-3 backdrop-blur-md dark:border-emerald-950/60 dark:bg-[#071910]/60 rounded-xl sm:rounded-2xl mb-4 sm:mb-5">
+    <div className="relative z-30 flex flex-wrap items-center justify-between gap-2 sm:gap-3 border-y border-gray-200/80 bg-white/60 px-3 py-2 sm:px-4 sm:py-3 backdrop-blur-md dark:border-emerald-950/60 dark:bg-[#071910]/60 rounded-xl sm:rounded-2xl mb-4 sm:mb-5">
       {/* Left: Quick Filters */}
       <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
         {/* In Stock Filter */}
@@ -64,14 +64,14 @@ export const SortFilterBar: React.FC<SortFilterBarProps> = ({ totalCount }) => {
       </div>
 
       {/* Right: Sort By Dropdown */}
-      <div className="flex items-center gap-1.5 sm:gap-2">
+      <div className="relative z-40 flex items-center gap-1.5 sm:gap-2">
         <label
           htmlFor="sort-select"
           className="text-[11px] sm:text-xs font-bold text-gray-500 dark:text-emerald-300/80 hidden xsm:inline"
         >
           {isEs ? "Ordenar:" : "Sort:"}
         </label>
-        <div className="w-44 sm:w-48">
+        <div className="relative z-50 w-44 sm:w-48">
           <CustomSelect
             size="sm"
             options={[
