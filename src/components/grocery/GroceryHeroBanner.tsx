@@ -367,78 +367,39 @@ export const GroceryHeroBanner: React.FC = () => {
   const mobileScrollRef = useRef<HTMLDivElement>(null);
   const isMobileInteracting = useRef(false);
 
-  const mobileCards = [
-    // Card 1: Warm Golden Yellow - Spanish Dairy (Nurpur style from reference screenshot 1)
+  const mobileBanners = [
     {
-      id: "dairy-banner",
-      category: "dairy-eggs",
-      headline: isEs ? "TUS LÁCTEOS FAVORITOS" : "YOUR FAVORITE DAIRY",
-      badgeText: isEs ? "TODO EN UN SOLO LUGAR" : "ALL IN ONE PLACE",
-      type: "dairy",
-    },
-    // Card 2: Electric Royal Blue - Spanish Beverages (Lineup from reference screenshot 2)
-    {
-      id: "beverages-banner",
-      category: "beverages",
-      headline: isEs ? "TUS BEBIDAS FAVORITAS" : "YOUR FAVORITE BEVERAGES",
-      ctaText: isEs ? "Comprar Ahora" : "Shop Now",
-      discountBadge: {
-        line1: isEs ? "HASTA" : "UPTO",
-        line2: "15%",
-        line3: isEs ? "DTO" : "OFF",
-      },
-      type: "beverages",
-    },
-    // Card 3: Crisp Emerald Green - Spanish Orchard & Harvest (Huerta Española)
-    {
-      id: "produce-banner",
+      id: "mobile-banner-1",
+      src: "/images/banner/mobile-hero-2.jpg",
+      alt: "Super Barrio Frutas y Cítricos Frescos",
       category: "fruits-vegetables",
-      headline: isEs ? "COSECHA DE HUERTA" : "FARM FRESH HARVEST",
-      badgeText: isEs ? "DEL CAMPO A TU MESA" : "FARM TO TABLE",
-      ctaText: isEs ? "Comprar Fresco" : "Shop Fresh",
-      discountBadge: {
-        line1: isEs ? "EN" : "IN",
-        line2: "25",
-        line3: isEs ? "MIN" : "MINS",
-      },
-      type: "produce",
+      bg: "bg-[#f58220]",
+      contain: false,
     },
-    // Card 4: Ruby Crimson - Spanish Ibéricos & Charcutería
     {
-      id: "iberico-banner",
-      category: "meat-poultry",
-      headline: isEs ? "CHARCUTERÍA & IBÉRICOS" : "IBERIAN CHARCUTERIE",
-      badgeText: isEs ? "100% BELLOTA D.O.P." : "100% ACORN-FED D.O.P.",
-      ctaText: isEs ? "Ver Selección" : "Shop Iberico",
-      discountBadge: {
-        line1: isEs ? "HASTA" : "UPTO",
-        line2: "20%",
-        line3: isEs ? "DTO" : "OFF",
-      },
-      type: "iberico",
+      id: "mobile-banner-2",
+      src: "/images/banner/mobile-hero-1.jpg",
+      alt: "Cosecha de Campo y Huerta",
+      category: "fruits-vegetables",
+      bg: "bg-[#1f140a]",
+      contain: false,
     },
-    // Card 5: Warm Bakery Amber - Artisanal Bakery
     {
-      id: "bakery-banner",
-      category: "bakery",
-      headline: isEs ? "PANADERÍA ARTESANAL" : "ARTISAN BAKERY",
-      badgeText: isEs ? "HORNO DE LEÑA" : "WOOD-FIRED OVEN",
-      ctaText: isEs ? "Pedir Desayuno" : "Order Breakfast",
-      discountBadge: {
-        line1: isEs ? "RECIÉN" : "OVEN",
-        line2: isEs ? "HECHO" : "FRESH",
-        line3: isEs ? "HOY" : "DAILY",
-      },
-      type: "bakery",
+      id: "mobile-banner-3",
+      src: "/images/banner/mobile-hero-3.jpg",
+      alt: "Barrio Granadas y Cítricos",
+      category: "fruits-vegetables",
+      bg: "bg-white",
+      contain: true,
     },
   ];
 
-  // Mobile auto-slide timer (gentle interval every 4.8s, pauses on touch/interaction)
+  // Mobile auto-slide timer (smooth interval every 4.5s)
   useEffect(() => {
     const timer = setInterval(() => {
       if (isMobileInteracting.current) return;
       setMobileSlideIndex((prev) => {
-        const next = (prev + 1) % mobileCards.length;
+        const next = (prev + 1) % mobileBanners.length;
         if (mobileScrollRef.current) {
           const items = mobileScrollRef.current.children;
           const target = items[next] as HTMLElement;
@@ -451,10 +412,10 @@ export const GroceryHeroBanner: React.FC = () => {
         }
         return next;
       });
-    }, 4800);
+    }, 4500);
 
     return () => clearInterval(timer);
-  }, [mobileCards.length]);
+  }, [mobileBanners.length]);
 
   const handleMobileScroll = () => {
     if (!mobileScrollRef.current) return;
@@ -508,458 +469,28 @@ export const GroceryHeroBanner: React.FC = () => {
           }}
           className="flex w-full gap-3 overflow-x-auto snap-x snap-mandatory no-scrollbar px-3.5 py-1 scroll-smooth"
         >
-          {mobileCards.map((card, idx) => (
-            <div key={card.id} className="snap-start shrink-0">
-              {/* -------------------------------------------------------- */}
-              {/* SLIDE 1: Warm Golden Yellow - Spanish Dairy              */}
-              {/* -------------------------------------------------------- */}
-              {card.type === "dairy" && (
-                <div
-                  onClick={() => scrollToCatalog(card.category)}
-                  className="relative h-[210px] w-[84vw] max-w-[325px] rounded-[22px] bg-gradient-to-b from-[#fbb016] via-[#f7a600] to-[#f29100] p-3.5 flex flex-col justify-between overflow-hidden shadow-md cursor-pointer select-none active:scale-[0.99] transition-transform"
-                >
-                  {/* Subtle Decorative Stars / Sparkles in corners */}
-                  <span className="pointer-events-none absolute top-2 right-4 text-[#c06800] text-sm select-none opacity-60">✦</span>
-                  <span className="pointer-events-none absolute top-9 right-8 text-[#c06800] text-xs select-none opacity-40">✦</span>
-                  <span className="pointer-events-none absolute top-7 left-3 text-[#c06800] text-xs select-none opacity-40">✦</span>
-
-                  {/* Top Text Content */}
-                  <div className="relative z-10 text-center pt-0.5">
-                    <h3 className="font-outfit font-black text-[20px] xs:text-[22px] text-[#0a3818] tracking-tight leading-[1.08] uppercase">
-                      {card.headline}
-                    </h3>
-                    <div className="mt-1.5 inline-flex items-center justify-center rounded-full bg-[#c81e28] px-3.5 py-0.5 shadow-xs">
-                      <span className="text-[10px] font-black text-white uppercase tracking-wider">
-                        {card.badgeText}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Realistic Spanish Dairy Product Showcase on Yellow Table */}
-                  <div className="relative z-10 flex items-end justify-center gap-2 pb-0.5">
-                    {/* 1. Leche Gallega Pack */}
-                    <div className="relative flex flex-col items-center">
-                      <div className="w-[34px] h-[78px] rounded-t-md rounded-b bg-gradient-to-b from-white via-[#e8f5e9] to-[#2e7d32] border border-white/80 shadow-md p-1 flex flex-col justify-between text-center overflow-hidden">
-                        <div className="bg-[#1b5e20] text-white text-[6px] font-black py-0.5 rounded-xs tracking-tighter">
-                          GALLEGA
-                        </div>
-                        <div className="my-auto">
-                          <span className="text-[12px] block leading-none">🥛</span>
-                          <span className="text-[7px] font-black text-[#1b5e20] block leading-none mt-0.5">1L</span>
-                        </div>
-                        <div className="bg-white/90 text-[#1b5e20] text-[5px] font-black rounded-xs py-0.2">
-                          ENTERA
-                        </div>
-                      </div>
-                      <div className="w-8 h-1.5 bg-black/25 blur-xs rounded-full mt-0.5" />
-                    </div>
-
-                    {/* 2. Nata para Montar */}
-                    <div className="relative flex flex-col items-center">
-                      <div className="w-[30px] h-[58px] rounded-t-sm rounded-b bg-gradient-to-b from-white via-blue-50 to-[#1565c0] border border-white/80 shadow-md p-1 flex flex-col justify-between text-center overflow-hidden">
-                        <div className="bg-[#0d47a1] text-white text-[5px] font-black py-0.5 rounded-xs">
-                          NATA
-                        </div>
-                        <span className="text-[10px] block my-auto">🍶</span>
-                        <div className="bg-white text-[#0d47a1] text-[5px] font-black rounded-xs">
-                          200ml
-                        </div>
-                      </div>
-                      <div className="w-7 h-1.5 bg-black/25 blur-xs rounded-full mt-0.5" />
-                    </div>
-
-                    {/* 3. Mantequilla Tradicional Asturiana */}
-                    <div className="relative flex flex-col items-center">
-                      <div className="w-[44px] h-[36px] rounded bg-gradient-to-b from-[#fff3b0] via-[#ffd54f] to-[#ffb300] border border-amber-200 shadow-md p-1 flex flex-col justify-between text-center overflow-hidden">
-                        <div className="bg-[#c81e28] text-white text-[5px] font-black py-0.2 rounded-xs tracking-tighter uppercase">
-                          ASTURIAS
-                        </div>
-                        <span className="text-[6.5px] font-black text-[#6d4c41] leading-none">
-                          MANTEQUILLA
-                        </span>
-                        <div className="text-[5px] font-bold text-[#b71c1c] leading-none">
-                          250g
-                        </div>
-                      </div>
-                      <div className="w-10 h-1.5 bg-black/25 blur-xs rounded-full mt-0.5" />
-                    </div>
-
-                    {/* 4. Queso Manchego Curado D.O.P. */}
-                    <div className="relative flex flex-col items-center">
-                      <div className="w-[46px] h-[52px] rounded-tr-xl rounded-l-sm bg-gradient-to-br from-[#ffe082] via-[#ffca28] to-[#d7a016] border border-amber-300 shadow-md p-1 flex flex-col justify-between overflow-hidden">
-                        <div className="flex items-center justify-between">
-                          <span className="h-2 w-2 rounded-full bg-[#b71c1c] text-[4px] text-white font-black flex items-center justify-center">
-                            DOP
-                          </span>
-                          <span className="text-[5px] font-black text-[#5d4037]">CURADO</span>
-                        </div>
-                        <div className="text-center my-0.5">
-                          <span className="text-[14px] leading-none">🧀</span>
-                        </div>
-                        <div className="bg-[#4e342e] text-[#ffe082] text-[5px] font-black py-0.2 text-center rounded-xs">
-                          MANCHEGO
-                        </div>
-                      </div>
-                      <div className="w-11 h-1.5 bg-black/25 blur-xs rounded-full mt-0.5" />
-                    </div>
-                  </div>
-
-                  {/* Brand signature */}
-                  <div className="relative z-10 flex items-center justify-between px-1">
-                    <span className="text-[9px] font-black tracking-wider text-[#0a3818]/70 uppercase">
-                      100% Calidad España
-                    </span>
-                    <span className="font-serif italic text-xs font-black text-[#0a3818]/80">
-                      SuperBarrio
-                    </span>
-                  </div>
-                </div>
-              )}
-
-              {/* -------------------------------------------------------- */}
-              {/* SLIDE 2: Electric Royal Blue - Spanish Beverages          */}
-              {/* -------------------------------------------------------- */}
-              {card.type === "beverages" && (
-                <div
-                  onClick={() => scrollToCatalog(card.category)}
-                  className="relative h-[210px] w-[84vw] max-w-[325px] rounded-[22px] bg-gradient-to-b from-[#0d59fc] via-[#0548d8] to-[#02339d] p-3.5 flex flex-col justify-between overflow-hidden shadow-md cursor-pointer select-none active:scale-[0.99] transition-transform"
-                >
-                  {/* Top Row: Heading + CTA Button (Left) and Circular Discount Sticker (Right) */}
-                  <div className="relative z-10 flex items-start justify-between gap-2">
-                    <div className="flex-1 min-w-0 pt-0.5">
-                      <h3 className="font-outfit font-black text-[19px] xs:text-[21px] text-white tracking-tight leading-[1.06] uppercase max-w-[180px]">
-                        {card.headline}
-                      </h3>
-                      <div className="mt-2 inline-flex items-center gap-1 rounded-full bg-white px-3.5 py-1 text-xs font-black text-[#0548d8] shadow-md active:scale-95 transition-transform">
-                        <span>{card.ctaText}</span>
-                        <ArrowRightIcon className="h-3 w-3 rtl:rotate-180" />
-                      </div>
-                    </div>
-
-                    {/* White Circular Badge Rotated -6deg (Matching Reference Screenshot 2) */}
-                    <div className="h-14 w-14 shrink-0 rounded-full bg-white shadow-lg flex flex-col items-center justify-center -rotate-6 border border-blue-100">
-                      <span className="text-[8px] font-black tracking-widest text-[#0548d8] leading-none uppercase">
-                        {card.discountBadge?.line1}
-                      </span>
-                      <span className="text-[17px] font-black text-[#0548d8] leading-tight">
-                        {card.discountBadge?.line2}
-                      </span>
-                      <span className="text-[8px] font-black tracking-widest text-[#0548d8] leading-none uppercase">
-                        {card.discountBadge?.line3}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Bottom Row: Lineup of Spanish Beverage Bottles */}
-                  <div className="relative z-10 flex items-end justify-center gap-2 pb-0.5">
-                    {/* 1. Solán de Cabras (Iconic Blue Bottle) */}
-                    <div className="relative flex flex-col items-center">
-                      <div className="w-[20px] h-[82px] rounded-t-full rounded-b-md bg-gradient-to-b from-[#003cb3] via-[#0055ff] to-[#002b80] border border-blue-300/40 shadow-md p-0.5 flex flex-col justify-between text-center overflow-hidden">
-                        <div className="w-2.5 h-3 bg-gray-200 rounded-t-xs mx-auto -mt-0.5" />
-                        <div className="bg-white text-[#003cb3] text-[4px] font-black py-0.5 rounded-xs leading-none">
-                          SOLÁN
-                        </div>
-                        <div className="w-full text-[4px] text-blue-200 font-bold leading-none mb-1">
-                          AGUA
-                        </div>
-                      </div>
-                      <div className="w-5 h-1.5 bg-black/35 blur-xs rounded-full mt-0.5" />
-                    </div>
-
-                    {/* 2. Mahou Cinco Estrellas (Beer Bottle) */}
-                    <div className="relative flex flex-col items-center">
-                      <div className="w-[22px] h-[86px] rounded-t-full rounded-b-md bg-gradient-to-b from-[#2e7d32] via-[#1b5e20] to-[#0d3311] border border-emerald-400/30 shadow-md p-0.5 flex flex-col justify-between text-center overflow-hidden">
-                        <div className="w-2.5 h-3 bg-amber-400 rounded-t-xs mx-auto -mt-0.5" />
-                        <div className="bg-[#c81e28] text-white text-[5px] font-black py-0.5 rounded-xs leading-none">
-                          MAHOU
-                        </div>
-                        <div className="text-[5px] text-amber-300 font-black leading-none mb-1">
-                          ★★★★★
-                        </div>
-                      </div>
-                      <div className="w-5 h-1.5 bg-black/35 blur-xs rounded-full mt-0.5" />
-                    </div>
-
-                    {/* 3. Don Simón Zumo de Naranja */}
-                    <div className="relative flex flex-col items-center">
-                      <div className="w-[24px] h-[80px] rounded-t-lg rounded-b-md bg-gradient-to-b from-[#ff9800] via-[#f57c00] to-[#e65100] border border-orange-300/40 shadow-md p-0.5 flex flex-col justify-between text-center overflow-hidden">
-                        <div className="w-3 h-2 bg-green-600 rounded-t-xs mx-auto -mt-0.5" />
-                        <div className="bg-white text-[#e65100] text-[4.5px] font-black py-0.5 rounded-xs leading-none">
-                          DON SIMÓN
-                        </div>
-                        <span className="text-[9px] block leading-none">🍊</span>
-                        <div className="text-[4px] text-white font-black leading-none mb-1">
-                          100%
-                        </div>
-                      </div>
-                      <div className="w-6 h-1.5 bg-black/35 blur-xs rounded-full mt-0.5" />
-                    </div>
-
-                    {/* 4. Estrella Galicia 1906 */}
-                    <div className="relative flex flex-col items-center">
-                      <div className="w-[22px] h-[84px] rounded-t-full rounded-b-md bg-gradient-to-b from-[#4e342e] via-[#3e2723] to-[#1a0c08] border border-amber-600/30 shadow-md p-0.5 flex flex-col justify-between text-center overflow-hidden">
-                        <div className="w-2.5 h-3 bg-red-600 rounded-t-xs mx-auto -mt-0.5" />
-                        <div className="w-4 h-4 rounded-full bg-[#b71c1c] text-white text-[4px] font-black flex items-center justify-center mx-auto">
-                          1906
-                        </div>
-                        <div className="text-[4.5px] text-amber-200 font-bold leading-none mb-1">
-                          ESTRELLA
-                        </div>
-                      </div>
-                      <div className="w-5 h-1.5 bg-black/35 blur-xs rounded-full mt-0.5" />
-                    </div>
-
-                    {/* 5. Refresco Citrus */}
-                    <div className="relative flex flex-col items-center">
-                      <div className="w-[20px] h-[72px] rounded-t-lg rounded-b-md bg-gradient-to-b from-[#ffee58] via-[#fdd835] to-[#fbc02d] border border-yellow-200 shadow-md p-0.5 flex flex-col justify-between text-center overflow-hidden">
-                        <div className="w-2.5 h-2 bg-gray-300 rounded-t-xs mx-auto -mt-0.5" />
-                        <div className="bg-[#1565c0] text-white text-[4.5px] font-black py-0.5 rounded-xs leading-none">
-                          KAS
-                        </div>
-                        <span className="text-[8px] block leading-none">🍋</span>
-                        <div className="text-[4px] text-[#5d4037] font-bold leading-none mb-1">
-                          LIMÓN
-                        </div>
-                      </div>
-                      <div className="w-5 h-1.5 bg-black/35 blur-xs rounded-full mt-0.5" />
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* -------------------------------------------------------- */}
-              {/* SLIDE 3: Crisp Emerald Green - Spanish Produce            */}
-              {/* -------------------------------------------------------- */}
-              {card.type === "produce" && (
-                <div
-                  onClick={() => scrollToCatalog(card.category)}
-                  className="relative h-[210px] w-[84vw] max-w-[325px] rounded-[22px] bg-gradient-to-b from-[#10b981] via-[#059669] to-[#047857] p-3.5 flex flex-col justify-between overflow-hidden shadow-md cursor-pointer select-none active:scale-[0.99] transition-transform"
-                >
-                  <div className="relative z-10 flex items-start justify-between gap-2">
-                    <div className="flex-1 min-w-0 pt-0.5">
-                      <h3 className="font-outfit font-black text-[19px] xs:text-[21px] text-white tracking-tight leading-[1.06] uppercase max-w-[180px]">
-                        {card.headline}
-                      </h3>
-                      <div className="mt-1 inline-flex items-center rounded-full bg-amber-400 px-2.5 py-0.5 text-[9px] font-black text-emerald-950 uppercase tracking-wide">
-                        {card.badgeText}
-                      </div>
-                      <div className="mt-2 inline-flex items-center gap-1 rounded-full bg-white px-3.5 py-1 text-xs font-black text-emerald-800 shadow-md active:scale-95 transition-transform">
-                        <span>{card.ctaText}</span>
-                        <ArrowRightIcon className="h-3 w-3 rtl:rotate-180" />
-                      </div>
-                    </div>
-
-                    {/* Circular Badge */}
-                    <div className="h-14 w-14 shrink-0 rounded-full bg-white shadow-lg flex flex-col items-center justify-center rotate-6 border border-emerald-100">
-                      <span className="text-[8px] font-black tracking-widest text-emerald-700 leading-none uppercase">
-                        {card.discountBadge?.line1}
-                      </span>
-                      <span className="text-[17px] font-black text-emerald-700 leading-tight">
-                        {card.discountBadge?.line2}
-                      </span>
-                      <span className="text-[8px] font-black tracking-widest text-emerald-700 leading-none uppercase">
-                        {card.discountBadge?.line3}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Spanish Produce Showcase with Actual Images */}
-                  <div className="relative z-10 flex items-end justify-center gap-2 pb-0.5">
-                    <div className="relative flex flex-col items-center">
-                      <div className="relative h-14 w-14 rounded-full overflow-hidden border-2 border-white shadow-md bg-white">
-                        <Image
-                          src="/images/grocery/platano-canarias.jpg"
-                          alt="Plátano de Canarias"
-                          fill
-                          sizes="56px"
-                          className="object-cover"
-                        />
-                      </div>
-                      <span className="text-[8px] font-black text-white mt-0.5">Canarias</span>
-                    </div>
-
-                    <div className="relative flex flex-col items-center">
-                      <div className="relative h-15 w-15 rounded-full overflow-hidden border-2 border-white shadow-md bg-white -mb-1">
-                        <Image
-                          src="/images/grocery/mandarinas-clemenules.jpg"
-                          alt="Mandarinas de Valencia"
-                          fill
-                          sizes="60px"
-                          className="object-cover"
-                        />
-                      </div>
-                      <span className="text-[8px] font-black text-white mt-0.5">Valencia</span>
-                    </div>
-
-                    <div className="relative flex flex-col items-center">
-                      <div className="relative h-14 w-14 rounded-full overflow-hidden border-2 border-white shadow-md bg-white">
-                        <Image
-                          src="/images/grocery/limones-murcia.jpg"
-                          alt="Limones de Murcia"
-                          fill
-                          sizes="56px"
-                          className="object-cover"
-                        />
-                      </div>
-                      <span className="text-[8px] font-black text-white mt-0.5">Murcia</span>
-                    </div>
-
-                    <div className="relative flex flex-col items-center">
-                      <div className="relative h-13 w-13 rounded-full overflow-hidden border-2 border-white shadow-md bg-white">
-                        <Image
-                          src="/images/grocery/manzana-royal-gala.jpg"
-                          alt="Manzana Gala"
-                          fill
-                          sizes="52px"
-                          className="object-cover"
-                        />
-                      </div>
-                      <span className="text-[8px] font-black text-white mt-0.5">Lleida</span>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* -------------------------------------------------------- */}
-              {/* SLIDE 4: Ruby Crimson - Spanish Ibéricos & Charcutería    */}
-              {/* -------------------------------------------------------- */}
-              {card.type === "iberico" && (
-                <div
-                  onClick={() => scrollToCatalog(card.category)}
-                  className="relative h-[210px] w-[84vw] max-w-[325px] rounded-[22px] bg-gradient-to-b from-[#be123c] via-[#9f1239] to-[#881337] p-3.5 flex flex-col justify-between overflow-hidden shadow-md cursor-pointer select-none active:scale-[0.99] transition-transform"
-                >
-                  <div className="relative z-10 flex items-start justify-between gap-2">
-                    <div className="flex-1 min-w-0 pt-0.5">
-                      <h3 className="font-outfit font-black text-[19px] xs:text-[21px] text-white tracking-tight leading-[1.06] uppercase max-w-[180px]">
-                        {card.headline}
-                      </h3>
-                      <div className="mt-1 inline-flex items-center rounded-full bg-amber-300 px-2.5 py-0.5 text-[9px] font-black text-red-950 uppercase tracking-wide">
-                        {card.badgeText}
-                      </div>
-                      <div className="mt-2 inline-flex items-center gap-1 rounded-full bg-white px-3.5 py-1 text-xs font-black text-red-700 shadow-md active:scale-95 transition-transform">
-                        <span>{card.ctaText}</span>
-                        <ArrowRightIcon className="h-3 w-3 rtl:rotate-180" />
-                      </div>
-                    </div>
-
-                    <div className="h-14 w-14 shrink-0 rounded-full bg-white shadow-lg flex flex-col items-center justify-center -rotate-6 border border-rose-100">
-                      <span className="text-[8px] font-black tracking-widest text-red-700 leading-none uppercase">
-                        {card.discountBadge?.line1}
-                      </span>
-                      <span className="text-[17px] font-black text-red-700 leading-tight">
-                        {card.discountBadge?.line2}
-                      </span>
-                      <span className="text-[8px] font-black tracking-widest text-red-700 leading-none uppercase">
-                        {card.discountBadge?.line3}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Ibéricos Showcase */}
-                  <div className="relative z-10 flex items-end justify-center gap-2 pb-0.5">
-                    <div className="relative flex flex-col items-center">
-                      <div className="w-[52px] h-[52px] rounded-xl bg-gradient-to-br from-[#7f1d1d] to-[#450a0a] border border-amber-300/40 shadow-md p-1 flex flex-col justify-between text-center">
-                        <span className="text-[7px] font-black text-amber-300 uppercase">Jamón 100%</span>
-                        <span className="text-[16px] leading-none">🥩</span>
-                        <span className="text-[6px] font-bold text-white">Bellota</span>
-                      </div>
-                      <div className="w-12 h-1.5 bg-black/35 blur-xs rounded-full mt-0.5" />
-                    </div>
-
-                    <div className="relative flex flex-col items-center">
-                      <div className="w-[50px] h-[58px] rounded-xl bg-gradient-to-br from-[#d97706] to-[#92400e] border border-amber-200 shadow-md p-1 flex flex-col justify-between text-center -mb-1">
-                        <span className="text-[7px] font-black text-amber-100 uppercase">Queso Curado</span>
-                        <span className="text-[16px] leading-none">🧀</span>
-                        <span className="text-[6px] font-bold text-white">D.O.P.</span>
-                      </div>
-                      <div className="w-12 h-1.5 bg-black/35 blur-xs rounded-full mt-0.5" />
-                    </div>
-
-                    <div className="relative flex flex-col items-center">
-                      <div className="w-[44px] h-[50px] rounded-xl bg-gradient-to-br from-[#166534] to-[#14532d] border border-emerald-300/40 shadow-md p-1 flex flex-col justify-between text-center">
-                        <span className="text-[7px] font-black text-emerald-200 uppercase">AOVE</span>
-                        <span className="text-[16px] leading-none">🫒</span>
-                        <span className="text-[6px] font-bold text-white">Jaén</span>
-                      </div>
-                      <div className="w-10 h-1.5 bg-black/35 blur-xs rounded-full mt-0.5" />
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* -------------------------------------------------------- */}
-              {/* SLIDE 5: Warm Bakery Amber - Artisanal Bakery            */}
-              {/* -------------------------------------------------------- */}
-              {card.type === "bakery" && (
-                <div
-                  onClick={() => scrollToCatalog(card.category)}
-                  className="relative h-[210px] w-[84vw] max-w-[325px] rounded-[22px] bg-gradient-to-b from-[#ea580c] via-[#c2410c] to-[#9a3412] p-3.5 flex flex-col justify-between overflow-hidden shadow-md cursor-pointer select-none active:scale-[0.99] transition-transform"
-                >
-                  <div className="relative z-10 flex items-start justify-between gap-2">
-                    <div className="flex-1 min-w-0 pt-0.5">
-                      <h3 className="font-outfit font-black text-[19px] xs:text-[21px] text-white tracking-tight leading-[1.06] uppercase max-w-[180px]">
-                        {card.headline}
-                      </h3>
-                      <div className="mt-1 inline-flex items-center rounded-full bg-amber-100 px-2.5 py-0.5 text-[9px] font-black text-amber-950 uppercase tracking-wide">
-                        {card.badgeText}
-                      </div>
-                      <div className="mt-2 inline-flex items-center gap-1 rounded-full bg-white px-3.5 py-1 text-xs font-black text-amber-800 shadow-md active:scale-95 transition-transform">
-                        <span>{card.ctaText}</span>
-                        <ArrowRightIcon className="h-3 w-3 rtl:rotate-180" />
-                      </div>
-                    </div>
-
-                    <div className="h-14 w-14 shrink-0 rounded-full bg-white shadow-lg flex flex-col items-center justify-center rotate-6 border border-amber-100">
-                      <span className="text-[8px] font-black tracking-widest text-amber-800 leading-none uppercase">
-                        {card.discountBadge?.line1}
-                      </span>
-                      <span className="text-[17px] font-black text-amber-800 leading-tight">
-                        {card.discountBadge?.line2}
-                      </span>
-                      <span className="text-[8px] font-black tracking-widest text-amber-800 leading-none uppercase">
-                        {card.discountBadge?.line3}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Bakery Showcase */}
-                  <div className="relative z-10 flex items-end justify-center gap-2 pb-0.5">
-                    <div className="relative flex flex-col items-center">
-                      <div className="w-[50px] h-[52px] rounded-xl bg-gradient-to-br from-[#b45309] to-[#78350f] border border-amber-200/50 shadow-md p-1 flex flex-col justify-between text-center">
-                        <span className="text-[7px] font-black text-amber-200 uppercase">Masa Madre</span>
-                        <span className="text-[18px] leading-none">🥖</span>
-                        <span className="text-[6px] font-bold text-white">Gallego</span>
-                      </div>
-                      <div className="w-12 h-1.5 bg-black/35 blur-xs rounded-full mt-0.5" />
-                    </div>
-
-                    <div className="relative flex flex-col items-center">
-                      <div className="w-[50px] h-[56px] rounded-xl bg-gradient-to-br from-[#d97706] to-[#92400e] border border-amber-200/50 shadow-md p-1 flex flex-col justify-between text-center -mb-1">
-                        <span className="text-[7px] font-black text-amber-100 uppercase">Croissant</span>
-                        <span className="text-[18px] leading-none">🥐</span>
-                        <span className="text-[6px] font-bold text-white">Mantequilla</span>
-                      </div>
-                      <div className="w-12 h-1.5 bg-black/35 blur-xs rounded-full mt-0.5" />
-                    </div>
-
-                    <div className="relative flex flex-col items-center">
-                      <div className="w-[46px] h-[50px] rounded-xl bg-gradient-to-br from-[#ca8a04] to-[#854d0e] border border-amber-200/50 shadow-md p-1 flex flex-col justify-between text-center">
-                        <span className="text-[7px] font-black text-amber-100 uppercase">Huevos</span>
-                        <span className="text-[18px] leading-none">🥚</span>
-                        <span className="text-[6px] font-bold text-white">Camperos</span>
-                      </div>
-                      <div className="w-11 h-1.5 bg-black/35 blur-xs rounded-full mt-0.5" />
-                    </div>
-                  </div>
-                </div>
-              )}
+          {mobileBanners.map((banner, idx) => (
+            <div key={banner.id} className="snap-start shrink-0">
+              <div
+                onClick={() => scrollToCatalog(banner.category)}
+                className={`relative h-[190px] xs:h-[210px] w-[86vw] max-w-[345px] rounded-[22px] overflow-hidden shadow-sm border border-black/5 dark:border-white/10 cursor-pointer select-none active:scale-[0.99] transition-transform ${banner.bg}`}
+              >
+                <Image
+                  src={banner.src}
+                  alt={banner.alt}
+                  fill
+                  sizes="(max-width: 640px) 345px, 100vw"
+                  className={banner.contain ? "object-contain p-2" : "object-cover object-center"}
+                  priority={idx === 0}
+                />
+              </div>
             </div>
           ))}
         </div>
 
-        {/* Mobile Pagination Dots Matching Reference UI (Active Orange Pill + Gray Dots) */}
+        {/* Mobile Pagination Dots (Active Orange Pill + Gray Dots) */}
         <div className="flex items-center justify-center gap-1.5 pt-2 pb-0.5">
-          {mobileCards.map((_, idx) => {
+          {mobileBanners.map((_, idx) => {
             const isActive = mobileSlideIndex === idx;
             return (
               <button
