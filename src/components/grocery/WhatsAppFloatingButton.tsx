@@ -18,7 +18,7 @@ export const WhatsAppFloatingButton: React.FC<WhatsAppFloatingButtonProps> = ({
   const pathname = usePathname();
   const t = useTranslations("grocery");
   const locale = useLocale();
-  const { cart, total, discountAmount, promoCode } = useGroceryCart();
+  const { cart, total, discountAmount, promoCode, totalItems } = useGroceryCart();
   const [isHovered, setIsHovered] = useState(false);
   const shouldReduceMotion = useReducedMotion();
 
@@ -49,8 +49,14 @@ export const WhatsAppFloatingButton: React.FC<WhatsAppFloatingButtonProps> = ({
   };
 
   return (
-    // Positioned safely above the mobile bottom nav on mobile, and bottom-8 on desktop
-    <div className="fixed bottom-[calc(3.75rem+env(safe-area-inset-bottom)+12px)] end-4 md:bottom-8 md:end-8 z-30 flex items-center">
+    // Positioned safely above the mobile bottom nav on mobile (and above cart bar if items in cart), and bottom-8 on desktop
+    <div
+      className={`fixed z-30 flex items-center transition-all duration-300 ${
+        totalItems > 0
+          ? "bottom-[calc(62px+env(safe-area-inset-bottom,0px)+54px)]"
+          : "bottom-[calc(3.75rem+env(safe-area-inset-bottom)+12px)]"
+      } end-3 sm:end-4 md:bottom-8 md:end-8`}
+    >
       <motion.a
         href={generateWhatsAppUrl()}
         target="_blank"

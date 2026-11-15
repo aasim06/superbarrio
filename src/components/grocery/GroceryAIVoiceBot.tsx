@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { usePathname } from "@/i18n/navigation";
+import { useGroceryCart } from "@/context/GroceryCartContext";
 import { LeafIcon } from "@/icons";
 import { GROCERY_PRODUCTS } from "@/data/groceryData";
 import type { GroceryProduct } from "@/types/grocery";
@@ -39,6 +40,7 @@ const isUrduText = (str: string) => /[\u0600-\u06FF]/.test(str);
 
 export default function GroceryAIVoiceBot() {
   const pathname = usePathname();
+  const { totalItems } = useGroceryCart();
   const [isOpen, setIsOpen] = useState(false);
   const [selectedLang, setSelectedLang] = useState<"ur-PK" | "en-US">("ur-PK");
   const [selectedVoice, setSelectedVoice] = useState<
@@ -416,7 +418,11 @@ export default function GroceryAIVoiceBot() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 20 }}
-          className="hidden md:block fixed bottom-8 start-8 z-40"
+          className={`fixed z-40 transition-all duration-300 ${
+            totalItems > 0
+              ? "bottom-[calc(62px+env(safe-area-inset-bottom,0px)+54px)]"
+              : "bottom-[calc(3.75rem+env(safe-area-inset-bottom)+12px)]"
+          } start-3 sm:start-4 md:bottom-8 md:start-8`}
         >
           <button
             onClick={() => {
@@ -425,12 +431,12 @@ export default function GroceryAIVoiceBot() {
                 speakText(messages[0].text);
               }
             }}
-            className="group flex items-center gap-2.5 sm:gap-3.5 rounded-full bg-gray-950/95 p-2 sm:px-4 sm:py-3 shadow-[0_12px_32px_rgba(0,0,0,0.45)] border border-gray-800/80 backdrop-blur-md transition-all duration-300 hover:scale-105 hover:border-emerald-500/50 hover:shadow-[0_12px_36px_rgba(16,185,129,0.25)]"
+            className="group flex items-center gap-2 sm:gap-3 rounded-full bg-gray-950/95 p-1.5 sm:px-4 sm:py-3 shadow-[0_12px_32px_rgba(0,0,0,0.45)] border border-gray-800/80 backdrop-blur-md transition-all duration-300 hover:scale-105 hover:border-emerald-500/50 hover:shadow-[0_12px_36px_rgba(16,185,129,0.25)] select-none"
             aria-label="Open SuperBarrio AI Voice Assistant"
           >
             {/* Website Brand Logo Icon (Leaf with Emerald Green gradient) */}
-            <div className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500 to-green-600 text-white shadow-md shadow-emerald-500/30">
-              <LeafIcon className="h-5 w-5" />
+            <div className="relative flex h-8 w-8 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500 to-green-600 text-white shadow-md shadow-emerald-500/30">
+              <LeafIcon className="h-4.5 w-4.5 sm:h-5 sm:w-5" />
               {/* Online pulsing dot */}
               <span className="absolute -top-0.5 -end-0.5 flex h-2.5 w-2.5">
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
@@ -438,19 +444,21 @@ export default function GroceryAIVoiceBot() {
               </span>
             </div>
 
-            {/* Labels - hidden on mobile for clean circular FAB, expanded on sm+ */}
-            <div className="hidden sm:block text-start pe-2">
-              <div className="flex items-center gap-1.5">
-                <span className="font-outfit text-xs font-black tracking-wider text-white uppercase">
+            {/* Labels - Visible on mobile as compact pill, full on sm+ */}
+            <div className="text-start pe-2">
+              <div className="flex items-center gap-1 sm:gap-1.5">
+                <span className="font-outfit text-[11px] sm:text-xs font-black tracking-wider text-white uppercase">
                   SuperBarrio AI
                 </span>
-                <span className="rounded bg-emerald-500/20 px-1.5 py-0.2 text-[9px] font-bold text-emerald-400">
-                  اردو Voice
+                <span className="rounded bg-emerald-500/20 px-1.5 py-0.2 text-[8px] sm:text-[9px] font-bold text-emerald-400">
+                  <span className="inline sm:hidden">اردو</span>
+                  <span className="hidden sm:inline">اردو Voice</span>
                 </span>
               </div>
-              <div className="flex items-center gap-1 text-[11px] font-medium text-emerald-400">
+              <div className="flex items-center gap-1 text-[9px] sm:text-[11px] font-medium text-emerald-400">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                Online • Live Chat & Voice
+                <span>Online</span>
+                <span className="hidden sm:inline">• Live Chat & Voice</span>
               </div>
             </div>
           </button>
