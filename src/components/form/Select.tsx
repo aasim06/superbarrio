@@ -1,80 +1,55 @@
-import { ChevronDownIcon } from "@/icons";
-import { useState, useEffect } from "react";
+"use client";
 
-interface Option {
+import React from "react";
+import CustomSelect, { CustomSelectOption } from "../ui/dropdown/CustomSelect";
+
+export interface SelectOption {
   value: string;
   label: string;
+  sublabel?: string;
 }
 
-interface SelectProps {
-  options: Option[];
+export interface SelectProps {
+  options: SelectOption[];
   placeholder?: string;
   onChange: (value: string) => void;
   className?: string;
   defaultValue?: string;
   value?: string;
+  disabled?: boolean;
+  size?: "sm" | "md";
+  align?: "left" | "right";
 }
 
-const Select: React.FC<SelectProps> = ({
+export default function Select({
   options,
   placeholder = "Select an option",
   onChange,
   className = "",
   defaultValue = "",
   value,
-}) => {
-  // Manage the selected value
-  const [selectedValue, setSelectedValue] = useState<string>(value ?? defaultValue);
+  disabled = false,
+  size = "md",
+  align = "left",
+}: SelectProps) {
+  const currentValue = value !== undefined ? value : defaultValue;
 
-  useEffect(() => {
-    if (value !== undefined) {
-      setSelectedValue(value);
-    }
-  }, [value]);
-
-  const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const newVal = e.target.value;
-    if (value === undefined) {
-      setSelectedValue(newVal);
-    }
-    onChange(newVal); // Trigger parent handler
-  };
+  const customOptions: CustomSelectOption[] = options.map((opt) => ({
+    value: opt.value,
+    label: opt.label,
+    sublabel: opt.sublabel,
+  }));
 
   return (
-    <div className="relative">
-      <select
-        className={`h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 pe-11 text-sm shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:ring-3 focus:ring-brand-500/10 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800 ${
-          selectedValue
-            ? "text-gray-800 dark:text-white/90"
-            : "text-gray-400 dark:text-gray-400"
-        } ${className}`}
-        value={selectedValue}
-        onChange={handleChange}
-      >
-        {/* Placeholder option */}
-        <option
-          value=""
-          disabled
-          className="text-gray-700 dark:bg-gray-900 dark:text-gray-400"
-        >
-          {placeholder}
-        </option>
-        {/* Map over options */}
-        {options.map((option) => (
-          <option
-            key={option.value}
-            value={option.value}
-            className="text-gray-700 dark:bg-gray-900 dark:text-gray-400"
-          >
-            {option.label}
-          </option>
-        ))}
-      </select>
-      <span className="end-4 pointer-events-none absolute top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">
-        <ChevronDownIcon className="h-5 w-5" />
-      </span>
-    </div>
+    <CustomSelect
+      options={customOptions}
+      value={currentValue}
+      onChange={onChange}
+      placeholder={placeholder}
+      className={className}
+      disabled={disabled}
+      size={size}
+      align={align}
+    />
   );
-};
-
-export default Select;
+}

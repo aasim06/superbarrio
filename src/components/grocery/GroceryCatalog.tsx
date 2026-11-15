@@ -1,20 +1,35 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
+import dynamic from "next/dynamic";
 import GroceryHeroBanner from "@/components/grocery/GroceryHeroBanner";
 import CategoryBar from "@/components/grocery/CategoryBar";
 import ProductCard from "@/components/grocery/ProductCard";
 import SortFilterBar from "@/components/grocery/SortFilterBar";
-import RecentlyViewedSection from "@/components/grocery/RecentlyViewedSection";
-import MarqueeStrip from "@/components/grocery/MarqueeStrip";
-import TestimonialsSection from "@/components/grocery/TestimonialsSection";
-import NewsletterSection from "@/components/grocery/NewsletterSection";
 import { GROCERY_PRODUCTS, getAllProducts } from "@/data/groceryData";
 import { GroceryProduct } from "@/types/grocery";
 import { useGroceryCart } from "@/context/GroceryCartContext";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { SearchIcon } from "@/icons";
 import { motion, AnimatePresence, type Variants } from "framer-motion";
+
+// Dynamically import heavy below-the-fold components (reduce initial JS bundle)
+const RecentlyViewedSection = dynamic(
+  () => import("@/components/grocery/RecentlyViewedSection").then((m) => ({ default: m.RecentlyViewedSection ?? m.default })),
+  { ssr: false },
+);
+const MarqueeStrip = dynamic(
+  () => import("@/components/grocery/MarqueeStrip"),
+  { ssr: false },
+);
+const TestimonialsSection = dynamic(
+  () => import("@/components/grocery/TestimonialsSection").then((m) => ({ default: m.TestimonialsSection ?? m.default })),
+  { ssr: false },
+);
+const NewsletterSection = dynamic(
+  () => import("@/components/grocery/NewsletterSection").then((m) => ({ default: m.NewsletterSection ?? m.default })),
+  { ssr: false },
+);
 
 const gridContainerVariants: Variants = {
   hidden: { opacity: 0 },
@@ -38,6 +53,8 @@ const gridItemVariants: Variants = {
 
 export const GroceryCatalog: React.FC = () => {
   const t = useTranslations("grocery");
+  const locale = useLocale();
+  const isEs = locale === "es";
   const {
     activeCategory,
     searchQuery,
@@ -71,7 +88,9 @@ export const GroceryCatalog: React.FC = () => {
       const matchesSearch =
         !searchQuery ||
         product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        Boolean(product.nameEn && product.nameEn.toLowerCase().includes(searchQuery.toLowerCase())) ||
         product.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        Boolean(product.descriptionEn && product.descriptionEn.toLowerCase().includes(searchQuery.toLowerCase())) ||
         product.category.toLowerCase().includes(searchQuery.toLowerCase());
 
       // In stock only filter
@@ -130,27 +149,29 @@ export const GroceryCatalog: React.FC = () => {
         <GroceryHeroBanner />
       </motion.div>
 
-      {/* Infinite Organic Ticker Marquee Strip */}
-      <MarqueeStrip />
-
-      {/* Sticky Category Pills Bar */}
+      {/* Sticky Category Pills Bar - Placed directly below Hero for instant mobile filtering */}
       <motion.div
         initial={{ opacity: 0, y: 18 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.15, ease: "easeOut" }}
-        className="mt-6"
+        transition={{ duration: 0.5, delay: 0.1, ease: "easeOut" }}
+        className="mt-2.5 sm:mt-6"
       >
         <CategoryBar />
       </motion.div>
 
+      {/* Infinite Organic Ticker Marquee Strip - Kept on desktop */}
+      <div className="hidden sm:block">
+        <MarqueeStrip />
+      </div>
+
       {/* Products Catalog Grid with Scroll Reveal */}
-      <div id="grocery-catalog" className="mt-8 scroll-mt-32">
+      <div id="grocery-catalog" className="mt-4 sm:mt-8 scroll-mt-32">
         {/* Section Header */}
         <div className="flex items-center justify-between pb-3">
           <div>
             <h3 className="font-outfit text-xl sm:text-2xl font-black tracking-tight text-gray-900 dark:text-white">
               {searchQuery
-                ? `Search: "${searchQuery}"`
+                ? (isEs ? `Búsqueda: "${searchQuery}"` : `Search: "${searchQuery}"`)
                 : activeCategory === "all"
                 ? t("popularEssentials")
                 : t("categoryItems")}

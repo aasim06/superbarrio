@@ -1,13 +1,16 @@
 "use client";
 
 import React, { useRef, useState } from "react";
+import Image from "next/image";
 import { GroceryProduct } from "@/types/grocery";
+import { getProductLocalized } from "@/data/groceryData";
 import { useGroceryCart } from "@/context/GroceryCartContext";
 import { LeafIcon, HeartIcon, EyeIcon, StarIcon } from "@/icons";
 import { useLocale, useTranslations } from "next-intl";
 import { formatPrice } from "@/utils/currency";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
+import { triggerHaptic } from "@/utils/haptics";
 
 interface ProductCardProps {
   product: GroceryProduct;
@@ -16,7 +19,7 @@ interface ProductCardProps {
 const FALLBACK_IMAGE =
   "https://images.unsplash.com/photo-1542838132-92c53300491e?w=600&auto=format&fit=crop&q=80";
 
-export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
+export const ProductCard: React.FC<ProductCardProps> = React.memo(function ProductCard({ product }) {
   const t = useTranslations("grocery");
   const locale = useLocale();
   const {
@@ -32,9 +35,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const quantity = cartItem ? cartItem.quantity : 0;
   const wishlisted = isWishlisted(product.id);
 
-  const imageRef = useRef<HTMLImageElement>(null);
-  const [imageLoaded, setImageLoaded] = useState(false);
-  const [imgSrc, setImgSrc] = useState(product.imageUrl || FALLBACK_IMAGE);
+  const imageRef = useRef<HTMLDivElement>(null);
+  const [imageError, setImageError] = useState(false);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
   const handleCardMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -42,34 +44,57 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     setMousePos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
   };
 
+  const isEs = locale === "es";
+  const localized = getProductLocalized(product, locale);
+
   const handleAdd = (e: React.MouseEvent) => {
     e.stopPropagation();
-    addToCart(product, 1, imageRef.current);
-    toast.success(`Added ${product.name} to basket!`);
+    triggerHaptic("medium");
+    addToCart(product, 1, null);
+    toast.success(
+      isEs
+        ? `¡${localized.name} añadido a la cesta!`
+        : `Added ${localized.name} to basket!`,
+    );
   };
 
   const handleIncrement = (e: React.MouseEvent) => {
     e.stopPropagation();
-    addToCart(product, 1, imageRef.current);
-    toast.success(`Updated quantity for ${product.name}`, { duration: 1500 });
+    triggerHaptic("light");
+    addToCart(product, 1, null);
+    toast.success(
+      isEs
+        ? `Cantidad actualizada para ${localized.name}`
+        : `Updated quantity for ${localized.name}`,
+      { duration: 1500 },
+    );
   };
 
   const handleDecrement = (e: React.MouseEvent) => {
     e.stopPropagation();
+    triggerHaptic("light");
     updateQuantity(product.id, quantity - 1);
   };
 
   const handleWishlistClick = (e: React.MouseEvent) => {
     e.stopPropagation();
+    triggerHaptic("selection");
     const added = toggleWishlist(product.id);
     if (added) {
-      toast.success(`Saved to wishlist!`, { duration: 1800 });
+      toast.success(
+        isEs ? `¡Guardado en favoritos!` : `Saved to wishlist!`,
+        { duration: 1800 },
+      );
     } else {
-      toast.info(`Removed from wishlist.`, { duration: 1500 });
+      toast.info(
+        isEs ? `Eliminado de favoritos.` : `Removed from wishlist.`,
+        { duration: 1500 },
+      );
     }
   };
 
   const handleCardClick = () => {
+    triggerHaptic("light");
     setQuickViewProduct(product);
   };
 
@@ -81,7 +106,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       transition={{ duration: 0.25, ease: "easeOut" }}
       role="button"
       tabIndex={0}
-      aria-label={`View details for ${product.name}, price ${formatPrice(product.price, locale)}`}
+      aria-label={
+        isEs
+          ? `Ver detalles de ${localized.name}, precio ${formatPrice(product.price, locale)}`
+          : `View details for ${localized.name}, price ${formatPrice(product.price, locale)}`
+      }
       onKeyDown={(e) => {
         if (e.key === "Enter" || e.key === " ") {
           e.preventDefault();
@@ -100,29 +129,38 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
       <div className="relative z-10 flex flex-1 flex-col justify-between">
         {/* Product Visual Container with Skeleton Shimmer (aspect-square keeps all cards consistent) */}
-        <div className="relative flex aspect-square w-full items-center justify-center overflow-hidden rounded-xl sm:rounded-2xl bg-gray-50/80 dark:bg-gray-800/60">
+        <div ref={imageRef} className="relative flex aspect-square w-full items-center justify-center overflow-hidden rounded-xl sm:rounded-2xl bg-gray-50/80 dark:bg-gray-800/60">
           {/* Skeleton Shimmer Loader */}
-          {!imageLoaded && (
+          {!imageError && (
             <div className="absolute inset-0 animate-pulse bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 dark:from-emerald-950/40 dark:via-gray-800 dark:to-emerald-950/40" />
           )}
 
-          <img
-            ref={imageRef}
-            src={imgSrc}
-            alt={product.name}
-            onError={() => setImgSrc(FALLBACK_IMAGE)}
-            onLoad={() => setImageLoaded(true)}
-            className={`h-full w-full object-cover transition-all duration-500 ease-out group-hover:scale-[1.08] ${
-              imageLoaded ? "opacity-100" : "opacity-0"
-            }`}
-            loading="lazy"
-          />
+          {imageError ? (
+            /* Inline SVG fallback — never shows broken icon box */
+            <div className="flex h-full w-full items-center justify-center bg-gray-100 dark:bg-gray-800">
+              <svg className="h-12 w-12 text-gray-300 dark:text-gray-600" fill="none" viewBox="0 0 48 48" stroke="currentColor" strokeWidth={1.2}>
+                <rect x="4" y="4" width="40" height="40" rx="8" />
+                <circle cx="18" cy="18" r="4" />
+                <path d="M4 32l10-10 8 8 6-6 10 10" />
+              </svg>
+            </div>
+          ) : (
+            <Image
+              src={product.imageUrl || FALLBACK_IMAGE}
+              alt={localized.name}
+              fill
+              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 20vw"
+              className="object-cover transition-all duration-500 ease-out group-hover:scale-[1.08]"
+              loading="lazy"
+              onError={() => setImageError(true)}
+            />
+          )}
 
           {/* Offer / Category Badge with Subtle Pulsing glow */}
-          {product.badge && (
+          {localized.badge && (
             <div className="absolute start-1.5 top-1.5 sm:start-2.5 sm:top-2.5 z-10 max-w-[65%]">
               <span className="block truncate rounded-full bg-gradient-to-r from-amber-500 to-orange-500 px-2 py-0.5 text-[9px] sm:text-[10px] font-black tracking-wide text-white shadow-xs animate-[pulse_2.5s_infinite]">
-                {product.badge}
+                {localized.badge}
               </span>
             </div>
           )}
@@ -158,7 +196,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           <div className="pointer-events-none absolute inset-0 z-10 hidden sm:flex items-center justify-center bg-black/20 opacity-0 backdrop-blur-[1px] transition-opacity duration-200 group-hover:opacity-100">
             <span className="flex items-center gap-1.5 rounded-full bg-white/95 px-3 py-1 text-[11px] font-bold text-gray-800 shadow-md backdrop-blur-md dark:bg-gray-900/95 dark:text-white">
               <EyeIcon className="h-3.5 w-3.5 text-gray-700 dark:text-gray-300" />
-              <span>Quick View</span>
+              <span>{isEs ? "Vista rápida" : "Quick View"}</span>
             </span>
           </div>
 
@@ -173,16 +211,16 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         <div className="mt-2 sm:mt-3 flex-1 flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between text-[10px] sm:text-[11px] font-semibold text-gray-500 dark:text-emerald-300/70">
-              <span className="truncate">{product.unit}</span>
-              {product.origin && (
+              <span className="truncate">{localized.unit}</span>
+              {localized.origin && (
                 <span className="ms-1 truncate rounded-md bg-gray-100 px-1.5 py-0.5 text-[9px] sm:text-[10px] font-bold text-gray-600 dark:bg-emerald-950/60 dark:text-emerald-300">
-                  {product.origin}
+                  {localized.origin}
                 </span>
               )}
             </div>
 
             <h4 className="mt-1 font-outfit line-clamp-2 min-h-[2.1rem] sm:min-h-[2.5rem] text-xs sm:text-sm font-black text-gray-900 transition-colors duration-200 group-hover:text-emerald-600 dark:text-white dark:group-hover:text-emerald-400 leading-snug">
-              {product.name}
+              {localized.name}
             </h4>
           </div>
         </div>
@@ -215,7 +253,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.92 }}
                 onClick={handleAdd}
-                className="inline-flex items-center gap-1 rounded-xl border border-emerald-500/60 bg-emerald-50/80 px-2 sm:px-3 py-1 sm:py-1.5 text-[11px] sm:text-xs font-black text-emerald-700 shadow-xs transition-colors duration-200 hover:bg-emerald-600 hover:text-white dark:border-emerald-500/80 dark:bg-emerald-950/40 dark:text-emerald-300 dark:hover:bg-emerald-600 dark:hover:text-white"
+                className="inline-flex shrink-0 items-center gap-1 rounded-xl border border-emerald-500/60 bg-emerald-50/80 px-1.5 2xsm:px-2 sm:px-3 py-1 sm:py-1.5 text-[10px] 2xsm:text-[11px] sm:text-xs font-black text-emerald-700 shadow-xs transition-colors duration-200 hover:bg-emerald-600 hover:text-white dark:border-emerald-500/80 dark:bg-emerald-950/40 dark:text-emerald-300 dark:hover:bg-emerald-600 dark:hover:text-white whitespace-nowrap"
               >
                 <span className="text-xs sm:text-sm font-black">+</span>
                 <span>{t("addToCart")}</span>
@@ -263,6 +301,6 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       </div>
     </motion.div>
   );
-};
+});
 
 export default ProductCard;

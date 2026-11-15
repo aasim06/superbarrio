@@ -2,8 +2,9 @@
 
 import React from "react";
 import { useGroceryCart, SortOption } from "@/context/GroceryCartContext";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { TagIcon } from "@/icons";
+import CustomSelect, { CustomSelectOption } from "../ui/dropdown/CustomSelect";
 
 interface SortFilterBarProps {
   totalCount: number;
@@ -11,6 +12,9 @@ interface SortFilterBarProps {
 
 export const SortFilterBar: React.FC<SortFilterBarProps> = ({ totalCount }) => {
   const t = useTranslations("grocery");
+  const locale = useLocale();
+  const isEs = locale === "es";
+
   const {
     sortBy,
     setSortBy,
@@ -38,7 +42,7 @@ export const SortFilterBar: React.FC<SortFilterBarProps> = ({ totalCount }) => {
               filterInStockOnly ? "bg-white" : "bg-emerald-500"
             }`}
           />
-          <span>In Stock</span>
+          <span>{isEs ? "En Stock" : "In Stock"}</span>
         </button>
 
         {/* On Sale Filter */}
@@ -51,11 +55,11 @@ export const SortFilterBar: React.FC<SortFilterBarProps> = ({ totalCount }) => {
           }`}
         >
           <TagIcon className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
-          <span>On Sale</span>
+          <span>{isEs ? "En Oferta" : "On Sale"}</span>
         </button>
 
         <span className="text-[11px] sm:text-xs font-semibold text-gray-400 dark:text-emerald-400/60 hidden sm:inline">
-          ({totalCount} items)
+          ({totalCount} {isEs ? "artículos" : "items"})
         </span>
       </div>
 
@@ -63,22 +67,24 @@ export const SortFilterBar: React.FC<SortFilterBarProps> = ({ totalCount }) => {
       <div className="flex items-center gap-1.5 sm:gap-2">
         <label
           htmlFor="sort-select"
-          className="text-[11px] sm:text-xs font-bold text-gray-500 dark:text-emerald-300/80 hidden xs:inline"
+          className="text-[11px] sm:text-xs font-bold text-gray-500 dark:text-emerald-300/80 hidden xsm:inline"
         >
-          Sort:
+          {isEs ? "Ordenar:" : "Sort:"}
         </label>
-        <select
-          id="sort-select"
-          value={sortBy}
-          onChange={(e) => setSortBy(e.target.value as SortOption)}
-          className="rounded-lg sm:rounded-xl border border-gray-200/80 bg-white px-2 sm:px-3 py-1 sm:py-1.5 text-[11px] sm:text-xs font-bold text-gray-800 shadow-xs transition focus:border-emerald-500 focus:outline-none dark:border-emerald-950/80 dark:bg-[#071d12] dark:text-white"
-        >
-          <option value="featured">Featured</option>
-          <option value="price-asc">Price: Low to High</option>
-          <option value="price-desc">Price: High to Low</option>
-          <option value="rating-desc">Highest Rated</option>
-          <option value="discount">Biggest Discount</option>
-        </select>
+        <div className="w-44 sm:w-48">
+          <CustomSelect
+            size="sm"
+            options={[
+              { value: "featured", label: isEs ? "Destacados" : "Featured" },
+              { value: "price-asc", label: isEs ? "Precio: Menor a Mayor" : "Price: Low to High" },
+              { value: "price-desc", label: isEs ? "Precio: Mayor a Menor" : "Price: High to Low" },
+              { value: "rating-desc", label: isEs ? "Mejor Valorados" : "Highest Rated" },
+              { value: "discount", label: isEs ? "Mayor Descuento" : "Biggest Discount" },
+            ]}
+            value={sortBy}
+            onChange={(val) => setSortBy(val as SortOption)}
+          />
+        </div>
       </div>
     </div>
   );

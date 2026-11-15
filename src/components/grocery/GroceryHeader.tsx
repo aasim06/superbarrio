@@ -3,14 +3,16 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link } from "@/i18n/navigation";
 import { useGroceryCart } from "@/context/GroceryCartContext";
-import { ThemeToggleButton } from "@/components/common/ThemeToggleButton";
+import GroceryUserDropdown from "@/components/grocery/GroceryUserDropdown";
 import GroceryLanguageSwitcher from "@/components/grocery/GroceryLanguageSwitcher";
+import { ThemeToggleButton } from "@/components/common/ThemeToggleButton";
 import { CartIcon, LeafIcon, SearchIcon, BoltIcon } from "@/icons";
 import { useLocale, useTranslations } from "next-intl";
 import { formatPrice } from "@/utils/currency";
 import { motion, AnimatePresence } from "framer-motion";
-import { GROCERY_PRODUCTS } from "@/data/groceryData";
+import { GROCERY_PRODUCTS, getProductLocalized } from "@/data/groceryData";
 import { GroceryProduct } from "@/types/grocery";
+import { triggerHaptic } from "@/utils/haptics";
 
 export const GroceryHeader: React.FC = () => {
   const t = useTranslations("grocery");
@@ -39,12 +41,15 @@ export const GroceryHeader: React.FC = () => {
 
     const timer = setTimeout(() => {
       const q = searchQuery.toLowerCase().trim();
-      const matches = GROCERY_PRODUCTS.filter(
-        (p) =>
+      const matches = GROCERY_PRODUCTS.filter((p) => {
+        const loc = getProductLocalized(p, locale);
+        return (
+          loc.name.toLowerCase().includes(q) ||
+          loc.description.toLowerCase().includes(q) ||
           p.name.toLowerCase().includes(q) ||
-          p.category.toLowerCase().includes(q) ||
-          p.description.toLowerCase().includes(q),
-      ).slice(0, 5);
+          (p.nameEn && p.nameEn.toLowerCase().includes(q))
+        );
+      }).slice(0, 5);
 
       setSuggestions(matches);
       setShowSuggestions(true);
@@ -93,15 +98,14 @@ export const GroceryHeader: React.FC = () => {
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-gray-200/70 bg-white/80 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] backdrop-blur-xl transition-colors duration-300 dark:border-emerald-950/60 dark:bg-[#071910]/85 dark:shadow-[0_4px_25px_-5px_rgba(0,0,0,0.4)]">
-      {/* Top Notification Announcement Bar */}
-      <div className="relative overflow-hidden bg-gradient-to-r from-emerald-600 via-green-600 to-emerald-700 px-4 py-1.5 text-center text-xs font-semibold tracking-wide text-white shadow-inner">
-        <div className="flex items-center justify-center gap-2">
-          <span className="inline-block h-2 w-2 rounded-full bg-amber-300 animate-ping" />
-          <span>{t("topNotice")}</span>
-          <span className="hidden sm:inline text-white/80">•</span>
-          <span className="hidden sm:inline font-bold text-amber-200">
-            <BoltIcon className="inline h-3.5 w-3.5 me-1 text-amber-300 fill-current" />
-            15-Min Instant Delivery • Code FRESH20 for 20% OFF
+      {/* Top Notification Announcement Bar with iOS Safe-Area-Inset-Top (Single Line on Mobile) */}
+      <div className="relative overflow-hidden bg-gradient-to-r from-emerald-600 via-green-600 to-emerald-700 px-3 pt-[max(0.25rem,env(safe-area-inset-top))] pb-1 text-center text-[10px] sm:text-xs font-semibold tracking-tight text-white shadow-inner">
+        <div className="flex items-center justify-center gap-1.5 truncate">
+          <span className="inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-amber-300 animate-ping" />
+          <span className="truncate">
+            {locale === "es"
+              ? "Envío gratis >25€ • Código FRESH20 (-20%) • Reparto Exprés 25 Min"
+              : "Free Delivery >€25 • Code FRESH20 (-20%) • 25-Min Delivery"}
           </span>
         </div>
       </div>
@@ -123,12 +127,16 @@ export const GroceryHeader: React.FC = () => {
 
           <div>
             <div className="flex items-center gap-1.5 sm:gap-2">
-              <span className="font-outfit text-lg sm:text-2xl font-black tracking-tight text-gray-900 dark:text-white">
+              <span className="font-outfit text-base sm:text-2xl font-black tracking-tight text-gray-900 dark:text-white">
                 Super<span className="text-emerald-600 dark:text-emerald-400">Barrio</span>
               </span>
               <span className="hidden sm:inline-block rounded-full bg-emerald-100/90 px-2.5 py-0.5 text-[10px] font-extrabold tracking-wider text-emerald-800 uppercase shadow-xs dark:bg-emerald-950/80 dark:text-emerald-300">
                 {t("badge")}
               </span>
+            </div>
+            <div className="sm:hidden flex items-center gap-1 text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
+              <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span>Madrid • 25 min ⚡</span>
             </div>
             <p className="hidden sm:block text-[11px] font-medium text-gray-500 dark:text-emerald-200/60">
               {t("tagline")}
@@ -136,10 +144,10 @@ export const GroceryHeader: React.FC = () => {
           </div>
         </Link>
 
-        {/* Live Search Bar with Dropdown Suggestions */}
+        {/* Live Search Bar with Dropdown Suggestions - activates at lg (1024px+) to prevent tablet header blowout */}
         <div
           ref={searchContainerRef}
-          className="relative hidden max-w-lg flex-1 md:block"
+          className="relative hidden max-w-lg flex-1 lg:block"
         >
           <div className="pointer-events-none absolute inset-y-0 start-0 flex items-center ps-3.5 text-gray-400 dark:text-emerald-400/60">
             <svg
@@ -192,51 +200,61 @@ export const GroceryHeader: React.FC = () => {
                   Matching Products
                 </div>
                 <div className="divide-y divide-gray-100 dark:divide-emerald-950/60">
-                  {suggestions.map((item) => (
-                    <div
-                      key={item.id}
-                      onClick={() => handleSelectSuggestion(item)}
-                      className="flex items-center gap-3 rounded-xl p-2.5 transition-colors hover:bg-emerald-50/70 dark:hover:bg-emerald-950/50 cursor-pointer"
-                    >
-                      <div className="h-10 w-10 shrink-0 overflow-hidden rounded-xl bg-gray-100 dark:bg-gray-800">
-                        <img
-                          src={item.imageUrl}
-                          alt={item.name}
-                          className="h-full w-full object-cover"
-                        />
+                  {suggestions.map((item) => {
+                    const loc = getProductLocalized(item, locale);
+                    return (
+                      <div
+                        key={item.id}
+                        onClick={() => handleSelectSuggestion(item)}
+                        className="flex items-center gap-3 rounded-xl p-2.5 transition-colors hover:bg-emerald-50/70 dark:hover:bg-emerald-950/50 cursor-pointer"
+                      >
+                        <div className="h-10 w-10 shrink-0 overflow-hidden rounded-xl bg-gray-100 dark:bg-gray-800">
+                          <img
+                            src={item.imageUrl}
+                            alt={loc.name}
+                            className="h-full w-full object-cover"
+                          />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h5 className="truncate text-xs font-bold text-gray-900 dark:text-white">
+                            {highlightMatch(loc.name, searchQuery)}
+                          </h5>
+                          <p className="text-[11px] text-gray-500 dark:text-emerald-300/60">
+                            {loc.unit} •{" "}
+                            <span className="font-bold text-emerald-600 dark:text-emerald-400">
+                              {formatPrice(item.price, locale)}
+                            </span>
+                          </p>
+                        </div>
+                        <span className="text-xs text-gray-400">➔</span>
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <h5 className="truncate text-xs font-bold text-gray-900 dark:text-white">
-                          {highlightMatch(item.name, searchQuery)}
-                        </h5>
-                        <p className="text-[11px] text-gray-500 dark:text-emerald-300/60">
-                          {item.unit} •{" "}
-                          <span className="font-bold text-emerald-600 dark:text-emerald-400">
-                            {formatPrice(item.price, locale)}
-                          </span>
-                        </p>
-                      </div>
-                      <span className="text-xs text-gray-400">➔</span>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </motion.div>
             )}
           </AnimatePresence>
         </div>
 
-        {/* Location & Header Actions */}
+        {/* Header Actions */}
         <div className="flex items-center gap-2.5 sm:gap-3">
-          {/* Language Switcher (ES / EN) */}
-          <GroceryLanguageSwitcher />
+          {/* Language Switcher (ES / EN) - Hidden on Mobile */}
+          <div className="hidden sm:block">
+            <GroceryLanguageSwitcher />
+          </div>
 
-          {/* Theme Toggle Button */}
-          <ThemeToggleButton />
+          {/* Theme Toggle Button (Light/Dark Mode) - Hidden on Mobile */}
+          <div className="hidden sm:block">
+            <ThemeToggleButton />
+          </div>
 
           {/* Animated Cart Basket Button with Bounce effect & Real-time Animated Total */}
           <motion.button
             id="header-basket-btn"
-            onClick={() => setIsCartOpen(true)}
+            onClick={() => {
+              triggerHaptic("medium");
+              setIsCartOpen(true);
+            }}
             animate={
               isBasketBouncing
                 ? {
@@ -260,7 +278,7 @@ export const GroceryHeader: React.FC = () => {
                     animate={{ scale: 1, opacity: 1 }}
                     exit={{ scale: 0.3, opacity: 0 }}
                     transition={{ type: "spring", stiffness: 500, damping: 25 }}
-                    className="absolute -end-3 -top-2.5 flex h-5 w-5 items-center justify-center rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-[11px] font-black text-white shadow-[0_2px_8px_rgba(245,158,11,0.6)]"
+                    className="absolute -top-1.5 -end-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-[9px] font-black text-white shadow-xs"
                   >
                     {totalItems}
                   </motion.span>
@@ -272,16 +290,19 @@ export const GroceryHeader: React.FC = () => {
               key={total}
               initial={{ scale: 0.9 }}
               animate={{ scale: 1 }}
-              className="hidden rounded-xl bg-black/20 px-2 py-0.5 text-xs font-extrabold md:inline"
+              className="hidden rounded-xl bg-black/20 px-2 py-0.5 text-xs font-extrabold lg:inline"
             >
               {formatPrice(total, locale)}
             </motion.span>
           </motion.button>
+
+          {/* User Profile Avatar Dropdown */}
+          <GroceryUserDropdown />
         </div>
       </div>
 
-      {/* Mobile Search Bar */}
-      <div className="border-t border-gray-100 px-3 py-2 md:hidden dark:border-emerald-950/60 dark:bg-[#071910]/95">
+      {/* Mobile & Tablet Search Bar */}
+      <div className="border-t border-gray-100 px-3 py-2 lg:hidden dark:border-emerald-950/60 dark:bg-[#071910]/95">
         <div className="relative">
           <input
             type="text"

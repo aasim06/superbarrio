@@ -20,8 +20,11 @@ export const GroceryLanguageSwitcher: React.FC = () => {
   const CurrentFlag = currentLang.FlagIcon;
 
   const handleSelect = (newLocale: Locale) => {
-    router.replace(pathname, { locale: newLocale });
+    // Persist choice in cookie and reload smoothly
+    document.cookie = `NEXT_LOCALE=${newLocale};path=/;max-age=31536000;SameSite=Lax`;
     setIsOpen(false);
+    router.replace(pathname, { locale: newLocale });
+    window.location.reload();
   };
 
   return (

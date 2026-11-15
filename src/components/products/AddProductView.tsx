@@ -15,6 +15,7 @@ import {
   saveProduct,
   saveBulkProducts,
   getCustomProducts,
+  getAllProducts,
   deleteProduct,
 } from "@/data/groceryData";
 import { GroceryProduct } from "@/types/grocery";
@@ -31,41 +32,43 @@ import {
   SearchIcon,
   RefreshIcon,
   FileIcon,
+  TableIcon,
 } from "@/icons";
 import { Link } from "@/i18n/navigation";
 import { useLocale } from "next-intl";
 import { formatPrice } from "@/utils/currency";
+import Pagination from "@/components/tables/Pagination";
 
 const PRESET_IMAGES = [
   {
-    name: "Red Fuji Apples",
+    name: "Plátanos de Canarias",
     category: "fruits-vegetables",
-    url: "https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=600&auto=format&fit=crop&q=80",
+    url: "/images/grocery/platano-canarias.jpg",
   },
   {
-    name: "Hass Avocados",
+    name: "Manzanas Royal Gala",
     category: "fruits-vegetables",
-    url: "https://images.unsplash.com/photo-1523049673857-eb18f1d7b578?w=600&auto=format&fit=crop&q=80",
+    url: "/images/grocery/manzana-royal-gala.jpg",
   },
   {
-    name: "Artisan Sourdough",
-    category: "bakery",
-    url: "https://images.unsplash.com/photo-1589367920969-ab8e050bbb04?w=600&auto=format&fit=crop&q=80",
+    name: "Zanahorias de Huerta",
+    category: "fruits-vegetables",
+    url: "/images/grocery/zanahorias-dulces.jpg",
   },
   {
-    name: "Farm Fresh Milk",
-    category: "dairy-eggs",
-    url: "https://images.unsplash.com/photo-1550583724-b2692b85b150?w=600&auto=format&fit=crop&q=80",
+    name: "Mandarinas Clemenules",
+    category: "fruits-vegetables",
+    url: "/images/grocery/mandarinas-clemenules.jpg",
   },
   {
-    name: "Pure Natural Honey",
-    category: "pantry-cooking",
-    url: "https://images.unsplash.com/photo-1587049352846-4a222e784d38?w=600&auto=format&fit=crop&q=80",
+    name: "Tomates de Ensalada",
+    category: "fruits-vegetables",
+    url: "/images/grocery/tomates-ensalada.jpg",
   },
   {
-    name: "Cold Brew Coffee",
-    category: "beverages",
-    url: "https://images.unsplash.com/photo-1517701604599-bb29b565090c?w=600&auto=format&fit=crop&q=80",
+    name: "Aguacates Hass",
+    category: "fruits-vegetables",
+    url: "/images/grocery/aguacates-hass.jpg",
   },
 ];
 
@@ -88,42 +91,65 @@ export default function AddProductView() {
   // Edit Mode tracking
   const [editingId, setEditingId] = useState<string | null>(null);
 
-  // Form Fields
-  const [name, setName] = useState("Organic Fuji Apples");
-  const [sku, setSku] = useState("SB-APL-101");
-  const [price, setPrice] = useState("3.49");
-  const [originalPrice, setOriginalPrice] = useState("4.20");
-  const [costPrice, setCostPrice] = useState("2.10");
+  // Form Fields (Clean initial state for production)
+  const [name, setName] = useState("");
+  const [sku, setSku] = useState("");
+  const [price, setPrice] = useState("");
+  const [originalPrice, setOriginalPrice] = useState("");
+  const [costPrice, setCostPrice] = useState("");
   const [unit, setUnit] = useState("1 kg");
   const [category, setCategory] = useState("fruits-vegetables");
-  const [stockQuantity, setStockQuantity] = useState("45");
+  const [stockQuantity, setStockQuantity] = useState("50");
   const [lowStockThreshold, setLowStockThreshold] = useState("10");
   const [expiryDate, setExpiryDate] = useState("");
-  const [imageUrl, setImageUrl] = useState(
-    "https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=600&auto=format&fit=crop&q=80"
-  );
-  const [badge, setBadge] = useState("Fresh");
-  const [origin, setOrigin] = useState("Local Orchard");
-  const [description, setDescription] = useState(
-    "Crisp, sweet organic Fuji apples freshly harvested and delivered directly from the farm."
-  );
+  const [imageUrl, setImageUrl] = useState("");
+  const [badge, setBadge] = useState("");
+  const [origin, setOrigin] = useState("España");
+  const [description, setDescription] = useState("");
 
   // Feedback, List & Search State
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [customProducts, setCustomProducts] = useState<GroceryProduct[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [customPage, setCustomPage] = useState(1);
+  const itemsPerPage = 6;
 
   // Category select options
-  const categoryOptions = GROCERY_CATEGORIES.filter((c) => c.id !== "all").map(
-    (c) => ({
-      value: c.id,
-      label: c.name,
-    })
+  const [categoriesList, setCategoriesList] = useState(
+    GROCERY_CATEGORIES.filter((c) => c.id !== "all")
   );
 
-  // Load custom products on mount
+  useEffect(() => {
+    fetch("/api/categories")
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.success && d.data?.length) {
+          setCategoriesList(d.data);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const categoryOptions = categoriesList.map((c) => ({
+    value: c.id,
+    label: c.name,
+  }));
+
+  // Load custom products on mount and check for ?edit= query
   useEffect(() => {
     setCustomProducts(getCustomProducts());
+
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const editId = params.get("edit");
+      if (editId) {
+        const all = getAllProducts();
+        const target = all.find((p) => p.id === editId);
+        if (target) {
+          handleEdit(target);
+        }
+      }
+    }
   }, []);
 
   // Profit Margin calculation
@@ -153,10 +179,26 @@ export default function AddProductView() {
     setSku(`SB-${prefix}-${randomNum}`);
   };
 
-  // Handle local image file upload (Base64 data URL)
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Handle local image file upload (Firebase Storage with fallback)
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+      const data = await res.json();
+      if (data.success && data.url) {
+        setImageUrl(data.url);
+        return;
+      }
+    } catch (err) {
+      console.warn("Upload API error, falling back to local data URL:", err);
+    }
 
     const reader = new FileReader();
     reader.onload = () => {
@@ -241,6 +283,13 @@ export default function AddProductView() {
 
     saveProduct(productData);
     setCustomProducts(getCustomProducts());
+
+    // Sync with Firebase Database
+    fetch("/api/products", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(productData),
+    }).catch((err) => console.warn("Firebase products sync fallback:", err));
 
     setToastMessage(
       editingId
@@ -557,6 +606,16 @@ export default function AddProductView() {
     );
   });
 
+  useEffect(() => {
+    setCustomPage(1);
+  }, [searchQuery]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredCustomProducts.length / itemsPerPage));
+  const paginatedCustomProducts = filteredCustomProducts.slice(
+    (customPage - 1) * itemsPerPage,
+    customPage * itemsPerPage
+  );
+
   return (
     <div className="space-y-6">
       {/* Toast Notification */}
@@ -571,13 +630,44 @@ export default function AddProductView() {
               Changes are live on the SuperBarrio Storefront.
             </p>
           </div>
-          <Link href="/grocery" className="ms-2">
-            <Button size="sm" variant="primary">
-              View Storefront
-            </Button>
-          </Link>
+          <div className="flex items-center gap-2 ms-2">
+            <Link href="/products">
+              <Button size="sm" variant="outline">
+                View in Table
+              </Button>
+            </Link>
+            <Link href="/grocery">
+              <Button size="sm" variant="primary">
+                Storefront
+              </Button>
+            </Link>
+          </div>
         </div>
       )}
+
+      {/* Navigation Banner to Products Table */}
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-gray-200 bg-white p-4 shadow-theme-xs dark:border-gray-800 dark:bg-gray-900">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-50 text-brand-600 dark:bg-brand-950/40 dark:text-brand-400">
+            <TableIcon className="h-5 w-5" />
+          </div>
+          <div>
+            <h4 className="text-sm font-bold text-gray-900 dark:text-white">
+              Looking to edit or delete existing products?
+            </h4>
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              Open the Products Table to view, search, edit details, or delete any catalog product.
+            </p>
+          </div>
+        </div>
+        <Link
+          href="/products"
+          className="inline-flex items-center gap-1.5 rounded-xl bg-brand-50 border border-brand-200 px-4 py-2 text-xs font-bold text-brand-700 transition hover:bg-brand-100 active:scale-95 dark:border-brand-800/40 dark:bg-brand-950/40 dark:text-brand-300"
+        >
+          <TableIcon className="h-4 w-4" />
+          <span>Open Products Table →</span>
+        </Link>
+      </div>
 
       {/* Main Two-Column Layout */}
       <div className="grid grid-cols-12 gap-6">
@@ -656,7 +746,7 @@ export default function AddProductView() {
                   {/* Sale Price */}
                   <div>
                     <Label htmlFor="prod-price">
-                      Sale Price ($) <span className="text-error-500">*</span>
+                      Sale Price (€) <span className="text-error-500">*</span>
                     </Label>
                     <Input
                       id="prod-price"
@@ -673,7 +763,7 @@ export default function AddProductView() {
                   {/* Original / Strike-through Price */}
                   <div>
                     <Label htmlFor="prod-orig-price">
-                      Original Price ($){" "}
+                      Original Price (€){" "}
                       <span className="text-xs font-normal text-gray-400">
                         (Discount)
                       </span>
@@ -692,7 +782,7 @@ export default function AddProductView() {
                   {/* Cost Price */}
                   <div>
                     <Label htmlFor="prod-cost-price">
-                      Cost Price ($){" "}
+                      Cost Price (€){" "}
                       <span className="text-xs font-normal text-gray-400">
                         (Wholesale)
                       </span>
@@ -928,8 +1018,8 @@ export default function AddProductView() {
                               className="h-full w-full object-cover transition group-hover:scale-105"
                             />
                           </div>
-                          <span className="mt-1 line-clamp-1 w-full text-center text-[10px] font-medium text-gray-700 dark:text-gray-300">
-                            {img.name.split(" ")[0]}
+                          <span className="mt-1 line-clamp-1 w-full px-0.5 text-center text-[10px] font-medium text-gray-700 dark:text-gray-300">
+                            {img.name}
                           </span>
                         </button>
                       );
@@ -1150,98 +1240,112 @@ export default function AddProductView() {
                   </p>
                 </div>
               ) : (
-                <div className="max-h-[380px] divide-y divide-gray-100 overflow-y-auto custom-scrollbar dark:divide-gray-800">
-                  {filteredCustomProducts.map((p) => {
-                    const isItemEditing = editingId === p.id;
-                    const itemStock = p.stockQuantity ?? 50;
-                    const itemLowLimit = p.lowStockThreshold ?? 10;
-                    const isItemOut = itemStock <= 0;
-                    const isItemLow = itemStock > 0 && itemStock <= itemLowLimit;
+                <>
+                  <div className="divide-y divide-gray-100 dark:divide-gray-800">
+                    {paginatedCustomProducts.map((p) => {
+                      const isItemEditing = editingId === p.id;
+                      const itemStock = p.stockQuantity ?? 50;
+                      const itemLowLimit = p.lowStockThreshold ?? 10;
+                      const isItemOut = itemStock <= 0;
+                      const isItemLow = itemStock > 0 && itemStock <= itemLowLimit;
 
-                    return (
-                      <div
-                        key={p.id}
-                        className={`flex items-center justify-between py-3 first:pt-0 last:pb-0 transition ${
-                          isItemEditing ? "bg-brand-50/40 p-2 rounded-xl dark:bg-brand-500/10" : ""
-                        }`}
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className="h-11 w-11 shrink-0 overflow-hidden rounded-lg border border-gray-200 bg-gray-100 dark:border-gray-800 dark:bg-gray-800">
-                            {p.imageUrl ? (
-                              <img
-                                src={p.imageUrl}
-                                alt={p.name}
-                                className="h-full w-full object-cover"
-                              />
-                            ) : (
-                              <div className="flex h-full w-full items-center justify-center text-gray-400">
-                                <LeafIcon className="h-4 w-4" />
-                              </div>
-                            )}
-                          </div>
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <h5 className="text-sm font-medium text-gray-800 dark:text-white/90">
-                                {p.name}
-                              </h5>
-                              {p.sku && (
-                                <span className="rounded bg-gray-100 px-1.5 py-0.2 font-mono text-[9px] text-gray-500 dark:bg-gray-800 dark:text-gray-400">
-                                  {p.sku}
-                                </span>
+                      return (
+                        <div
+                          key={p.id}
+                          className={`flex items-center justify-between py-3 first:pt-0 last:pb-0 transition ${
+                            isItemEditing ? "bg-brand-50/40 p-2 rounded-xl dark:bg-brand-500/10" : ""
+                          }`}
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="h-11 w-11 shrink-0 overflow-hidden rounded-lg border border-gray-200 bg-gray-100 dark:border-gray-800 dark:bg-gray-800">
+                              {p.imageUrl ? (
+                                <img
+                                  src={p.imageUrl}
+                                  alt={p.name}
+                                  className="h-full w-full object-cover"
+                                />
+                              ) : (
+                                <div className="flex h-full w-full items-center justify-center text-gray-400">
+                                  <LeafIcon className="h-4 w-4" />
+                                </div>
                               )}
                             </div>
-                            <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-2 mt-0.5">
-                              <span className="font-semibold text-emerald-600 dark:text-emerald-400">
-                                {formatPrice(p.price, locale)}
-                              </span>
-                              <span>• {p.unit}</span>
-                              <span>•</span>
-                              <span
-                                className={`font-medium ${
-                                  isItemOut
-                                    ? "text-error-500"
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <h5 className="text-sm font-medium text-gray-800 dark:text-white/90">
+                                  {p.name}
+                                </h5>
+                                {p.sku && (
+                                  <span className="rounded bg-gray-100 px-1.5 py-0.2 font-mono text-[9px] text-gray-500 dark:bg-gray-800 dark:text-gray-400">
+                                    {p.sku}
+                                  </span>
+                                )}
+                              </div>
+                              <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-2 mt-0.5">
+                                <span className="font-semibold text-emerald-600 dark:text-emerald-400">
+                                  {formatPrice(p.price, locale)}
+                                </span>
+                                <span>• {p.unit}</span>
+                                <span>•</span>
+                                <span
+                                  className={`font-medium ${
+                                    isItemOut
+                                      ? "text-error-500"
+                                      : isItemLow
+                                      ? "text-warning-500"
+                                      : "text-gray-500 dark:text-gray-400"
+                                  }`}
+                                >
+                                  {isItemOut
+                                    ? "Out of Stock"
                                     : isItemLow
-                                    ? "text-warning-500"
-                                    : "text-gray-500 dark:text-gray-400"
-                                }`}
-                              >
-                                {isItemOut
-                                  ? "Out of Stock"
-                                  : isItemLow
-                                  ? `Low (${itemStock})`
-                                  : `${itemStock} in stock`}
-                              </span>
-                            </p>
+                                    ? `Low (${itemStock})`
+                                    : `${itemStock} in stock`}
+                                </span>
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* Action buttons: Edit & Delete */}
+                          <div className="flex items-center gap-1">
+                            <button
+                              type="button"
+                              onClick={() => handleEdit(p)}
+                              className={`rounded-lg p-2 transition ${
+                                isItemEditing
+                                  ? "bg-brand-500 text-white shadow-theme-xs"
+                                  : "text-gray-400 hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-gray-800 dark:hover:text-gray-200"
+                              }`}
+                              title="Edit Product"
+                            >
+                              <PencilIcon className="h-4 w-4" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleDelete(p.id)}
+                              className="rounded-lg p-2 text-gray-400 transition hover:bg-error-50 hover:text-error-600 dark:hover:bg-error-500/10 dark:hover:text-error-400"
+                              title="Delete Product"
+                            >
+                              <TrashBinIcon className="h-4 w-4" />
+                            </button>
                           </div>
                         </div>
+                      );
+                    })}
+                  </div>
 
-                        {/* Action buttons: Edit & Delete */}
-                        <div className="flex items-center gap-1">
-                          <button
-                            type="button"
-                            onClick={() => handleEdit(p)}
-                            className={`rounded-lg p-2 transition ${
-                              isItemEditing
-                                ? "bg-brand-500 text-white shadow-theme-xs"
-                                : "text-gray-400 hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-gray-800 dark:hover:text-gray-200"
-                            }`}
-                            title="Edit Product"
-                          >
-                            <PencilIcon className="h-4 w-4" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleDelete(p.id)}
-                            className="rounded-lg p-2 text-gray-400 transition hover:bg-error-50 hover:text-error-600 dark:hover:bg-error-500/10 dark:hover:text-error-400"
-                            title="Delete Product"
-                          >
-                            <TrashBinIcon className="h-4 w-4" />
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
+                  {filteredCustomProducts.length > itemsPerPage && (
+                    <div className="pt-3 border-t border-gray-100 dark:border-gray-800">
+                      <Pagination
+                        currentPage={customPage}
+                        totalPages={totalPages}
+                        totalItems={filteredCustomProducts.length}
+                        itemsPerPage={itemsPerPage}
+                        onPageChange={setCustomPage}
+                      />
+                    </div>
+                  )}
+                </>
               )}
             </div>
           </ComponentCard>

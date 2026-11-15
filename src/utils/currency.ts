@@ -1,4 +1,4 @@
-export function getCurrencySymbol(locale?: string): string {
+export function getCurrencySymbol(_locale?: string): string {
   return "€";
 }
 

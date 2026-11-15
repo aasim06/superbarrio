@@ -2,6 +2,7 @@
 
 import React from "react";
 import { motion, useReducedMotion } from "framer-motion";
+import { useLocale } from "next-intl";
 import {
   LeafIcon,
   BoltIcon,
@@ -14,18 +15,60 @@ import {
 } from "@/icons";
 
 const MARQUEE_ITEMS = [
-  { icon: LeafIcon, text: "100% Organic Produce", color: "text-emerald-600 dark:text-emerald-400" },
-  { icon: BoltIcon, text: "15-25 Min Ultra-Fast Delivery", color: "text-amber-500 dark:text-amber-400" },
-  { icon: TruckIcon, text: "Direct From Local Organic Farms", color: "text-emerald-600 dark:text-emerald-400" },
-  { icon: ShieldCheckIcon, text: "Grade-A Hygiene Certified", color: "text-emerald-600 dark:text-emerald-400" },
-  { icon: FruitIcon, text: "100% Freshness Guarantee", color: "text-amber-500 dark:text-amber-400" },
-  { icon: BakeryIcon, text: "Daily Oven-Fresh Breads", color: "text-amber-600 dark:text-amber-400" },
-  { icon: DairyIcon, text: "Pure Grass-Fed Dairy", color: "text-emerald-600 dark:text-emerald-400" },
-  { icon: FlameIcon, text: "Zero Artificial Preservatives", color: "text-rose-500 dark:text-rose-400" },
+  {
+    icon: LeafIcon,
+    text: "Productos 100% Ecológicos",
+    textEn: "100% Organic Produce",
+    color: "text-emerald-600 dark:text-emerald-400",
+  },
+  {
+    icon: BoltIcon,
+    text: "Entrega Ultrarrápida en 15-25 Min",
+    textEn: "15-25 Min Ultra-Fast Delivery",
+    color: "text-amber-500 dark:text-amber-400",
+  },
+  {
+    icon: TruckIcon,
+    text: "Directo de Agricultores Locales en España",
+    textEn: "Direct From Local Organic Farms",
+    color: "text-emerald-600 dark:text-emerald-400",
+  },
+  {
+    icon: ShieldCheckIcon,
+    text: "Certificación de Máxima Calidad e Higiene",
+    textEn: "Grade-A Hygiene Certified",
+    color: "text-emerald-600 dark:text-emerald-400",
+  },
+  {
+    icon: FruitIcon,
+    text: "Garantía de Frescura 100%",
+    textEn: "100% Freshness Guarantee",
+    color: "text-amber-500 dark:text-amber-400",
+  },
+  {
+    icon: BakeryIcon,
+    text: "Panes Recién Horneados del Día",
+    textEn: "Daily Oven-Fresh Breads",
+    color: "text-amber-600 dark:text-amber-400",
+  },
+  {
+    icon: DairyIcon,
+    text: "Lácteos Puros de Pastoreo",
+    textEn: "Pure Grass-Fed Dairy",
+    color: "text-emerald-600 dark:text-emerald-400",
+  },
+  {
+    icon: FlameIcon,
+    text: "Sin Conservantes Artificiales",
+    textEn: "Zero Artificial Preservatives",
+    color: "text-rose-500 dark:text-rose-400",
+  },
 ];
 
 export const MarqueeStrip: React.FC = () => {
   const shouldReduceMotion = useReducedMotion();
+  const locale = useLocale();
+  const isEs = locale === "es";
 
   // Duplicate items for continuous seamless loop
   const duplicated = [...MARQUEE_ITEMS, ...MARQUEE_ITEMS];
@@ -60,7 +103,7 @@ export const MarqueeStrip: React.FC = () => {
                 className="flex items-center gap-2.5 text-xs sm:text-sm font-extrabold tracking-wide text-emerald-900 dark:text-emerald-200"
               >
                 <Icon className={`h-4 w-4 shrink-0 ${item.color}`} />
-                <span>{item.text}</span>
+                <span>{isEs ? item.text : item.textEn}</span>
                 <span className="ms-6 text-emerald-400/40 dark:text-emerald-700">
                   •
                 </span>

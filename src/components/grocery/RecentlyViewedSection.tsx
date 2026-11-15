@@ -5,10 +5,13 @@ import { useGroceryCart } from "@/context/GroceryCartContext";
 import ProductCard from "@/components/grocery/ProductCard";
 import { GROCERY_PRODUCTS } from "@/data/groceryData";
 import { motion } from "framer-motion";
+import { useLocale } from "next-intl";
 import { TimeIcon, ShootingStarIcon } from "@/icons";
 
 export const RecentlyViewedSection: React.FC = () => {
   const { recentlyViewed, activeCategory } = useGroceryCart();
+  const locale = useLocale();
+  const isEs = locale === "es";
 
   // "You May Also Like" recommendation based on category or top-rated products
   const recommendations = React.useMemo(() => {
@@ -33,11 +36,11 @@ export const RecentlyViewedSection: React.FC = () => {
               <div className="flex items-center gap-2">
                 <TimeIcon className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-600 dark:text-emerald-400" />
                 <h3 className="font-outfit text-base sm:text-xl font-black text-gray-900 dark:text-white">
-                  Recently Viewed
+                  {isEs ? "Vistos Recientemente" : "Recently Viewed"}
                 </h3>
               </div>
               <p className="text-[11px] sm:text-xs font-semibold text-gray-500 dark:text-emerald-300/70">
-                Pick up right where you left off
+                {isEs ? "Continúa justo donde lo dejaste" : "Pick up right where you left off"}
               </p>
             </div>
           </div>
@@ -69,11 +72,13 @@ export const RecentlyViewedSection: React.FC = () => {
             <div className="flex items-center gap-2">
               <ShootingStarIcon className="h-4 w-4 sm:h-5 sm:w-5 text-amber-500 fill-amber-500" />
               <h3 className="font-outfit text-base sm:text-xl font-black text-gray-900 dark:text-white">
-                You May Also Like
+                {isEs ? "También te puede interesar" : "You May Also Like"}
               </h3>
             </div>
             <p className="text-[11px] sm:text-xs font-semibold text-gray-500 dark:text-emerald-300/70">
-              Curated chef & customer top-rated picks
+              {isEs
+                ? "Selección recomendada de nuestros mejores productos"
+                : "Curated chef & customer top-rated picks"}
             </p>
           </div>
         </div>

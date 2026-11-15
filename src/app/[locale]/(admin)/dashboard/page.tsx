@@ -1,6 +1,7 @@
 import { EcommerceMetrics } from "@/components/ecommerce/EcommerceMetrics";
 import RecentOrders from "@/components/ecommerce/RecentOrders";
-import StatisticsChart from "@/components/ecommerce/StatisticsChart";
+import ComponentCard from "@/components/common/ComponentCard";
+import LineChartOne from "@/components/charts/line/LineChartOne";
 import StoreManagerHeader from "@/components/ecommerce/StoreManagerHeader";
 import TopSellingGroceries from "@/components/ecommerce/TopSellingGroceries";
 import { setRequestLocale } from "next-intl/server";
@@ -29,9 +30,14 @@ export default async function EcommerceDashboard({ params }: PageProps) {
       {/* 2. Primary KPI Performance Metrics (4-Column Full Width) */}
       <EcommerceMetrics />
 
-      {/* 3. Daily Grocery Sales & Revenue Velocity Chart (Full Width) */}
-      <div className="w-full">
-        <StatisticsChart />
+      {/* 3. Line Chart from Chart Module */}
+      <div className="w-full min-w-0 max-w-full">
+        <ComponentCard
+          title="Line Chart"
+          desc="Monthly sales & revenue velocity tracking"
+        >
+          <LineChartOne />
+        </ComponentCard>
       </div>
 
       {/* 4. Live Orders Management & Inventory Alerts */}

@@ -1,0 +1,19 @@
+[
+  {
+    "id": "2pgopvD0v4dJHwRXnNxA8h4GAIh1",
+    "uid": "2pgopvD0v4dJHwRXnNxA8h4GAIh1",
+    "name": "Aasim Ameer",
+    "email": "aasimameer06@gmail.com",
+    "photoURL": "https://lh3.googleusercontent.com/a/ACg8ocKpg-RVmpapaWnJrC251RLQBKAzlkyyjW9OqnpKUzcILEyLZA=s96-c",
+    "phone": "",
+    "address": "",
+    "city": "",
+    "provider": "google",
+    "lastLoginAt": "2026-11-15T09:10:17.018Z",
+    "createdAt": "2026-11-14T17:31:01.727Z",
+    "ordersCount": 0,
+    "totalSpent": 0,
+    "rewardPoints": 250,
+    "status": "active"
+  }
+]

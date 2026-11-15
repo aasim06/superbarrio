@@ -13,7 +13,7 @@ interface WhatsAppFloatingButtonProps {
 }
 
 export const WhatsAppFloatingButton: React.FC<WhatsAppFloatingButtonProps> = ({
-  phoneNumber = "34612345678",
+  phoneNumber = "34632250561",
 }) => {
   const pathname = usePathname();
   const t = useTranslations("grocery");
@@ -29,6 +29,7 @@ export const WhatsAppFloatingButton: React.FC<WhatsAppFloatingButtonProps> = ({
 
   // Generate WhatsApp message based on cart state
   const generateWhatsAppUrl = () => {
+    const cleanPhone = phoneNumber.replace(/^00/, "").replace(/\D/g, "") || "34632250561";
     let message = `*¡Hola SuperBarrio España!*\n`;
     if (cart.length > 0) {
       message += `Me gustaría confirmar y realizar el siguiente pedido:\n\n`;
@@ -44,12 +45,12 @@ export const WhatsAppFloatingButton: React.FC<WhatsAppFloatingButtonProps> = ({
       message += `Hola, me gustaría hacer una consulta o pedido directo de alimentos frescos.`;
     }
 
-    return `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+    return `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
   };
 
   return (
-    // Positioned at bottom-22 on mobile to cleanly sit above the 64px mobile bottom nav, and bottom-8 on desktop
-    <div className="fixed bottom-22 end-4 sm:bottom-8 sm:end-8 z-30 flex items-center">
+    // Positioned safely above the mobile bottom nav on mobile, and bottom-8 on desktop
+    <div className="fixed bottom-[calc(3.75rem+env(safe-area-inset-bottom)+12px)] end-4 md:bottom-8 md:end-8 z-30 flex items-center">
       <motion.a
         href={generateWhatsAppUrl()}
         target="_blank"

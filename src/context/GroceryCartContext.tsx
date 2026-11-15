@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { CartItem, GroceryProduct } from "@/types/grocery";
+import { GROCERY_PRODUCTS } from "@/data/groceryData";
 
 export interface FlyingCartItem {
   id: string;
@@ -78,9 +79,9 @@ const GroceryCartContext = createContext<GroceryCartContextType | undefined>(
   undefined,
 );
 
-const CART_STORAGE_KEY = "tailgrocery_cart_items";
-const WISHLIST_STORAGE_KEY = "tailgrocery_wishlist";
-const RECENTLY_VIEWED_KEY = "tailgrocery_recently_viewed";
+const CART_STORAGE_KEY = "superbarrio_cart_v2";
+const WISHLIST_STORAGE_KEY = "superbarrio_wishlist_v2";
+const RECENTLY_VIEWED_KEY = "superbarrio_recently_viewed_v2";
 
 export const GroceryCartProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
@@ -116,20 +117,36 @@ export const GroceryCartProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const freeDeliveryThreshold = 25.0;
 
-  // Load from localStorage on mount
+  // Load from localStorage on mount (clean slate for live production)
   useEffect(() => {
     try {
+      // Purge legacy mock/dummy storage keys from previous development
+      localStorage.removeItem("tailgrocery_cart_items");
+      localStorage.removeItem("tailgrocery_wishlist");
+      localStorage.removeItem("tailgrocery_recently_viewed");
+
       const storedCart = localStorage.getItem(CART_STORAGE_KEY);
       if (storedCart) {
-        setCart(JSON.parse(storedCart));
+        const parsed: CartItem[] = JSON.parse(storedCart);
+        const validIds = new Set(GROCERY_PRODUCTS.map((p) => p.id));
+        const cleanCart = parsed.filter(
+          (it) => it && validIds.has(it.id) && it.quantity > 0
+        );
+        setCart(cleanCart);
+      } else {
+        setCart([]);
       }
+
       const storedWishlist = localStorage.getItem(WISHLIST_STORAGE_KEY);
       if (storedWishlist) {
         setWishlist(JSON.parse(storedWishlist));
       }
+
       const storedRecent = localStorage.getItem(RECENTLY_VIEWED_KEY);
       if (storedRecent) {
-        setRecentlyViewed(JSON.parse(storedRecent));
+        const parsed: GroceryProduct[] = JSON.parse(storedRecent);
+        const validIds = new Set(GROCERY_PRODUCTS.map((p) => p.id));
+        setRecentlyViewed(parsed.filter((p) => p && validIds.has(p.id)));
       }
     } catch {
       // Ignore storage errors

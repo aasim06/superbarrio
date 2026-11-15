@@ -1,0 +1,51 @@
+[
+  {
+    "id": "fruits-vegetables",
+    "name": "Frutas y Verduras",
+    "nameEn": "Fruits & Vegetables",
+    "icon": "fruits-vegetables",
+    "status": "active"
+  },
+  {
+    "id": "dairy-eggs",
+    "name": "Lácteos y Huevos",
+    "nameEn": "Dairy & Eggs",
+    "icon": "dairy-eggs",
+    "status": "active"
+  },
+  {
+    "id": "bakery",
+    "name": "Panadería y Panes",
+    "nameEn": "Bakery & Breads",
+    "icon": "bakery",
+    "status": "active"
+  },
+  {
+    "id": "meat-poultry",
+    "name": "Carnes y Aves",
+    "nameEn": "Meat & Poultry",
+    "icon": "meat-poultry",
+    "status": "active"
+  },
+  {
+    "id": "pantry-cooking",
+    "name": "Despensa y Especias",
+    "nameEn": "Pantry & Spices",
+    "icon": "pantry-cooking",
+    "status": "active"
+  },
+  {
+    "id": "beverages",
+    "name": "Bebidas y Jugos",
+    "nameEn": "Drinks & Juices",
+    "icon": "beverages",
+    "status": "active"
+  },
+  {
+    "id": "snacks",
+    "name": "Aperitivos y Snacks",
+    "nameEn": "Snacks & Munchies",
+    "icon": "snacks",
+    "status": "active"
+  }
+]

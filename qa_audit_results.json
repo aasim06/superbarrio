@@ -1,0 +1,255 @@
+{
+  "sections": {
+    "catalog": [
+      {
+        "name": "Total unique product images (51)",
+        "status": "PASS",
+        "detail": "51 images found"
+      },
+      {
+        "name": "All 51 local product images HTTP 200",
+        "status": "PASS",
+        "detail": "0 broken"
+      }
+    ],
+    "security": [
+      {
+        "name": "Unauth route /dashboard redirects to /signin",
+        "status": "PASS",
+        "detail": "Status 307 -> /es/signin?callbackUrl=%2Fdashboard"
+      },
+      {
+        "name": "Auth route /dashboard returns 200",
+        "status": "PASS",
+        "detail": "Status 200"
+      },
+      {
+        "name": "Unauth route /orders redirects to /signin",
+        "status": "PASS",
+        "detail": "Status 307 -> /es/signin?callbackUrl=%2Forders"
+      },
+      {
+        "name": "Auth route /orders returns 200",
+        "status": "PASS",
+        "detail": "Status 200"
+      },
+      {
+        "name": "Unauth route /products redirects to /signin",
+        "status": "PASS",
+        "detail": "Status 307 -> /es/signin?callbackUrl=%2Fproducts"
+      },
+      {
+        "name": "Auth route /products returns 200",
+        "status": "PASS",
+        "detail": "Status 200"
+      },
+      {
+        "name": "Unauth route /add-product redirects to /signin",
+        "status": "PASS",
+        "detail": "Status 307 -> /es/signin?callbackUrl=%2Fadd-product"
+      },
+      {
+        "name": "Auth route /add-product returns 200",
+        "status": "PASS",
+        "detail": "Status 200"
+      },
+      {
+        "name": "Unauth route /categories redirects to /signin",
+        "status": "PASS",
+        "detail": "Status 307 -> /es/signin?callbackUrl=%2Fcategories"
+      },
+      {
+        "name": "Auth route /categories returns 200",
+        "status": "PASS",
+        "detail": "Status 200"
+      },
+      {
+        "name": "Unauth route /inventory redirects to /signin",
+        "status": "PASS",
+        "detail": "Status 307 -> /es/signin?callbackUrl=%2Finventory"
+      },
+      {
+        "name": "Auth route /inventory returns 200",
+        "status": "PASS",
+        "detail": "Status 200"
+      },
+      {
+        "name": "Unauth route /customers redirects to /signin",
+        "status": "PASS",
+        "detail": "Status 307 -> /es/signin?callbackUrl=%2Fcustomers"
+      },
+      {
+        "name": "Auth route /customers returns 200",
+        "status": "PASS",
+        "detail": "Status 200"
+      },
+      {
+        "name": "Unauth route /delivery redirects to /signin",
+        "status": "PASS",
+        "detail": "Status 307 -> /es/signin?callbackUrl=%2Fdelivery"
+      },
+      {
+        "name": "Auth route /delivery returns 200",
+        "status": "PASS",
+        "detail": "Status 200"
+      },
+      {
+        "name": "Unauth route /coupons redirects to /signin",
+        "status": "PASS",
+        "detail": "Status 307 -> /es/signin?callbackUrl=%2Fcoupons"
+      },
+      {
+        "name": "Auth route /coupons returns 200",
+        "status": "PASS",
+        "detail": "Status 200"
+      },
+      {
+        "name": "Unauth route /profile redirects to /signin",
+        "status": "PASS",
+        "detail": "Status 307 -> /es/signin?callbackUrl=%2Fprofile"
+      },
+      {
+        "name": "Auth route /profile returns 200",
+        "status": "PASS",
+        "detail": "Status 200"
+      },
+      {
+        "name": "Unauth route /khata redirects to /signin",
+        "status": "PASS",
+        "detail": "Status 307 -> /es/signin?callbackUrl=%2Fkhata"
+      },
+      {
+        "name": "Auth route /khata returns 200",
+        "status": "PASS",
+        "detail": "Status 200"
+      },
+      {
+        "name": "Unauth route /whatsapp redirects to /signin",
+        "status": "PASS",
+        "detail": "Status 307 -> /es/signin?callbackUrl=%2Fwhatsapp"
+      },
+      {
+        "name": "Auth route /whatsapp returns 200",
+        "status": "PASS",
+        "detail": "Status 200"
+      }
+    ],
+    "auth": [
+      {
+        "name": "POST /api/auth/login (admin/admin)",
+        "status": "PASS",
+        "detail": "Status 200, Cookie=sb_admin_session=true; Path=/;"
+      },
+      {
+        "name": "POST /api/auth/login (email/admin)",
+        "status": "PASS",
+        "detail": "Status 200"
+      },
+      {
+        "name": "POST /api/auth/login (asif/admin)",
+        "status": "PASS",
+        "detail": "Status 200"
+      },
+      {
+        "name": "POST /api/auth/login (wrong password rejected 401)",
+        "status": "PASS",
+        "detail": "Status 401"
+      },
+      {
+        "name": "POST /api/auth/login (empty payload rejected 400)",
+        "status": "PASS",
+        "detail": "Status 400"
+      },
+      {
+        "name": "POST /api/auth/logout clears session",
+        "status": "PASS",
+        "detail": "Status 200"
+      }
+    ],
+    "storefront": [
+      {
+        "name": "Storefront /grocery returns 200",
+        "status": "PASS",
+        "detail": "Latency: 33.1ms"
+      },
+      {
+        "name": "Checkout view /grocery/checkout returns 200",
+        "status": "PASS",
+        "detail": "Latency: 31.6ms"
+      },
+      {
+        "name": "Cart storage updated to superbarrio_cart_v2 (clean empty cart)",
+        "status": "PASS",
+        "detail": ""
+      }
+    ],
+    "apis": [
+      {
+        "name": "GET /api/products returns items",
+        "status": "PASS",
+        "detail": "51 products"
+      },
+      {
+        "name": "GET /api/categories returns grocery departments",
+        "status": "PASS",
+        "detail": "7 categories"
+      },
+      {
+        "name": "GET /api/profile returns valid Admin Profile",
+        "status": "PASS",
+        "detail": "Name: Aasim Ameer"
+      },
+      {
+        "name": "POST /api/profile/password rejects wrong current password (400)",
+        "status": "PASS",
+        "detail": "Status 400"
+      },
+      {
+        "name": "GET /api/customers returns 200",
+        "status": "PASS",
+        "detail": "Status 200"
+      },
+      {
+        "name": "GET /uploads/... dynamic streamer serves image",
+        "status": "PASS",
+        "detail": "Size: 247352 bytes"
+      }
+    ],
+    "ecommerce": [
+      {
+        "name": "POST /api/orders creates genuine order",
+        "status": "PASS",
+        "detail": "Order ID: SB-5441"
+      },
+      {
+        "name": "GET /api/orders reflects newly created order",
+        "status": "PASS",
+        "detail": "Found SB-5441 in 1 orders"
+      }
+    ],
+    "performance": [
+      {
+        "name": "Stress test 100% success (0 server errors)",
+        "status": "PASS",
+        "detail": "RPS: 52.0, Avg Latency: 178.6ms"
+      }
+    ]
+  },
+  "total_checks": 44,
+  "passed_checks": 44,
+  "failed_checks": 0,
+  "warnings": [],
+  "performance": {
+    "total_requests": 100,
+    "concurrency_workers": 10,
+    "total_duration_sec": 1.92,
+    "requests_per_second": 52.0,
+    "avg_latency_ms": 178.6,
+    "p95_latency_ms": 293.1,
+    "max_latency_ms": 331.8,
+    "status_distribution": {
+      "200": 100
+    },
+    "error_rate_pct": 0.0
+  }
+}

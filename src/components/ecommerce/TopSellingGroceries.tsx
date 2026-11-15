@@ -5,7 +5,6 @@ import Badge from "../ui/badge/Badge";
 import {
   computeGroceryDashboardMetrics,
   getAllGroceryOrders,
-  SEEDED_ORDERS,
 } from "@/data/groceryAdminStore";
 import { AlertIcon, LeafIcon } from "@/icons";
 import { useLocale } from "next-intl";
@@ -14,7 +13,7 @@ import { formatPrice } from "@/utils/currency";
 export default function TopSellingGroceries() {
   const locale = useLocale();
   const [metrics, setMetrics] = useState(() =>
-    computeGroceryDashboardMetrics(SEEDED_ORDERS),
+    computeGroceryDashboardMetrics([]),
   );
 
   useEffect(() => {
@@ -25,8 +24,10 @@ export default function TopSellingGroceries() {
     };
 
     window.addEventListener("grocery-orders-updated", handleUpdate);
+    window.addEventListener("storage", handleUpdate);
     return () => {
       window.removeEventListener("grocery-orders-updated", handleUpdate);
+      window.removeEventListener("storage", handleUpdate);
     };
   }, []);
 
@@ -48,7 +49,17 @@ export default function TopSellingGroceries() {
       </div>
 
       <div className="mt-5 divide-y divide-gray-100 dark:divide-gray-800">
-        {metrics.topProducts.map((product, idx) => (
+        {metrics.topProducts.length === 0 ? (
+          <div className="py-10 text-center">
+            <p className="text-xs font-semibold text-gray-500 dark:text-gray-400">
+              No product orders recorded yet.
+            </p>
+            <p className="mt-1 text-[11px] text-gray-400 dark:text-gray-500">
+              Items purchased from the storefront will automatically rank here in real time.
+            </p>
+          </div>
+        ) : (
+          metrics.topProducts.map((product, idx) => (
           <div
             key={product.id}
             className="flex flex-col gap-3 py-3.5 sm:flex-row sm:items-center sm:justify-between"
@@ -107,7 +118,7 @@ export default function TopSellingGroceries() {
               </div>
             </div>
           </div>
-        ))}
+        )))}
       </div>
     </div>
   );

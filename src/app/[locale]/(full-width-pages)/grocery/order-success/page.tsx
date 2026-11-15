@@ -4,8 +4,8 @@ import { setRequestLocale } from "next-intl/server";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Order Placed Successfully | SuperBarrio",
-  description: "Track your live fresh grocery delivery order.",
+  title: "¡Pedido Realizado con Éxito! | SuperBarrio España",
+  description: "Sigue en directo la preparación y entrega de tu pedido de alimentos frescos en España.",
 };
 
 interface PageProps {

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import Badge from "../ui/badge/Badge";
 import {
   Table,
@@ -11,7 +11,7 @@ import {
 } from "../ui/table";
 import {
   getAllGroceryOrders,
-  SEEDED_ORDERS,
+  clearAllGroceryOrders,
   simulateNewOrder,
   updateOrderStatusInStorage,
 } from "@/data/groceryAdminStore";
@@ -20,13 +20,23 @@ import {
   BoxIcon,
   FlameIcon,
   SearchIcon,
+  TrashBinIcon,
 } from "@/icons";
 import { useLocale } from "next-intl";
 import { formatPrice } from "@/utils/currency";
+import CustomSelect, { CustomSelectOption } from "../ui/dropdown/CustomSelect";
+import Pagination from "@/components/tables/Pagination";
+
+const RECENT_ORDER_STATUS_OPTIONS: CustomSelectOption[] = [
+  { value: "placed", label: "Placed" },
+  { value: "packing", label: "Packing" },
+  { value: "on_the_way", label: "On the Way" },
+  { value: "delivered", label: "Delivered" },
+];
 
 export default function RecentOrders() {
   const locale = useLocale();
-  const [orders, setOrders] = useState<CustomerOrder[]>(SEEDED_ORDERS);
+  const [orders, setOrders] = useState<CustomerOrder[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [selectedOrder, setSelectedOrder] = useState<CustomerOrder | null>(null);
@@ -45,8 +55,10 @@ export default function RecentOrders() {
     };
 
     window.addEventListener("grocery-orders-updated", handleUpdate);
+    window.addEventListener("storage", handleUpdate);
     return () => {
       window.removeEventListener("grocery-orders-updated", handleUpdate);
+      window.removeEventListener("storage", handleUpdate);
     };
   }, []);
 
@@ -63,6 +75,13 @@ export default function RecentOrders() {
     refreshOrders();
   };
 
+  const handleClearAll = () => {
+    if (confirm("Reset all grocery orders data back to zero?")) {
+      clearAllGroceryOrders();
+      refreshOrders();
+    }
+  };
+
   const filteredOrders = orders.filter((order) => {
     const matchesStatus =
       statusFilter === "all" || order.status === statusFilter;
@@ -76,6 +95,20 @@ export default function RecentOrders() {
 
     return matchesStatus && matchesSearch;
   });
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 6;
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, statusFilter]);
+
+  const totalPages = Math.ceil(filteredOrders.length / itemsPerPage) || 1;
+  const paginatedOrders = useMemo(() => {
+    const s = (currentPage - 1) * itemsPerPage;
+    return filteredOrders.slice(s, s + itemsPerPage);
+  }, [filteredOrders, currentPage, itemsPerPage]);
 
   const getStatusBadge = (status: CustomerOrder["status"]) => {
     switch (status) {
@@ -124,16 +157,30 @@ export default function RecentOrders() {
           </p>
         </div>
 
-        {/* Simulate Order Button */}
-        <button
-          type="button"
-          onClick={handleSimulate}
-          className="inline-flex items-center justify-center gap-2 rounded-xl bg-brand-500 px-4 py-2.5 text-xs font-bold text-white shadow-theme-xs transition hover:bg-brand-600 active:scale-95"
-          title="Simulate a new incoming customer order"
-        >
-          <FlameIcon className="h-4 w-4" />
-          <span>+ Simulate Customer Order</span>
-        </button>
+        {/* Action Buttons */}
+        <div className="flex items-center gap-2">
+          {orders.length > 0 && (
+            <button
+              type="button"
+              onClick={handleClearAll}
+              className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-error-200 bg-error-50 px-3 py-2.5 text-xs font-bold text-error-700 transition hover:bg-error-100 dark:border-error-900/40 dark:bg-error-950/40 dark:text-error-400"
+              title="Reset all grocery orders data back to zero"
+            >
+              <TrashBinIcon className="h-4 w-4" />
+              <span>Reset to 0</span>
+            </button>
+          )}
+
+          <button
+            type="button"
+            onClick={handleSimulate}
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-brand-500 px-4 py-2.5 text-xs font-bold text-white shadow-theme-xs transition hover:bg-brand-600 active:scale-95"
+            title="Simulate a new incoming customer order"
+          >
+            <FlameIcon className="h-4 w-4" />
+            <span>+ Simulate Customer Order</span>
+          </button>
+        </div>
       </div>
 
       {/* Filter Tabs & Search Bar */}
@@ -206,15 +253,20 @@ export default function RecentOrders() {
           <TableBody>
             {filteredOrders.length === 0 ? (
               <TableRow>
-                <TableCell className="py-8 text-center text-sm text-gray-500 dark:text-gray-400" colSpan={6}>
-                  No grocery orders found matching this filter.
+                <TableCell className="py-10 text-center text-sm text-gray-500 dark:text-gray-400" colSpan={6}>
+                  <p className="font-semibold text-gray-700 dark:text-gray-300">
+                    No grocery orders placed yet.
+                  </p>
+                  <p className="mt-1 text-xs text-gray-400 dark:text-gray-500">
+                    Place an order on the storefront or click &apos;+ Simulate Customer Order&apos; to view real-time data!
+                  </p>
                 </TableCell>
               </TableRow>
             ) : (
-              filteredOrders.map((order) => (
+              paginatedOrders.map((order) => (
                 <TableRow
                   key={order.orderId}
-                  className="border-b border-gray-50 transition hover:bg-gray-50/60 dark:border-gray-800/60 dark:hover:bg-gray-850/50"
+                  className="border-b border-gray-50 transition hover:bg-gray-50/60 dark:border-gray-800/60 dark:hover:bg-gray-800/50"
                 >
                   {/* Order ID & Time */}
                   <TableCell className="py-3.5">
@@ -291,22 +343,18 @@ export default function RecentOrders() {
                     <div className="flex items-center gap-2">
                       {getStatusBadge(order.status)}
 
-                      <select
+                      <CustomSelect
+                        size="sm"
+                        className="w-32"
+                        options={RECENT_ORDER_STATUS_OPTIONS}
                         value={order.status}
-                        onChange={(e) =>
+                        onChange={(val) =>
                           handleStatusChange(
                             order.orderId,
-                            e.target.value as CustomerOrder["status"],
+                            val as CustomerOrder["status"],
                           )
                         }
-                        className="rounded-lg border border-gray-200 bg-white py-1 ps-2 pe-6 text-[11px] font-medium text-gray-700 focus:border-brand-500 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300"
-                        title="Change order status"
-                      >
-                        <option value="placed">Placed</option>
-                        <option value="packing">Packing</option>
-                        <option value="on_the_way">On the Way</option>
-                        <option value="delivered">Delivered</option>
-                      </select>
+                      />
                     </div>
                   </TableCell>
                 </TableRow>
@@ -315,6 +363,15 @@ export default function RecentOrders() {
           </TableBody>
         </Table>
       </div>
+
+      {/* Pagination */}
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        totalItems={filteredOrders.length}
+        itemsPerPage={itemsPerPage}
+        onPageChange={(p) => setCurrentPage(p)}
+      />
 
       {/* Order Items Modal / Popover */}
       {selectedOrder && (

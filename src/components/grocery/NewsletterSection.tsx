@@ -3,16 +3,23 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
+import { useLocale } from "next-intl";
 import { LeafIcon, ShieldCheckIcon } from "@/icons";
 
 export const NewsletterSection: React.FC = () => {
+  const locale = useLocale();
+  const isEs = locale === "es";
   const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim() || !email.includes("@")) {
-      toast.error("Please enter a valid email address.");
+      toast.error(
+        isEs
+          ? "Por favor, introduce una dirección de correo válida."
+          : "Please enter a valid email address.",
+      );
       return;
     }
 
@@ -20,7 +27,9 @@ export const NewsletterSection: React.FC = () => {
     setTimeout(() => {
       setIsSubmitting(false);
       toast.success(
-        "Welcome to SuperBarrio! Check your email for your $10 welcome voucher.",
+        isEs
+          ? "¡Bienvenido a SuperBarrio! Revisa tu correo para tu cupón de 10 € de bienvenida."
+          : "Welcome to SuperBarrio! Check your email for your 10 € welcome voucher.",
         { duration: 4000 },
       );
       setEmail("");
@@ -49,15 +58,19 @@ export const NewsletterSection: React.FC = () => {
             </div>
 
             <span className="text-[11px] sm:text-xs font-black tracking-widest uppercase text-amber-300">
-              Join The SuperBarrio Neighborhood
+              {isEs ? "Únete al Barrio de SuperBarrio" : "Join The SuperBarrio Neighborhood"}
             </span>
 
             <h3 className="mt-2 font-outfit text-xl sm:text-3xl lg:text-4xl font-black tracking-tight text-white leading-tight">
-              Get $10 Off Your First Farm-Fresh Order
+              {isEs
+                ? "Consigue 10 € de Descuento en tu Primer Pedido"
+                : "Get 10 € Off Your First Farm-Fresh Order"}
             </h3>
 
             <p className="mt-2 text-xs sm:text-sm text-emerald-100/80 leading-relaxed max-w-lg">
-              Subscribe to our weekly harvest newsletter for exclusive seasonal discounts, new farm arrivals, and chef recipes.
+              {isEs
+                ? "Suscríbete a nuestro boletín semanal de cosechas para recibir descuentos de temporada exclusivos, novedades del campo español y recetas de chef."
+                : "Subscribe to our weekly harvest newsletter for exclusive seasonal discounts, new farm arrivals, and chef recipes."}
             </p>
 
             {/* Email Input Form with Focus Rings */}
@@ -69,7 +82,7 @@ export const NewsletterSection: React.FC = () => {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter your email address..."
+                placeholder={isEs ? "Introduce tu correo electrónico..." : "Enter your email address..."}
                 required
                 className="flex-1 rounded-2xl border border-white/20 bg-white/10 px-4 py-3 text-sm text-white placeholder-emerald-200/50 backdrop-blur-md transition-all focus:border-amber-400 focus:bg-white/15 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
               />
@@ -80,13 +93,19 @@ export const NewsletterSection: React.FC = () => {
                 whileTap={{ scale: 0.96 }}
                 className="rounded-2xl bg-gradient-to-r from-amber-400 to-orange-400 px-6 py-3 text-xs sm:text-sm font-black text-gray-950 shadow-lg shadow-amber-400/30 transition-all hover:shadow-xl hover:shadow-amber-400/40 focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none"
               >
-                {isSubmitting ? "Subscribing..." : "Get My $10"}
+                {isSubmitting
+                  ? (isEs ? "Suscribiendo..." : "Subscribing...")
+                  : (isEs ? "¡Quiero mis 10 €!" : "Get My 10 €")}
               </motion.button>
             </form>
 
             <p className="mt-3 inline-flex items-center gap-1.5 text-[11px] font-medium text-emerald-200/60">
               <ShieldCheckIcon className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
-              <span>Zero spam. Unsubscribe anytime with 1 click.</span>
+              <span>
+                {isEs
+                  ? "Cero spam. Cancela tu suscripción en cualquier momento con 1 clic."
+                  : "Zero spam. Unsubscribe anytime with 1 click."}
+              </span>
             </p>
           </div>
         </div>

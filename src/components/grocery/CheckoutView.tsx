@@ -10,6 +10,8 @@ import {
   SpainDeliverySlot,
 } from "@/data/spainCheckoutData";
 import { CustomerOrder, PaymentMethod } from "@/types/grocery";
+import { getProductLocalized } from "@/data/groceryData";
+import { recordKhataPurchase, getKhataCustomers } from "@/data/khataStore";
 import {
   WhatsAppIcon,
   CreditCardIcon,
@@ -22,11 +24,20 @@ import {
   BoltIcon,
   EsFlagIcon,
 } from "@/icons";
+import {
+  BizumLogo,
+  VisaLogo,
+  MastercardLogo,
+  ApplePayLogo,
+  PayPalLogo,
+} from "./PaymentCardLogos";
 import { useLocale, useTranslations } from "next-intl";
+import { useCustomerAuth } from "@/context/CustomerAuthContext";
 import { formatPrice } from "@/utils/currency";
 import { motion, AnimatePresence, useReducedMotion, type Variants } from "framer-motion";
 import { toast } from "sonner";
 import { z } from "zod";
+import CustomSelect from "../ui/dropdown/CustomSelect";
 
 // Zod Validation Schema for Spain Checkout Form
 const spainCheckoutSchema = z.object({
@@ -91,7 +102,7 @@ export const CheckoutSkeleton: React.FC = () => {
       role="status"
       aria-busy="true"
       aria-label="Cargando proceso de compra"
-      className="mx-auto w-full max-w-[1920px] px-4 py-6 sm:px-6 md:py-10 lg:px-8 xl:px-10 animate-pulse"
+      className="container mx-auto max-w-6xl px-4 py-6 sm:px-6 md:py-8 lg:px-8 animate-pulse"
     >
       {/* Stepper Skeleton */}
       <div className="mb-8">
@@ -273,8 +284,9 @@ export const CheckoutView: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [isMobileSummaryOpen, setIsMobileSummaryOpen] = useState(false);
+  const { user } = useCustomerAuth();
 
-  // Load saved address from localStorage if available
+  // Load saved address and auto-populate logged-in customer details
   useEffect(() => {
     try {
       const saved = localStorage.getItem("tailgrocery_saved_address");
@@ -285,7 +297,15 @@ export const CheckoutView: React.FC = () => {
     } catch {
       // Ignore
     }
-  }, []);
+
+    if (user) {
+      setFormData((prev) => ({
+        ...prev,
+        fullName: prev.fullName || user.displayName || "",
+        email: prev.email || user.email || "",
+      }));
+    }
+  }, [user]);
 
   const handleFieldChange = (field: string, value: string | boolean) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -349,7 +369,7 @@ export const CheckoutView: React.FC = () => {
     return true;
   };
 
-  const handleSubmitOrder = (e: React.FormEvent) => {
+  const handleSubmitOrder = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateWithZod()) return;
 
@@ -390,10 +410,56 @@ export const CheckoutView: React.FC = () => {
       formData.apartment ? `, ${formData.apartment}` : ""
     }, ${formData.postalCode} ${formData.city} (${formData.province})`;
 
+    let createdOrderId = `ES-${Math.floor(100000 + Math.random() * 900000)}`;
+    let serverTotal = total;
+    let serverSubtotal = subtotal;
+    let serverFee = deliveryFee;
+
+    // Server-side verification & persistence to Firestore
+    try {
+      const response = await fetch("/api/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          customerName: formData.fullName,
+          email: formData.email || user?.email || undefined,
+          customerUid: user?.uid || undefined,
+          phone: `+34 ${formData.phone}`,
+          address: fullStreetAddress,
+          streetAddress: formData.street,
+          apartment: formData.apartment || "",
+          postalCode: formData.postalCode,
+          city: formData.city,
+          province: formData.province,
+          notes: formData.notes || "",
+          deliverySlot: chosenSlotLabel,
+          paymentMethod:
+            paymentMethod === "khata" || paymentMethod === "bizum"
+              ? "bizum"
+              : paymentMethod === "cod"
+              ? "cash"
+              : "card",
+          items: cart.map((it) => ({ id: it.id, quantity: it.quantity })),
+          couponCode: promoCode || undefined,
+        }),
+      });
+
+      const resData = await response.json();
+      if (resData.success && resData.data) {
+        createdOrderId = resData.data.orderId;
+        serverTotal = resData.data.total;
+        serverSubtotal = resData.data.subtotal;
+        serverFee = resData.data.deliveryFee;
+      }
+    } catch (err) {
+      console.warn("Server order endpoint fallback:", err);
+    }
+
     const newOrder: CustomerOrder = {
-      orderId: `ES-${Math.floor(100000 + Math.random() * 900000)}`,
-      customerName: formData.fullName,
-      email: formData.email,
+      orderId: createdOrderId,
+      customerName: formData.fullName || user?.displayName || "Customer",
+      email: formData.email || user?.email || "",
+      customerUid: user?.uid,
       phone: `+34 ${formData.phone}`,
       address: fullStreetAddress,
       streetAddress: formData.street,
@@ -405,11 +471,11 @@ export const CheckoutView: React.FC = () => {
       deliverySlot: chosenSlotLabel,
       paymentMethod,
       items: cart,
-      subtotal,
+      subtotal: serverSubtotal,
       discount: discountAmount,
       promoCode: promoCode || undefined,
-      deliveryFee,
-      total,
+      deliveryFee: serverFee,
+      total: serverTotal,
       status: "placed",
       createdAt: new Date().toISOString(),
     };
@@ -420,8 +486,61 @@ export const CheckoutView: React.FC = () => {
       list.unshift(newOrder);
       localStorage.setItem("tailgrocery_orders", JSON.stringify(list));
       localStorage.setItem("tailgrocery_last_order", JSON.stringify(newOrder));
+
+      // Award VIP loyalty points on purchase
+      if (user) {
+        try {
+          const earned = Math.max(50, Math.round(serverTotal * 10));
+          const storedCust = localStorage.getItem("superbarrio_customer_user");
+          if (storedCust) {
+            const parsed = JSON.parse(storedCust);
+            parsed.points = (parsed.points || 250) + earned;
+            localStorage.setItem("superbarrio_customer_user", JSON.stringify(parsed));
+          }
+        } catch {
+          // ignore
+        }
+      }
+
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("grocery-orders-updated"));
+      }
     } catch {
       // Ignore
+    }
+
+    // If customer selected Monthly Khata, record directly into their ledger
+    if (paymentMethod === "khata") {
+      try {
+        const khataCustomers = getKhataCustomers();
+        const matched =
+          khataCustomers.find(
+            (c) =>
+              c.phone.replace(/\D/g, "").includes(formData.phone.replace(/\D/g, "")) ||
+              (c.name || c.commercialName || "").toLowerCase().includes(formData.fullName.toLowerCase()),
+          ) || khataCustomers[0];
+
+        if (matched) {
+          const breakdown = cart.map((it) => ({
+            id: it.id,
+            name: it.nameEn || it.name,
+            quantity: it.quantity,
+            unit: it.unitEn || it.unit,
+            price: it.price,
+            total: Number((it.price * it.quantity).toFixed(2)),
+          }));
+          recordKhataPurchase(
+            matched.id,
+            breakdown,
+            total,
+            `Online Order #${newOrder.orderId}`,
+            newOrder.orderId,
+            `Delivery to ${formData.city}`,
+          );
+        }
+      } catch (err) {
+        console.warn("Khata recording error:", err);
+      }
     }
 
     setIsSuccess(true);
@@ -434,7 +553,8 @@ export const CheckoutView: React.FC = () => {
   const getWhatsAppOrderUrl = () => {
     let msg = `*Nuevo Pedido en SuperBarrio España*\n\n`;
     cart.forEach((item, index) => {
-      msg += `${index + 1}. *${item.name}* (${item.unit}) x ${item.quantity} = ${formatPrice(item.price * item.quantity, locale)}\n`;
+      const loc = getProductLocalized(item, locale);
+      msg += `${index + 1}. *${loc.name}* (${loc.unit}) x ${item.quantity} = ${formatPrice(item.price * item.quantity, locale)}\n`;
     });
     msg += `\n*Subtotal:* ${formatPrice(subtotal, locale)}`;
     if (discountAmount > 0) {
@@ -453,7 +573,7 @@ export const CheckoutView: React.FC = () => {
     }
     msg += `\n¡Por favor confirmen la disponibilidad y hora de entrega! Muchas gracias.`;
 
-    return `https://wa.me/34612345678?text=${encodeURIComponent(msg)}`;
+    return `https://wa.me/34632250561?text=${encodeURIComponent(msg)}`;
   };
 
   // If still hydrating from localStorage, show shimmering Skeleton Loader
@@ -548,21 +668,22 @@ export const CheckoutView: React.FC = () => {
   const vatAmount = Number((total - total / 1.1).toFixed(2));
 
   return (
-    <div className="mx-auto w-full max-w-[1920px] px-4 py-6 sm:px-6 md:py-10 lg:px-8 xl:px-10 pb-28 lg:pb-10">
+    <div className="container mx-auto max-w-6xl px-4 py-6 sm:px-6 md:py-8 lg:px-8 pb-28 lg:pb-12">
       {/* 1. Top Navigation & Progress Stepper */}
-      <div className="mb-6 sm:mb-8">
-        <div className="flex items-center justify-between pb-3 sm:pb-4">
+      {/* Native-style Back Navigation & Header Bar */}
+      <div className="mb-5 sm:mb-8">
+        <div className="flex items-center justify-between pb-3 sm:pb-4 border-b border-gray-100/80 sm:border-0 dark:border-emerald-950/60">
           <Link
             href="/grocery"
-            className="group inline-flex items-center gap-2 text-xs font-bold text-emerald-600 transition-colors hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300"
+            className="group inline-flex items-center gap-2 rounded-xl bg-gray-100/90 sm:bg-transparent px-3 py-1.5 sm:p-0 text-xs font-extrabold text-emerald-700 transition-all hover:text-emerald-800 active:scale-95 dark:bg-emerald-950/50 sm:dark:bg-transparent dark:text-emerald-400 dark:hover:text-emerald-300"
           >
-            <span className="transition-transform group-hover:-translate-x-1">
+            <span className="flex h-5 w-5 items-center justify-center rounded-lg bg-emerald-600/10 text-emerald-600 sm:bg-transparent sm:text-current dark:bg-emerald-500/20">
               ←
             </span>
             <span>{t("backToStore")}</span>
           </Link>
-          <div className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 dark:text-emerald-400/70">
-            <ShieldCheckIcon className="h-4 w-4 text-emerald-500" />
+          <div className="flex items-center gap-1.5 rounded-full bg-emerald-50/80 px-2.5 py-1 text-[11px] sm:text-xs font-bold text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-400">
+            <ShieldCheckIcon className="h-3.5 w-3.5 text-emerald-500" />
             <span className="hidden sm:inline">{t("secureCheckout")}</span>
             <span className="sm:hidden">SSL 256-Bit</span>
           </div>
@@ -654,28 +775,31 @@ export const CheckoutView: React.FC = () => {
             >
               {/* Smart max-height for mobile list */}
               <div className="divide-y divide-gray-100 dark:divide-emerald-950/60 max-h-[360px] overflow-y-auto custom-scrollbar">
-                {cart.map((item) => (
-                  <div key={item.id} className="flex items-center justify-between py-2.5 text-xs">
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      <img
-                        src={item.imageUrl}
-                        alt={item.name}
-                        className="h-10 w-10 rounded-xl object-cover shrink-0"
-                      />
-                      <div className="truncate">
-                        <span className="font-bold text-gray-900 dark:text-white truncate block">
-                          {item.name}
-                        </span>
-                        <span className="text-[10px] text-gray-500 dark:text-emerald-300/60">
-                          {item.quantity} x {formatPrice(item.price, locale)} ({item.unit})
-                        </span>
+                {cart.map((item) => {
+                  const loc = getProductLocalized(item, locale);
+                  return (
+                    <div key={item.id} className="flex items-center justify-between py-2.5 text-xs">
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <img
+                          src={item.imageUrl}
+                          alt={loc.name}
+                          className="h-10 w-10 rounded-xl object-cover shrink-0"
+                        />
+                        <div className="truncate">
+                          <span className="font-bold text-gray-900 dark:text-white truncate block">
+                            {loc.name}
+                          </span>
+                          <span className="text-[10px] text-gray-500 dark:text-emerald-300/60">
+                            {item.quantity} x {formatPrice(item.price, locale)} ({loc.unit})
+                          </span>
+                        </div>
                       </div>
+                      <span className="font-outfit font-black text-gray-900 dark:text-white ms-2">
+                        {formatPrice(item.price * item.quantity, locale)}
+                      </span>
                     </div>
-                    <span className="font-outfit font-black text-gray-900 dark:text-white ms-2">
-                      {formatPrice(item.price * item.quantity, locale)}
-                    </span>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </motion.div>
           )}
@@ -961,21 +1085,16 @@ export const CheckoutView: React.FC = () => {
                   >
                     {t("deliverySection.province")}
                   </label>
-                  <select
-                    id="checkout-province"
-                    name="province"
-                    value={formData.province}
-                    onChange={(e) =>
-                      handleFieldChange("province", e.target.value)
-                    }
-                    className="mt-1.5 w-full rounded-2xl border border-gray-200/80 bg-gray-50/70 px-3.5 py-2.5 text-xs sm:text-sm font-semibold text-gray-800 transition focus:border-emerald-500 focus:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/30 dark:border-emerald-950 dark:bg-[#05130b] dark:text-white"
-                  >
-                    {SPAIN_PROVINCES.map((prov) => (
-                      <option key={prov} value={prov}>
-                        {prov}
-                      </option>
-                    ))}
-                  </select>
+                  <div className="mt-1.5">
+                    <CustomSelect
+                      options={SPAIN_PROVINCES.map((prov) => ({
+                        value: prov,
+                        label: prov,
+                      }))}
+                      value={formData.province}
+                      onChange={(val) => handleFieldChange("province", val)}
+                    />
+                  </div>
                 </div>
 
                 {/* Quick City Suggestions */}
@@ -1211,11 +1330,11 @@ export const CheckoutView: React.FC = () => {
                         <span className="font-outfit text-sm font-black text-gray-900 dark:text-white">
                           {t("paymentSection.card")}
                         </span>
-                        <span className="rounded-md bg-emerald-100/70 px-1.5 py-0.5 text-[9px] font-black text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300">
-                          VISA
+                        <span className="inline-flex items-center rounded-md border border-blue-500/20 bg-blue-50 px-1.5 py-0.5 shadow-2xs dark:bg-blue-950/60">
+                          <VisaLogo className="h-2.5 w-auto" />
                         </span>
-                        <span className="rounded-md bg-amber-100/70 px-1.5 py-0.5 text-[9px] font-black text-amber-800 dark:bg-amber-950/80 dark:text-amber-300">
-                          Mastercard
+                        <span className="inline-flex items-center rounded-md border border-amber-500/20 bg-amber-50 px-1.5 py-0.5 shadow-2xs dark:bg-amber-950/60">
+                          <MastercardLogo className="h-3 w-auto" />
                         </span>
                       </div>
                       <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400 truncate sm:whitespace-normal">
@@ -1248,8 +1367,8 @@ export const CheckoutView: React.FC = () => {
                   }`}
                 >
                   <div className="flex items-center gap-3 min-w-0 flex-1">
-                    <div className="flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-xl bg-[#00A99D]/10 text-[#00A99D] font-black text-xs shadow-2xs">
-                      bizum
+                    <div className="flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-xl bg-white border border-gray-200 dark:border-gray-700 shadow-2xs dark:bg-gray-800">
+                      <BizumLogo className="h-3.5 w-auto" />
                     </div>
                     <div className="min-w-0 flex-1 pe-2">
                       <div className="flex flex-wrap items-center gap-1.5">
@@ -1290,8 +1409,8 @@ export const CheckoutView: React.FC = () => {
                   }`}
                 >
                   <div className="flex items-center gap-3 min-w-0 flex-1">
-                    <div className="flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-700 font-black text-xs shadow-2xs dark:bg-blue-950/60 dark:text-blue-300">
-                      PayPal
+                    <div className="flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-xl bg-white border border-gray-200 dark:border-gray-700 shadow-2xs dark:bg-gray-800">
+                      <PayPalLogo className="h-3.5 w-auto" />
                     </div>
                     <div className="min-w-0 flex-1 pe-2">
                       <span className="font-outfit text-sm font-black text-gray-900 dark:text-white">
@@ -1327,8 +1446,8 @@ export const CheckoutView: React.FC = () => {
                   }`}
                 >
                   <div className="flex items-center gap-3 min-w-0 flex-1">
-                    <div className="flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-xl bg-gray-100 text-gray-900 font-black text-xs shadow-2xs dark:bg-gray-800 dark:text-white">
-                       / G
+                    <div className="flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-xl bg-white border border-gray-200 dark:border-gray-700 shadow-2xs dark:bg-gray-800">
+                      <ApplePayLogo className="h-3.5 w-auto text-gray-900 dark:text-white" />
                     </div>
                     <div className="min-w-0 flex-1 pe-2">
                       <span className="font-outfit text-sm font-black text-gray-900 dark:text-white">
@@ -1378,6 +1497,48 @@ export const CheckoutView: React.FC = () => {
                   </div>
                   <div className="shrink-0 ms-2">
                     {paymentMethod === "cod" ? (
+                      <div className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-600 text-white shadow-xs">
+                        <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={3}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                      </div>
+                    ) : (
+                      <div className="h-4 w-4 rounded-full border-2 border-gray-300 dark:border-emerald-950 bg-white dark:bg-gray-800" />
+                    )}
+                  </div>
+                </motion.div>
+
+                {/* 6. Monthly Khata (کھاتہ / بعد میں ادائیگی) */}
+                <motion.div
+                  whileHover={shouldReduceMotion ? {} : { scale: 1.008 }}
+                  whileTap={shouldReduceMotion ? {} : { scale: 0.992 }}
+                  onClick={() => setPaymentMethod("khata")}
+                  className={`flex cursor-pointer items-center justify-between rounded-xl sm:rounded-2xl border p-3 sm:p-3.5 transition-all duration-200 ${
+                    paymentMethod === "khata"
+                      ? "border-emerald-500 bg-emerald-50/60 shadow-xs ring-2 ring-emerald-500/25 dark:border-emerald-500 dark:bg-emerald-950/40"
+                      : "border-gray-200/80 bg-white hover:border-gray-300 dark:border-emerald-950 dark:bg-[#05130b]"
+                  }`}
+                >
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
+                    <div className="flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-xl bg-purple-50 text-purple-700 shadow-2xs dark:bg-purple-950/60 dark:text-purple-300">
+                      <LeafIcon className="h-5 w-5" />
+                    </div>
+                    <div className="min-w-0 flex-1 pe-2">
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        <span className="font-outfit text-sm font-black text-gray-900 dark:text-white">
+                          B2B Credit Invoice / Crédito Mensual
+                        </span>
+                        <span className="rounded-full bg-purple-100 px-2 py-0.5 text-[9px] font-extrabold text-purple-800 dark:bg-purple-950/80 dark:text-purple-300">
+                          15/30 Days Credit
+                        </span>
+                      </div>
+                      <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400 truncate sm:whitespace-normal">
+                        Hospitality & Regular Customers • Consolidated monthly invoice & bank settlement
+                      </p>
+                    </div>
+                  </div>
+                  <div className="shrink-0 ms-2">
+                    {paymentMethod === "khata" ? (
                       <div className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-600 text-white shadow-xs">
                         <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={3}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
@@ -1488,74 +1649,77 @@ export const CheckoutView: React.FC = () => {
                   : "max-h-none"
               }`}
             >
-              {cart.map((item) => (
-                <div
-                  key={item.id}
-                  className="flex items-center justify-between py-2.5 sm:py-3 text-xs"
-                >
-                  <div className="flex items-center gap-2.5 min-w-0 flex-1 pe-2">
-                    <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-100 dark:border-emerald-950/60">
-                      <img
-                        src={item.imageUrl}
-                        alt={item.name}
-                        className="h-full w-full object-cover"
-                        loading="lazy"
-                      />
+              {cart.map((item) => {
+                const loc = getProductLocalized(item, locale);
+                return (
+                  <div
+                    key={item.id}
+                    className="flex items-center justify-between py-2.5 sm:py-3 text-xs"
+                  >
+                    <div className="flex items-center gap-2.5 min-w-0 flex-1 pe-2">
+                      <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-100 dark:border-emerald-950/60">
+                        <img
+                          src={item.imageUrl}
+                          alt={loc.name}
+                          className="h-full w-full object-cover"
+                          loading="lazy"
+                        />
+                      </div>
+                      <div className="min-w-0 truncate">
+                        <h5 className="font-bold text-gray-900 dark:text-white truncate">
+                          {loc.name}
+                        </h5>
+                        <span className="text-[10px] sm:text-[11px] text-gray-500 dark:text-emerald-300/60">
+                          {loc.unit} • {formatPrice(item.price, locale)}
+                        </span>
+                      </div>
                     </div>
-                    <div className="min-w-0 truncate">
-                      <h5 className="font-bold text-gray-900 dark:text-white truncate">
-                        {item.name}
-                      </h5>
-                      <span className="text-[10px] sm:text-[11px] text-gray-500 dark:text-emerald-300/60">
-                        {item.unit} • {formatPrice(item.price, locale)}
-                      </span>
-                    </div>
-                  </div>
 
-                  {/* Quantity Stepper & Remove */}
-                  <div className="flex shrink-0 items-center gap-1.5 ms-1">
-                    <div className="flex items-center rounded-lg border border-gray-200/80 bg-gray-50/80 dark:border-emerald-950 dark:bg-emerald-950/40">
+                    {/* Quantity Stepper & Remove */}
+                    <div className="flex shrink-0 items-center gap-1.5 ms-1">
+                      <div className="flex items-center rounded-lg border border-gray-200/80 bg-gray-50/80 dark:border-emerald-950 dark:bg-emerald-950/40">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            updateQuantity(item.id, item.quantity - 1)
+                          }
+                          aria-label={`Disminuir cantidad de ${loc.name}`}
+                          className="flex h-6 w-5 items-center justify-center font-black text-gray-600 hover:bg-gray-200/60 hover:text-emerald-600 dark:text-gray-300 dark:hover:bg-emerald-900/40"
+                        >
+                          -
+                        </button>
+                        <span className="w-4 text-center font-black text-gray-900 dark:text-white text-[10px]">
+                          {item.quantity}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            updateQuantity(item.id, item.quantity + 1)
+                          }
+                          aria-label={`Aumentar cantidad de ${loc.name}`}
+                          className="flex h-6 w-5 items-center justify-center font-black text-gray-600 hover:bg-gray-200/60 hover:text-emerald-600 dark:text-gray-300 dark:hover:bg-emerald-900/40"
+                        >
+                          +
+                        </button>
+                      </div>
+
+                      <span className="font-outfit font-black text-xs text-gray-900 dark:text-white min-w-12 text-end">
+                        {formatPrice(item.price * item.quantity, locale)}
+                      </span>
+
                       <button
                         type="button"
-                        onClick={() =>
-                          updateQuantity(item.id, item.quantity - 1)
-                        }
-                        aria-label={`Disminuir cantidad de ${item.name}`}
-                        className="flex h-6 w-5 items-center justify-center font-black text-gray-600 hover:bg-gray-200/60 hover:text-emerald-600 dark:text-gray-300 dark:hover:bg-emerald-900/40"
+                        onClick={() => removeFromCart(item.id)}
+                        aria-label={`Eliminar ${loc.name} de la cesta`}
+                        className="text-gray-400 hover:text-rose-500 transition px-1 text-xs"
+                        title="Eliminar artículo"
                       >
-                        -
-                      </button>
-                      <span className="w-4 text-center font-black text-gray-900 dark:text-white text-[10px]">
-                        {item.quantity}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          updateQuantity(item.id, item.quantity + 1)
-                        }
-                        aria-label={`Aumentar cantidad de ${item.name}`}
-                        className="flex h-6 w-5 items-center justify-center font-black text-gray-600 hover:bg-gray-200/60 hover:text-emerald-600 dark:text-gray-300 dark:hover:bg-emerald-900/40"
-                      >
-                        +
+                        ✕
                       </button>
                     </div>
-
-                    <span className="font-outfit font-black text-xs text-gray-900 dark:text-white min-w-12 text-end">
-                      {formatPrice(item.price * item.quantity, locale)}
-                    </span>
-
-                    <button
-                      type="button"
-                      onClick={() => removeFromCart(item.id)}
-                      aria-label={`Eliminar ${item.name} de la cesta`}
-                      className="text-gray-400 hover:text-rose-500 transition px-1 text-xs"
-                      title="Eliminar artículo"
-                    >
-                      ✕
-                    </button>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             {/* Promo Code Box with Green Apply Button & Shake on Error */}

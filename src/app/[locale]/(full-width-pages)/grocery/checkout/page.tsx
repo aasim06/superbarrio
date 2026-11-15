@@ -4,8 +4,8 @@ import { setRequestLocale } from "next-intl/server";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Checkout | SuperBarrio",
-  description: "Complete your grocery order with fast express delivery.",
+  title: "Finalizar Compra | SuperBarrio España",
+  description: "Completa tu pedido de supermercado fresco con entrega rápida en España.",
 };
 
 interface PageProps {

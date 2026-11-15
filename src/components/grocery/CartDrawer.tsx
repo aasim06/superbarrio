@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import Image from "next/image";
 import { Link } from "@/i18n/navigation";
 import { useGroceryCart } from "@/context/GroceryCartContext";
 import {
@@ -13,12 +14,14 @@ import {
 } from "@/icons";
 import { useLocale, useTranslations } from "next-intl";
 import { formatPrice } from "@/utils/currency";
+import { getProductLocalized } from "@/data/groceryData";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 
 export const CartDrawer: React.FC = () => {
   const t = useTranslations("grocery");
   const locale = useLocale();
+  const isEs = locale === "es";
   const {
     cart,
     isCartOpen,
@@ -40,6 +43,14 @@ export const CartDrawer: React.FC = () => {
   } = useGroceryCart();
 
   const [inputCoupon, setInputCoupon] = useState("");
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 640);
+    checkMobile();
+    window.addEventListener("resize", checkMobile, { passive: true });
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   const progressPercent = Math.min(
     100,
@@ -60,22 +71,33 @@ export const CartDrawer: React.FC = () => {
 
   const handleRemoveCoupon = () => {
     removePromoCode();
-    toast.info("Promo code removed.");
+    toast.info(isEs ? "Código promocional eliminado." : "Promo code removed.");
   };
 
   const getWhatsAppOrderUrl = () => {
-    let msg = `*New Order from SuperBarrio*\n\n`;
+    let msg = isEs
+      ? `*Nuevo Pedido desde SuperBarrio España*\n\n`
+      : `*New Order from SuperBarrio*\n\n`;
     cart.forEach((item, index) => {
-      msg += `${index + 1}. *${item.name}* (${item.unit}) x ${item.quantity} = ${formatPrice(item.price * item.quantity, locale)}\n`;
+      const loc = getProductLocalized(item, locale);
+      msg += `${index + 1}. *${loc.name}* (${loc.unit}) x ${item.quantity} = ${formatPrice(item.price * item.quantity, locale)}\n`;
     });
     msg += `\n*Subtotal:* ${formatPrice(subtotal, locale)}`;
     if (discountAmount > 0) {
-      msg += `\n*Discount (${promoCode} - ${discountRate * 100}%):* -${formatPrice(discountAmount, locale)}`;
+      msg += isEs
+        ? `\n*Descuento (${promoCode} - ${discountRate * 100}%):* -${formatPrice(discountAmount, locale)}`
+        : `\n*Discount (${promoCode} - ${discountRate * 100}%):* -${formatPrice(discountAmount, locale)}`;
     }
-    msg += `\n*Delivery:* ${deliveryFee === 0 ? "FREE" : formatPrice(deliveryFee, locale)}`;
-    msg += `\n*Grand Total:* ${formatPrice(total, locale)}\n\n`;
-    msg += `Please confirm my order and share delivery details!`;
-    return `https://wa.me/34612345678?text=${encodeURIComponent(msg)}`;
+    msg += isEs
+      ? `\n*Gastos de Envío:* ${deliveryFee === 0 ? "GRATIS" : formatPrice(deliveryFee, locale)}`
+      : `\n*Delivery:* ${deliveryFee === 0 ? "FREE" : formatPrice(deliveryFee, locale)}`;
+    msg += isEs
+      ? `\n*Total a Pagar:* ${formatPrice(total, locale)}\n\n`
+      : `\n*Grand Total:* ${formatPrice(total, locale)}\n\n`;
+    msg += isEs
+      ? `¡Por favor confirmen mi pedido y detalles de la entrega en España!`
+      : `Please confirm my order and share delivery details!`;
+    return `https://wa.me/34632250561?text=${encodeURIComponent(msg)}`;
   };
 
   return (
@@ -92,15 +114,20 @@ export const CartDrawer: React.FC = () => {
             onClick={() => setIsCartOpen(false)}
           />
 
-          <div className="fixed inset-y-0 end-0 flex w-full max-w-full sm:max-w-md sm:ps-10">
-            {/* Animated Sliding Drawer */}
+          <div className="fixed inset-x-0 bottom-0 top-auto sm:top-0 sm:bottom-0 sm:inset-y-0 sm:end-0 sm:start-auto flex w-full max-h-[92vh] sm:max-h-full sm:max-w-md sm:ps-10">
+            {/* Animated Sliding Drawer / Native Mobile Bottom Sheet */}
             <motion.div
-              initial={{ x: "100%" }}
-              animate={{ x: 0 }}
-              exit={{ x: "100%" }}
-              transition={{ type: "spring", stiffness: 340, damping: 32 }}
-              className="flex h-full w-full flex-col bg-white shadow-2xl dark:bg-[#071910] dark:border-s dark:border-emerald-950/80 overflow-hidden"
+              initial={isMobile ? { y: "100%" } : { x: "100%" }}
+              animate={isMobile ? { y: 0 } : { x: 0 }}
+              exit={isMobile ? { y: "100%" } : { x: "100%" }}
+              transition={{ type: "spring", stiffness: 360, damping: 32 }}
+              className="flex h-full w-full flex-col bg-white shadow-2xl rounded-t-[32px] sm:rounded-none dark:bg-[#071910] dark:border-s dark:border-emerald-950/80 overflow-hidden"
             >
+              {/* Native Mobile Bottom Sheet Drag Handle */}
+              <div className="sm:hidden flex justify-center pt-2.5 pb-1">
+                <div className="h-1.5 w-12 rounded-full bg-gray-300 dark:bg-emerald-800/60" />
+              </div>
+
               {/* Drawer Header */}
               <div className="flex items-center justify-between border-b border-gray-200/80 px-4 py-3 sm:px-6 sm:py-4.5 dark:border-emerald-950/80">
                 <div className="flex items-center gap-3">
@@ -112,7 +139,7 @@ export const CartDrawer: React.FC = () => {
                       {t("myBasket")}
                     </h3>
                     <p className="text-xs font-semibold text-gray-500 dark:text-emerald-300/70">
-                      {totalItems} {totalItems === 1 ? "item" : "items"}
+                      {totalItems} {totalItems === 1 ? (isEs ? "artículo" : "item") : (isEs ? "artículos" : "items")}
                     </p>
                   </div>
                 </div>
@@ -122,10 +149,10 @@ export const CartDrawer: React.FC = () => {
                     <button
                       onClick={() => {
                         clearCart();
-                        toast.info("Basket cleared.");
+                        toast.info(isEs ? "Cesta vaciada." : "Basket cleared.");
                       }}
                       className="rounded-xl px-2.5 py-1 text-xs font-bold text-gray-400 transition hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-950/40 dark:hover:text-rose-400"
-                      title="Clear basket"
+                      title={isEs ? "Vaciar cesta" : "Clear basket"}
                     >
                       {t("clearAll")}
                     </button>
@@ -149,13 +176,13 @@ export const CartDrawer: React.FC = () => {
                     </span>
                   ) : (
                     <span className="text-gray-700 dark:text-gray-300 font-medium">
-                      Add{" "}
+                      {isEs ? "Faltan " : "Add "}
                       <strong className="text-emerald-600 dark:text-emerald-400 font-bold">
                         {formatPrice(amountNeededForFreeDelivery, locale)}
                       </strong>{" "}
-                      more for{" "}
+                      {isEs ? "para " : "more for "}
                       <strong className="text-emerald-600 font-bold">
-                        FREE delivery
+                        {isEs ? "envío GRATIS" : "FREE delivery"}
                       </strong>
                     </span>
                   )}
@@ -205,81 +232,89 @@ export const CartDrawer: React.FC = () => {
                   </div>
                 ) : (
                   <div className="divide-y divide-gray-100 dark:divide-emerald-950/60">
-                    {cart.map((item) => (
-                      <motion.div
-                        key={item.id}
-                        layout
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
-                        className="flex items-center gap-2.5 sm:gap-3.5 py-3 sm:py-4"
-                      >
-                        {/* Item visual */}
-                        <div className="relative flex h-12 w-12 sm:h-14 sm:w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl sm:rounded-2xl border border-gray-100 bg-gray-50 dark:border-emerald-950 dark:bg-gray-800">
-                          {item.imageUrl ? (
-                            <img
-                              src={item.imageUrl}
-                              alt={item.name}
-                              className="h-full w-full object-cover"
-                              loading="lazy"
-                            />
-                          ) : (
-                            <LeafIcon className="h-6 w-6 text-emerald-500" />
-                          )}
-                        </div>
-
-                        {/* Details */}
-                        <div className="flex-1 min-w-0">
-                          <h5 className="truncate text-xs font-bold text-gray-900 dark:text-white">
-                            {item.name}
-                          </h5>
-                          <p className="text-[11px] font-medium text-gray-500 dark:text-emerald-300/60 truncate">
-                            {item.unit} • {formatPrice(item.price, locale)}
-                          </p>
-                          <span className="font-outfit text-xs font-black text-emerald-600 dark:text-emerald-400">
-                            {formatPrice(item.price * item.quantity, locale)}
-                          </span>
-                        </div>
-
-                        {/* Stepper & Delete Action */}
-                        <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
-                          <div className="flex items-center rounded-xl border border-gray-200/80 bg-gray-50/80 dark:border-emerald-950 dark:bg-emerald-950/40">
-                            <button
-                              onClick={() =>
-                                updateQuantity(item.id, item.quantity - 1)
-                              }
-                              className="flex h-7 w-6 sm:h-8 sm:w-7 items-center justify-center text-xs font-black text-gray-600 transition hover:bg-gray-200/60 hover:text-emerald-600 dark:text-gray-300 dark:hover:bg-gray-800"
-                              title="Decrease"
-                            >
-                              -
-                            </button>
-                            <span className="w-4 sm:w-5 text-center text-xs font-black text-gray-900 dark:text-white">
-                              {item.quantity}
-                            </span>
-                            <button
-                              onClick={() =>
-                                updateQuantity(item.id, item.quantity + 1)
-                              }
-                              className="flex h-7 w-6 sm:h-8 sm:w-7 items-center justify-center text-xs font-black text-gray-600 transition hover:bg-gray-200/60 hover:text-emerald-600 dark:text-gray-300 dark:hover:bg-gray-800"
-                              title="Increase"
-                            >
-                              +
-                            </button>
+                    {cart.map((item) => {
+                      const loc = getProductLocalized(item, locale);
+                      return (
+                        <motion.div
+                          key={item.id}
+                          layout
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -10 }}
+                          className="flex items-center gap-2.5 sm:gap-3.5 py-3 sm:py-4"
+                        >
+                          {/* Item visual */}
+                          <div className="relative flex h-12 w-12 sm:h-14 sm:w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl sm:rounded-2xl border border-gray-100 bg-gray-50 dark:border-emerald-950 dark:bg-gray-800">
+                            {item.imageUrl ? (
+                              <Image
+                                src={item.imageUrl}
+                                alt={loc.name}
+                                fill
+                                sizes="56px"
+                                className="object-cover"
+                              />
+                            ) : (
+                              <LeafIcon className="h-6 w-6 text-emerald-500" />
+                            )}
                           </div>
 
-                          <button
-                            onClick={() => {
-                              removeFromCart(item.id);
-                              toast.info(`Removed ${item.name}`);
-                            }}
-                            className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-xl text-gray-400 transition hover:bg-rose-50 hover:text-rose-500 dark:text-gray-500 dark:hover:bg-rose-950/40 dark:hover:text-rose-400"
-                            title="Remove from basket"
-                          >
-                            <TrashBinIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                          </button>
-                        </div>
-                      </motion.div>
-                    ))}
+                          {/* Details */}
+                          <div className="flex-1 min-w-0">
+                            <h5 className="truncate text-xs font-bold text-gray-900 dark:text-white">
+                              {loc.name}
+                            </h5>
+                            <p className="text-[11px] font-medium text-gray-500 dark:text-emerald-300/60 truncate">
+                              {loc.unit} • {formatPrice(item.price, locale)}
+                            </p>
+                            <span className="font-outfit text-xs font-black text-emerald-600 dark:text-emerald-400">
+                              {formatPrice(item.price * item.quantity, locale)}
+                            </span>
+                          </div>
+
+                          {/* Stepper & Delete Action */}
+                          <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
+                            <div className="flex items-center rounded-xl border border-gray-200/80 bg-gray-50/80 dark:border-emerald-950 dark:bg-emerald-950/40">
+                              <button
+                                onClick={() =>
+                                  updateQuantity(item.id, item.quantity - 1)
+                                }
+                                className="flex h-7 w-6 sm:h-8 sm:w-7 items-center justify-center text-xs font-black text-gray-600 transition hover:bg-gray-200/60 hover:text-emerald-600 dark:text-gray-300 dark:hover:bg-gray-800"
+                                title="Decrease"
+                              >
+                                -
+                              </button>
+                              <span className="w-4 sm:w-5 text-center text-xs font-black text-gray-900 dark:text-white">
+                                {item.quantity}
+                              </span>
+                              <button
+                                onClick={() =>
+                                  updateQuantity(item.id, item.quantity + 1)
+                                }
+                                className="flex h-7 w-6 sm:h-8 sm:w-7 items-center justify-center text-xs font-black text-gray-600 transition hover:bg-gray-200/60 hover:text-emerald-600 dark:text-gray-300 dark:hover:bg-gray-800"
+                                title="Increase"
+                              >
+                                +
+                              </button>
+                            </div>
+
+                            <button
+                              onClick={() => {
+                                removeFromCart(item.id);
+                                toast.info(
+                                  isEs
+                                    ? `Eliminado ${loc.name}`
+                                    : `Removed ${loc.name}`,
+                                );
+                              }}
+                              className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-xl text-gray-400 transition hover:bg-rose-50 hover:text-rose-500 dark:text-gray-500 dark:hover:bg-rose-950/40 dark:hover:text-rose-400"
+                              title={isEs ? "Eliminar de la cesta" : "Remove from basket"}
+                            >
+                              <TrashBinIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                            </button>
+                          </div>
+                        </motion.div>
+                      );
+                    })}
                   </div>
                 )}
               </div>
@@ -320,7 +355,7 @@ export const CartDrawer: React.FC = () => {
                           type="submit"
                           className="shrink-0 rounded-xl bg-emerald-600 px-4 py-2 text-xs font-black text-white shadow-xs transition hover:bg-emerald-700"
                         >
-                          Apply
+                          {isEs ? "Aplicar" : "Apply"}
                         </button>
                       </form>
                     )}
@@ -337,7 +372,7 @@ export const CartDrawer: React.FC = () => {
 
                     {discountAmount > 0 && (
                       <div className="flex justify-between text-emerald-600 dark:text-emerald-400 font-bold">
-                        <span>Promo Discount (20%)</span>
+                        <span>{isEs ? "Descuento Promocional (20%)" : "Promo Discount (20%)"}</span>
                         <span>-{formatPrice(discountAmount, locale)}</span>
                       </div>
                     )}

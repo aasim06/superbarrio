@@ -25,6 +25,10 @@ export const SmoothScrollProvider: React.FC<{ children: React.ReactNode }> = ({
       touchMultiplier: 1.5,
     });
 
+    if (typeof window !== "undefined") {
+      (window as any).__lenis = lenis;
+    }
+
     let animationFrameId: number;
 
     function raf(time: number) {
@@ -36,6 +40,9 @@ export const SmoothScrollProvider: React.FC<{ children: React.ReactNode }> = ({
 
     return () => {
       cancelAnimationFrame(animationFrameId);
+      if (typeof window !== "undefined") {
+        (window as any).__lenis = null;
+      }
       lenis.destroy();
     };
   }, []);

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import { useGroceryCart } from "@/context/GroceryCartContext";
 import {
   AngleLeftIcon,
@@ -39,6 +40,8 @@ interface HeroSlide {
   descKey: string;
   accentColor: string;
   doodleTextKey: string;
+  mobileVisualUrl: string;
+  mobileBadge: string;
   pouches: [ProductPouch, ProductPouch, ProductPouch];
 }
 
@@ -153,6 +156,8 @@ export const GroceryHeroBanner: React.FC = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
 
+  const isEs = locale === "es";
+
   const slides: HeroSlide[] = [
     // Slide 1: Iconic Snacks & Munchies Theme
     {
@@ -165,11 +170,14 @@ export const GroceryHeroBanner: React.FC = () => {
       descKey: "descSnacks",
       accentColor: "#ea384c", // Warm coral red
       doodleTextKey: "handwrittenNote",
+      mobileVisualUrl:
+        "https://images.unsplash.com/photo-1540420773420-3366772f4999?w=800&auto=format&fit=crop&q=80",
+      mobileBadge: isEs ? "🌱 100% Ecológico" : "🌱 100% Organic",
       pouches: [
         {
-          name: "Plantain Chips",
-          subname: "Lightly Salted",
-          tag: "Real Plantain • No Preservatives",
+          name: isEs ? "Chips de Plátano" : "Plantain Chips",
+          subname: isEs ? "Poco Saladas" : "Lightly Salted",
+          tag: isEs ? "Plátano 100% Natural • Sin Conservantes" : "Real Plantain • No Preservatives",
           weight: "100g",
           color: "#166534",
           bgGradient: "from-[#15803d] to-[#14532d]",
@@ -178,21 +186,21 @@ export const GroceryHeroBanner: React.FC = () => {
           priceNum: 2.8,
         },
         {
-          name: "Spicy Roasted Peanuts",
-          subname: "High Protein",
-          tag: "Real Nuts • No Artificial Flavours",
+          name: isEs ? "Cacahuetes Tostados" : "Spicy Roasted Peanuts",
+          subname: isEs ? "Rico en Proteína" : "High Protein",
+          tag: isEs ? "Frutos Secos Reales • Sin Aromas" : "Real Nuts • No Artificial Flavours",
           weight: "100g",
           color: "#dc2626",
           bgGradient: "from-[#ef4444] to-[#b91c1c]",
           imgUrl:
-            "https://images.unsplash.com/photo-1569460275917-763435165c01?w=400&auto=format&fit=crop&q=80",
-          accentBadge: "Mild Chili",
+            "https://images.unsplash.com/photo-1525253086316-d0c936c814f8?w=600&auto=format&fit=crop&q=80",
+          accentBadge: isEs ? "Toque Picante" : "Mild Chili",
           priceNum: 2.2,
         },
         {
-          name: "Mixed Nuts",
-          subname: "Almonds & Cashews",
-          tag: "Whole Roasted • Sea Salted",
+          name: isEs ? "Frutos Secos Variados" : "Mixed Nuts",
+          subname: isEs ? "Almendras y Anacardos" : "Almonds & Cashews",
+          tag: isEs ? "Tostado Artesanal • Con Sal Marina" : "Whole Roasted • Sea Salted",
           weight: "100g",
           color: "#ca8a04",
           bgGradient: "from-[#eab308] to-[#a16207]",
@@ -214,11 +222,14 @@ export const GroceryHeroBanner: React.FC = () => {
       descKey: "descProduce",
       accentColor: "#10b981", // Crisp Emerald Green
       doodleTextKey: "handwrittenNote",
+      mobileVisualUrl:
+        "https://images.unsplash.com/photo-1610348725531-843dff563e2c?w=800&auto=format&fit=crop&q=80",
+      mobileBadge: isEs ? "🌿 Cosecha del Día" : "🌿 Daily Farm Harvest",
       pouches: [
         {
-          name: "Royal Gala Apples",
-          subname: "Crisp & Sweet",
-          tag: "Handpicked • Grade A Orchard",
+          name: isEs ? "Manzanas Royal Gala" : "Royal Gala Apples",
+          subname: isEs ? "Crujientes y Dulces" : "Crisp & Sweet",
+          tag: isEs ? "Recolectadas a Mano • Calidad Extra" : "Handpicked • Grade A Orchard",
           weight: "1 kg",
           color: "#b91c1c",
           bgGradient: "from-[#dc2626] to-[#991b1b]",
@@ -227,22 +238,22 @@ export const GroceryHeroBanner: React.FC = () => {
           priceNum: 3.2,
         },
         {
-          name: "Farm Red Tomatoes",
-          subname: "Vine Ripened",
-          tag: "100% Organic • Pesticide Free",
+          name: isEs ? "Tomates de Huerta" : "Farm Red Tomatoes",
+          subname: isEs ? "Madurados en Rama" : "Vine Ripened",
+          tag: isEs ? "100% Ecológicos • Sin Pesticidas" : "100% Organic • Pesticide Free",
           weight: "1 kg",
           color: "#15803d",
           bgGradient: "from-[#16a34a] to-[#14532d]",
           imgUrl:
             "https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=400&auto=format&fit=crop&q=80",
-          accentBadge: "100% Organic",
+          accentBadge: isEs ? "100% Ecológico" : "100% Organic",
           priceNum: 1.85,
         },
         {
-          name: "Cavendish Bananas",
-          subname: "Naturally Sweet",
-          tag: "Potassium Rich • Freshly Cut",
-          weight: "1 Dozen",
+          name: isEs ? "Plátanos de Canarias" : "Cavendish Bananas",
+          subname: isEs ? "Dulzura Natural" : "Naturally Sweet",
+          tag: isEs ? "Ricos en Potasio • Recién Cortados" : "Potassium Rich • Freshly Cut",
+          weight: isEs ? "1 Docena" : "1 Dozen",
           color: "#ca8a04",
           bgGradient: "from-[#eab308] to-[#a16207]",
           imgUrl:
@@ -263,12 +274,15 @@ export const GroceryHeroBanner: React.FC = () => {
       descKey: "descBakery",
       accentColor: "#f59e0b", // Warm Golden Amber
       doodleTextKey: "handwrittenNote",
+      mobileVisualUrl:
+        "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=800&auto=format&fit=crop&q=80",
+      mobileBadge: isEs ? "🥖 Recién Horneado" : "🥖 Oven Fresh",
       pouches: [
         {
-          name: "Pure Farm Milk",
-          subname: "Full Cream",
-          tag: "Grass Fed • Freshly Bottled",
-          weight: "1 Liter",
+          name: isEs ? "Leche Pura de Granja" : "Pure Farm Milk",
+          subname: isEs ? "Entera Cremosa" : "Full Cream",
+          tag: isEs ? "Vacas de Pasto • Embotellada Fresca" : "Grass Fed • Freshly Bottled",
+          weight: isEs ? "1 Litro" : "1 Liter",
           color: "#0369a1",
           bgGradient: "from-[#0284c7] to-[#075985]",
           imgUrl:
@@ -276,22 +290,22 @@ export const GroceryHeroBanner: React.FC = () => {
           priceNum: 2.45,
         },
         {
-          name: "Sourdough Bread",
-          subname: "Slow Fermented",
-          tag: "Crusty Loaf • Wood Fired",
+          name: isEs ? "Pan de Masa Madre" : "Sourdough Bread",
+          subname: isEs ? "Fermentación Lenta" : "Slow Fermented",
+          tag: isEs ? "Corteza Crujiente • Horno de Leña" : "Crusty Loaf • Wood Fired",
           weight: "500g",
           color: "#b45309",
           bgGradient: "from-[#d97706] to-[#92400e]",
           imgUrl:
             "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=400&auto=format&fit=crop&q=80",
-          accentBadge: "Oven Fresh",
+          accentBadge: isEs ? "Recién Horneado" : "Oven Fresh",
           priceNum: 3.75,
         },
         {
-          name: "Golden Farm Eggs",
-          subname: "Free Range",
-          tag: "Brown Farm Eggs • Pack of 12",
-          weight: "12 pcs",
+          name: isEs ? "Huevos Camperos" : "Golden Farm Eggs",
+          subname: isEs ? "Gallinas en Libertad" : "Free Range",
+          tag: isEs ? "Huevos Frescos de Granja • Pack de 12" : "Brown Farm Eggs • Pack of 12",
+          weight: isEs ? "Pack 12 ud" : "12 pcs",
           color: "#ca8a04",
           bgGradient: "from-[#eab308] to-[#a16207]",
           imgUrl:
@@ -352,22 +366,22 @@ export const GroceryHeroBanner: React.FC = () => {
     <div className="w-full space-y-2.5 sm:space-y-4">
       {/* 1. Main Billboard Banner Canvas */}
       <div
-        className="group relative w-full overflow-hidden rounded-2xl sm:rounded-3xl border border-emerald-900/30 bg-[#072416] shadow-xl sm:shadow-2xl transition-all"
+        className="group relative w-full overflow-hidden rounded-2xl sm:rounded-3xl border border-emerald-200/70 sm:border-emerald-900/30 bg-gradient-to-br from-[#ebf7f0] via-[#f3faf6] to-[#e1f3e7] sm:bg-[#072416] shadow-sm sm:shadow-2xl transition-all dark:bg-[#072416] dark:border-emerald-950"
         onMouseEnter={() => setIsPaused(true)}
         onMouseLeave={() => setIsPaused(false)}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
       >
-        {/* Animated Radial Lighting Glow Background */}
+        {/* Animated Radial Lighting Glow Background (Desktop Only) */}
         <div
-          className="pointer-events-none absolute inset-0 opacity-95 transition-all duration-1000"
+          className="hidden sm:block pointer-events-none absolute inset-0 opacity-95 transition-all duration-1000"
           style={{
             background:
               "radial-gradient(ellipse 95% 85% at 75% 35%, #144f30 0%, #09331e 45%, #051a10 100%)",
           }}
         />
 
-        {/* Ambient Glowing Floating Flares */}
+        {/* Ambient Glowing Floating Flares (Desktop Only) */}
         <motion.div
           animate={{
             scale: [1, 1.25, 1],
@@ -376,7 +390,7 @@ export const GroceryHeroBanner: React.FC = () => {
             y: [0, -15, 0],
           }}
           transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
-          className="pointer-events-none absolute -end-16 -top-16 h-[420px] w-[420px] rounded-full bg-emerald-300/20 blur-3xl"
+          className="hidden sm:block pointer-events-none absolute -end-16 -top-16 h-[420px] w-[420px] rounded-full bg-emerald-300/20 blur-3xl"
         />
         <motion.div
           animate={{
@@ -390,23 +404,25 @@ export const GroceryHeroBanner: React.FC = () => {
             ease: "easeInOut",
             delay: 1,
           }}
-          className="pointer-events-none absolute start-1/4 -top-20 h-80 w-80 rounded-full bg-amber-400/15 blur-3xl"
+          className="hidden sm:block pointer-events-none absolute start-1/4 -top-20 h-80 w-80 rounded-full bg-amber-400/15 blur-3xl"
         />
 
-        {/* Botanical Leaf Accents */}
-        <div className="pointer-events-none absolute -start-10 -top-10 text-emerald-400/10 blur-[1px]">
+        {/* Botanical Leaf Accents (Desktop Only) */}
+        <div className="hidden sm:block pointer-events-none absolute -start-10 -top-10 text-emerald-400/10 blur-[1px]">
           <LeafIcon className="h-64 w-64 -rotate-45" />
         </div>
-        <div className="pointer-events-none absolute -end-8 -top-8 text-emerald-400/10 blur-[1px]">
+        <div className="hidden sm:block pointer-events-none absolute -end-8 -top-8 text-emerald-400/10 blur-[1px]">
           <LeafIcon className="h-56 w-56 rotate-45" />
         </div>
 
-        {/* Floating Fruit & Leaf Particles */}
-        <FloatingParticles />
+        {/* Floating Fruit & Leaf Particles (Desktop Only) */}
+        <div className="hidden sm:block">
+          <FloatingParticles />
+        </div>
 
-        {/* Rustic Tabletop Platform (Bottom Horizon) */}
+        {/* Rustic Tabletop Platform (Bottom Horizon) - Desktop Only */}
         <div
-          className="pointer-events-none absolute inset-x-0 bottom-0 h-28 sm:h-32 border-t border-[#4a2b13]/40"
+          className="hidden sm:block pointer-events-none absolute inset-x-0 bottom-0 h-28 sm:h-32 border-t border-[#4a2b13]/40"
           style={{
             background:
               "linear-gradient(to top, #140a04 0%, #1e0f06 35%, #2a160a 75%, #341c0d 95%, transparent 100%)",
@@ -414,8 +430,111 @@ export const GroceryHeroBanner: React.FC = () => {
           }}
         />
 
-        {/* Banner Content Container with AnimatePresence Crossfade */}
-        <div className="relative z-10 flex min-h-[290px] sm:min-h-[500px] lg:min-h-[530px] w-full flex-col justify-between p-4 sm:p-10 lg:p-14 pb-7 sm:pb-10">
+        {/* =============================================================== */}
+        {/* MOBILE HERO SECTION (Compact 225px, Light, Clean & Punchy)     */}
+        {/* =============================================================== */}
+        <div className="sm:hidden relative z-10 flex h-[230px] w-full flex-col justify-between p-3.5 pb-2">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={slide.id}
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.3, ease: "easeOut" }}
+              className="flex items-center justify-between gap-3 h-[185px]"
+            >
+              {/* Left Column: Kicker, 2-line Heading, 1-line Description, CTA Row */}
+              <div className="flex-1 min-w-0 flex flex-col justify-between h-full py-0.5 select-none">
+                {/* 1. Kicker Pill */}
+                <div>
+                  <span className="inline-flex items-center gap-1 rounded-full border border-emerald-200/80 bg-emerald-100/90 px-2 py-0.5 text-[9px] font-black tracking-wider uppercase text-emerald-800 dark:border-emerald-800/40 dark:bg-emerald-950/80 dark:text-emerald-300">
+                    <LeafIcon className="h-2.5 w-2.5 text-emerald-600 dark:text-emerald-400" />
+                    <span>{t(slide.kickerKey)}</span>
+                  </span>
+
+                  {/* 2. Heading (Max 2 lines, tight leading, high contrast) */}
+                  <h2 className="mt-1 font-outfit text-[17px] xs:text-[19px] font-black tracking-tight text-gray-900 dark:text-white leading-[1.18] line-clamp-2">
+                    <span>{t(slide.title1Key)} {t(slide.title2Key)}{" "}</span>
+                    <span className="text-emerald-600 dark:text-emerald-400">
+                      {t(slide.title3Key)}
+                    </span>
+                  </h2>
+
+                  {/* 3. Description (1 line only, never cut off mid-sentence) */}
+                  <p className="mt-0.5 text-[11px] font-medium text-gray-600 dark:text-emerald-200/80 truncate">
+                    {slide.id === "snacks-theme"
+                      ? (isEs ? "Ingredientes 100% naturales para picar sano." : "100% natural ingredients for healthy snacking.")
+                      : slide.id === "produce-theme"
+                      ? (isEs ? "Cosecha fresca seleccionada a mano en 25 min." : "Handpicked farm-fresh harvest in 25 mins.")
+                      : (isEs ? "Masa madre artesanal y lácteos del día." : "Artisan sourdough bread & fresh farm dairy.")}
+                  </p>
+                </div>
+
+                {/* 4. Action Row (Single CTA button + small delivery tag) */}
+                <div className="flex items-center gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => scrollToCatalog(slide.category)}
+                    className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-green-600 px-4 py-2 text-xs font-black text-white shadow-md shadow-emerald-600/25 active:scale-95 transition-all touch-manipulation"
+                  >
+                    <span>{t("shopNowBtn")}</span>
+                    <ArrowRightIcon className="h-3 w-3 rtl:rotate-180" />
+                  </button>
+
+                  <span className="inline-flex items-center gap-1 rounded-lg bg-emerald-100/90 dark:bg-emerald-950/70 px-2 py-1 text-[10px] font-bold text-emerald-800 dark:text-emerald-300">
+                    <BoltIcon className="h-3 w-3 text-amber-500 fill-current" />
+                    <span>25 min</span>
+                  </span>
+                </div>
+              </div>
+
+              {/* Right Column: Cropped Organic Product Visual (No nested heavy card) */}
+              <div
+                onClick={() => scrollToCatalog(slide.category)}
+                className="relative h-[175px] w-[115px] xs:w-[130px] shrink-0 overflow-hidden rounded-2xl border border-white/80 bg-emerald-100/40 shadow-md cursor-pointer dark:border-white/10 dark:bg-emerald-950/60"
+              >
+                <Image
+                  src={slide.mobileVisualUrl}
+                  alt={slide.pouches[1].name}
+                  fill
+                  sizes="140px"
+                  className="object-cover transition-transform duration-500 hover:scale-105"
+                  priority
+                />
+
+                {/* Subtle vignette */}
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/10" />
+
+                {/* ONLY ONE Badge: -20% DTO */}
+                <span className="absolute top-2 end-2 rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 px-2 py-0.5 text-[9px] font-black text-white shadow-xs">
+                  -20% DTO
+                </span>
+              </div>
+            </motion.div>
+          </AnimatePresence>
+
+          {/* Mobile Pagination Dots (Bigger, 8-10px, Clear Active Contrast) */}
+          <div className="flex items-center justify-center gap-2 pt-1">
+            {slides.map((s, idx) => (
+              <button
+                key={s.id}
+                type="button"
+                onClick={() => setCurrentSlide(idx)}
+                className={`h-2 rounded-full transition-all duration-300 ${
+                  currentSlide === idx
+                    ? "w-7 bg-emerald-600 dark:bg-emerald-400 shadow-xs"
+                    : "w-2 bg-emerald-300/80 hover:bg-emerald-400 dark:bg-emerald-800/60"
+                }`}
+                title={`Slide ${idx + 1}`}
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* =============================================================== */}
+        {/* DESKTOP HERO SECTION (Preserved 100% for sm: and larger)       */}
+        {/* =============================================================== */}
+        <div className="hidden sm:flex relative z-10 min-h-[500px] lg:min-h-[530px] w-full flex-col justify-between p-10 lg:p-14 pb-10">
           <AnimatePresence mode="wait">
             <motion.div
               key={slide.id}
@@ -423,7 +542,7 @@ export const GroceryHeroBanner: React.FC = () => {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -12 }}
               transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-              className="flex flex-1 flex-col justify-between gap-4 sm:gap-8 lg:flex-row lg:items-center"
+              className="flex flex-1 flex-col justify-between gap-8 lg:flex-row lg:items-center"
             >
               {/* Left Column: Bold Typography & Magnetic Action Button */}
               <div className="max-w-xl flex-1 select-none">
@@ -555,10 +674,12 @@ export const GroceryHeroBanner: React.FC = () => {
                     </div>
 
                     <div className="relative mx-auto h-16 w-16 sm:h-20 sm:w-20 lg:h-24 lg:w-24 overflow-hidden rounded-full border-2 border-white/60 shadow-inner bg-black/20 my-1">
-                      <img
+                      <Image
                         src={slide.pouches[0].imgUrl}
                         alt={slide.pouches[0].name}
-                        className="h-full w-full object-cover transition-transform duration-500 group-hover/pouch:scale-110"
+                        fill
+                        sizes="96px"
+                        className="object-cover transition-transform duration-500 group-hover/pouch:scale-110"
                         loading="lazy"
                       />
                     </div>
@@ -625,11 +746,13 @@ export const GroceryHeroBanner: React.FC = () => {
                     </div>
 
                     <div className="relative mx-auto h-14 w-14 sm:h-24 sm:w-24 lg:h-28 lg:w-28 overflow-hidden rounded-full border-2 border-white/80 shadow-md bg-black/30 my-0.5 sm:my-1">
-                      <img
+                      <Image
                         src={slide.pouches[1].imgUrl}
                         alt={slide.pouches[1].name}
-                        className="h-full w-full object-cover transition-transform duration-500 group-hover/pouch:scale-110"
-                        loading="eager"
+                        fill
+                        sizes="112px"
+                        className="object-cover transition-transform duration-500 group-hover/pouch:scale-110"
+                        priority
                       />
                     </div>
 
@@ -692,10 +815,12 @@ export const GroceryHeroBanner: React.FC = () => {
                     </div>
 
                     <div className="relative mx-auto h-16 w-16 sm:h-20 sm:w-20 lg:h-24 lg:w-24 overflow-hidden rounded-full border-2 border-white/60 shadow-inner bg-black/20 my-1">
-                      <img
+                      <Image
                         src={slide.pouches[2].imgUrl}
                         alt={slide.pouches[2].name}
-                        className="h-full w-full object-cover transition-transform duration-500 group-hover/pouch:scale-110"
+                        fill
+                        sizes="96px"
+                        className="object-cover transition-transform duration-500 group-hover/pouch:scale-110"
                         loading="lazy"
                       />
                     </div>
@@ -746,8 +871,8 @@ export const GroceryHeroBanner: React.FC = () => {
           <AngleRightIcon className="h-5 w-5 rtl:rotate-180" />
         </button>
 
-        {/* Bottom Pagination Dots */}
-        <div className="absolute bottom-2 sm:bottom-4 inset-x-0 z-20 flex items-center justify-center gap-1.5 sm:gap-2">
+        {/* Desktop Bottom Pagination Dots */}
+        <div className="hidden sm:flex absolute bottom-4 inset-x-0 z-20 items-center justify-center gap-2">
           {slides.map((s, idx) => (
             <button
               key={s.id}
@@ -764,13 +889,13 @@ export const GroceryHeroBanner: React.FC = () => {
         </div>
       </div>
 
-      {/* 2. Premium Live Counter & Guarantee Ribbon with Animated Numbers */}
+      {/* 2. Premium Live Counter & Guarantee Ribbon with Animated Numbers (Desktop Only) */}
       <motion.div
         initial={{ opacity: 0, y: 16 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-40px" }}
         transition={{ duration: 0.5, ease: "easeOut" }}
-        className="grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-4 rounded-2xl sm:rounded-3xl border border-gray-200/80 bg-white/80 p-3 sm:p-5 shadow-[0_10px_25px_-5px_rgba(0,0,0,0.05)] backdrop-blur-sm dark:border-emerald-950/60 dark:bg-[#071d12]/70 dark:shadow-[0_10px_30px_-5px_rgba(0,0,0,0.3)]"
+        className="hidden md:grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-4 rounded-2xl sm:rounded-3xl border border-gray-200/80 bg-white/80 p-3 sm:p-5 shadow-[0_10px_25px_-5px_rgba(0,0,0,0.05)] backdrop-blur-sm dark:border-emerald-950/60 dark:bg-[#071d12]/70 dark:shadow-[0_10px_30px_-5px_rgba(0,0,0,0.3)]"
       >
         {/* Metric 1: Express 15 Min Delivery */}
         <div className="flex items-center gap-2 sm:gap-3.5 min-w-0">
@@ -779,7 +904,7 @@ export const GroceryHeroBanner: React.FC = () => {
           </div>
           <div className="min-w-0">
             <h4 className="font-outfit text-xs sm:text-base font-extrabold text-gray-900 dark:text-white truncate">
-              <AnimatedCounter to={15} suffix=" Mins" />
+              <AnimatedCounter to={15} suffix={isEs ? " Min" : " Mins"} />
             </h4>
             <p className="text-[10px] sm:text-[11px] font-medium text-gray-500 dark:text-emerald-300/70 truncate">
               {t("trust1Desc")}
@@ -794,7 +919,7 @@ export const GroceryHeroBanner: React.FC = () => {
           </div>
           <div className="min-w-0">
             <h4 className="font-outfit text-xs sm:text-base font-extrabold text-gray-900 dark:text-white truncate">
-              <AnimatedCounter to={100} suffix="%" /> Fresh
+              <AnimatedCounter to={100} suffix="%" /> {isEs ? "Fresco" : "Fresh"}
             </h4>
             <p className="text-[10px] sm:text-[11px] font-medium text-gray-500 dark:text-emerald-300/70 truncate">
               {t("trust2Desc")}
@@ -812,7 +937,7 @@ export const GroceryHeroBanner: React.FC = () => {
               <AnimatedCounter to={12450} suffix="+" />
             </h4>
             <p className="text-[10px] sm:text-[11px] font-medium text-gray-500 dark:text-emerald-300/70 truncate">
-              Happy Homes
+              {isEs ? "Hogares Felices" : "Happy Homes"}
             </p>
           </div>
         </div>
@@ -828,7 +953,7 @@ export const GroceryHeroBanner: React.FC = () => {
               <StarIcon className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-amber-500 fill-amber-500 inline" />
             </h4>
             <p className="text-[10px] sm:text-[11px] font-medium text-gray-500 dark:text-emerald-300/70 truncate">
-              Customer Rating
+              {isEs ? "Valoración Clientes" : "Customer Rating"}
             </p>
           </div>
         </div>

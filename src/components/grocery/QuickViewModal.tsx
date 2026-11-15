@@ -1,8 +1,10 @@
 "use client";
 
-import React, { useRef, useState } from "react";
+import React, { useState } from "react";
+import Image from "next/image";
 import { useGroceryCart } from "@/context/GroceryCartContext";
 import { formatPrice } from "@/utils/currency";
+import { getProductLocalized } from "@/data/groceryData";
 import { useLocale, useTranslations } from "next-intl";
 import { motion, AnimatePresence } from "framer-motion";
 import { CartIcon, LeafIcon, ShieldCheckIcon, HeartIcon, StarIcon } from "@/icons";
@@ -24,35 +26,56 @@ export const QuickViewModal: React.FC = () => {
 
   const t = useTranslations("grocery");
   const locale = useLocale();
-  const imageRef = useRef<HTMLImageElement>(null);
-  const [imgSrc, setImgSrc] = useState<string>("");
+  const isEs = locale === "es";
+  const [imageError, setImageError] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  React.useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 640);
+    checkMobile();
+    window.addEventListener("resize", checkMobile, { passive: true });
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   if (!quickViewProduct) return null;
+
+  const localized = getProductLocalized(quickViewProduct, locale);
 
   const cartItem = cart.find((item) => item.id === quickViewProduct.id);
   const currentQty = cartItem ? cartItem.quantity : 0;
   const wishlisted = isWishlisted(quickViewProduct.id);
 
-  const displayImage =
-    imgSrc || quickViewProduct.imageUrl || FALLBACK_IMAGE;
+  const displayImage = quickViewProduct.imageUrl || FALLBACK_IMAGE;
 
   const handleAddToCart = () => {
-    addToCart(quickViewProduct, 1, imageRef.current);
-    toast.success(`Added "${quickViewProduct.name}" to basket!`);
+    addToCart(quickViewProduct, 1, null);
+    toast.success(
+      isEs
+        ? `¡"${localized.name}" añadido a la cesta!`
+        : `Added "${localized.name}" to basket!`,
+    );
   };
 
   const handleWishlistToggle = () => {
     const added = toggleWishlist(quickViewProduct.id);
     if (added) {
-      toast.success(`Added "${quickViewProduct.name}" to wishlist!`);
+      toast.success(
+        isEs
+          ? `¡"${localized.name}" añadido a favoritos!`
+          : `Added "${localized.name}" to wishlist!`,
+      );
     } else {
-      toast.info(`Removed "${quickViewProduct.name}" from wishlist.`);
+      toast.info(
+        isEs
+          ? `"${localized.name}" eliminado de favoritos.`
+          : `Removed "${localized.name}" from wishlist.`,
+      );
     }
   };
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
+      <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-y-auto">
         {/* Backdrop */}
         <motion.div
           initial={{ opacity: 0 }}
@@ -62,14 +85,19 @@ export const QuickViewModal: React.FC = () => {
           onClick={() => setQuickViewProduct(null)}
         />
 
-        {/* Modal Window */}
+        {/* Modal Window / Native Mobile Bottom Sheet */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.95, y: 15 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.95, y: 15 }}
+          initial={isMobile ? { y: "100%", opacity: 0 } : { opacity: 0, scale: 0.95, y: 15 }}
+          animate={isMobile ? { y: 0, opacity: 1 } : { opacity: 1, scale: 1, y: 0 }}
+          exit={isMobile ? { y: "100%", opacity: 0 } : { opacity: 0, scale: 0.95, y: 15 }}
           transition={{ type: "spring", stiffness: 350, damping: 28 }}
-          className="relative z-10 w-full max-w-2xl overflow-hidden rounded-3xl border border-gray-200/80 bg-white p-6 shadow-2xl dark:border-emerald-950/80 dark:bg-[#071910] sm:p-8"
+          className="relative z-10 w-full max-w-2xl overflow-hidden rounded-t-[32px] sm:rounded-3xl border border-gray-200/80 bg-white p-5 pb-[max(1.5rem,env(safe-area-inset-bottom))] shadow-2xl dark:border-emerald-950/80 dark:bg-[#071910] sm:p-8 max-h-[90vh] overflow-y-auto"
         >
+          {/* Native Mobile Grab Handle */}
+          <div className="sm:hidden flex justify-center -mt-1 mb-3">
+            <div className="h-1.5 w-12 rounded-full bg-gray-300 dark:bg-emerald-800/60" />
+          </div>
+
           {/* Close Button */}
           <button
             onClick={() => setQuickViewProduct(null)}
@@ -81,19 +109,31 @@ export const QuickViewModal: React.FC = () => {
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
             {/* Left: Product Image */}
             <div className="relative flex h-64 sm:h-80 w-full items-center justify-center overflow-hidden rounded-2xl bg-gray-100/90 dark:bg-gray-800/60">
-              <img
-                ref={imageRef}
-                src={displayImage}
-                alt={quickViewProduct.name}
-                onError={() => setImgSrc(FALLBACK_IMAGE)}
-                className="h-full w-full object-cover transition-transform duration-500 hover:scale-105"
-                loading="lazy"
-              />
+              {imageError ? (
+                /* Inline SVG fallback */
+                <div className="flex h-full w-full items-center justify-center bg-gray-100 dark:bg-gray-800">
+                  <svg className="h-16 w-16 text-gray-300 dark:text-gray-600" fill="none" viewBox="0 0 48 48" stroke="currentColor" strokeWidth={1.2}>
+                    <rect x="4" y="4" width="40" height="40" rx="8" />
+                    <circle cx="18" cy="18" r="4" />
+                    <path d="M4 32l10-10 8 8 6-6 10 10" />
+                  </svg>
+                </div>
+              ) : (
+                <Image
+                  src={displayImage}
+                  alt={localized.name}
+                  fill
+                  sizes="(max-width: 640px) 100vw, 50vw"
+                  className="object-cover transition-transform duration-500 hover:scale-105"
+                  priority
+                  onError={() => setImageError(true)}
+                />
+              )}
 
               {/* Badge */}
-              {quickViewProduct.badge && (
+              {localized.badge && (
                 <span className="absolute start-3 top-3 inline-flex items-center rounded-full bg-gradient-to-r from-amber-500 to-orange-500 px-3 py-1 text-xs font-black text-white shadow-md animate-pulse">
-                  {quickViewProduct.badge}
+                  {localized.badge}
                 </span>
               )}
 
@@ -126,15 +166,15 @@ export const QuickViewModal: React.FC = () => {
                 </div>
 
                 <h3 className="mt-2 font-outfit text-xl sm:text-2xl font-black text-gray-900 dark:text-white leading-tight">
-                  {quickViewProduct.name}
+                  {localized.name}
                 </h3>
 
                 <p className="mt-1 text-xs font-semibold text-gray-500 dark:text-emerald-300/70">
-                  {quickViewProduct.unit} {quickViewProduct.origin ? `• Origin: ${quickViewProduct.origin}` : ""}
+                  {localized.unit} {localized.origin ? `• ${isEs ? "Origen" : "Origin"}: ${localized.origin}` : ""}
                 </p>
 
                 <p className="mt-3 text-xs sm:text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
-                  {quickViewProduct.description}
+                  {localized.description}
                 </p>
 
                 {/* Price Display */}
@@ -149,7 +189,7 @@ export const QuickViewModal: React.FC = () => {
                   )}
                   {quickViewProduct.originalPrice && (
                     <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-extrabold text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
-                      Save{" "}
+                      {isEs ? "Ahorras " : "Save "}
                       {formatPrice(
                         quickViewProduct.originalPrice - quickViewProduct.price,
                         locale,
@@ -161,7 +201,11 @@ export const QuickViewModal: React.FC = () => {
                 {/* Delivery Guarantee */}
                 <div className="mt-4 flex items-center gap-2 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
                   <ShieldCheckIcon className="h-4 w-4" />
-                  <span>100% Quality Guarantee & 15-Min Delivery</span>
+                  <span>
+                    {isEs
+                      ? "100% Calidad Garantizada y Reparto en 25 Min"
+                      : "100% Quality Guarantee & 15-Min Delivery"}
+                  </span>
                 </div>
               </div>
 
@@ -177,7 +221,7 @@ export const QuickViewModal: React.FC = () => {
                   </button>
                 ) : (
                   <div className="flex-1 flex items-center justify-between rounded-2xl bg-gradient-to-r from-emerald-600 to-green-600 px-4 py-3 text-white shadow-lg">
-                    <span className="text-xs font-bold">In Basket</span>
+                    <span className="text-xs font-bold">{isEs ? "En la Cesta" : "In Basket"}</span>
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() =>

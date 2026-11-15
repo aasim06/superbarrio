@@ -17,7 +17,7 @@ const ComponentCard: React.FC<ComponentCardProps> = ({
   return (
     <div
       className={cn(
-        "rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/3",
+        "rounded-2xl border border-gray-200 bg-white overflow-hidden dark:border-gray-800 dark:bg-white/3",
         className,
       )}
     >
@@ -34,8 +34,8 @@ const ComponentCard: React.FC<ComponentCardProps> = ({
       </div>
 
       {/* Card Body */}
-      <div className="border-t border-gray-100 p-4 sm:p-6 dark:border-gray-800">
-        <div className="space-y-6">{children}</div>
+      <div className="border-t border-gray-100 p-4 sm:p-6 dark:border-gray-800 min-w-0">
+        <div className="space-y-6 min-w-0">{children}</div>
       </div>
     </div>
   );

@@ -1,126 +1,171 @@
 "use client";
 
 import { ApexOptions } from "apexcharts";
-
 import dynamic from "next/dynamic";
+import { useEffect, useState } from "react";
+import { getAllGroceryOrders } from "@/data/groceryAdminStore";
+import { CustomerOrder } from "@/types/grocery";
+
 // Dynamically import the ReactApexChart component
 const ReactApexChart = dynamic(() => import("react-apexcharts"), {
   ssr: false,
 });
 
 export default function LineChartOne() {
+  const [orders, setOrders] = useState<CustomerOrder[]>([]);
+
+  useEffect(() => {
+    // Load real customer orders from storage
+    setOrders(getAllGroceryOrders());
+
+    const handleUpdate = () => {
+      setOrders(getAllGroceryOrders());
+    };
+
+    window.addEventListener("grocery-orders-updated", handleUpdate);
+    window.addEventListener("storage", handleUpdate);
+    return () => {
+      window.removeEventListener("grocery-orders-updated", handleUpdate);
+      window.removeEventListener("storage", handleUpdate);
+    };
+  }, []);
+
+  const monthCategories = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+  ];
+
+  // Aggregate real orders per calendar month
+  const salesData = Array(12).fill(0);
+  const revenueData = Array(12).fill(0);
+
+  orders.forEach((order) => {
+    const d = order.createdAt ? new Date(order.createdAt) : new Date();
+    const month = d.getMonth();
+    if (month >= 0 && month < 12) {
+      const itemsCount = (order.items || []).reduce(
+        (sum, it) => sum + (Number(it.quantity) || 1),
+        0,
+      );
+      salesData[month] += itemsCount || 1;
+      revenueData[month] += Math.round((Number(order.total) || 0) * 100) / 100;
+    }
+  });
+
+  const series = [
+    {
+      name: "Items Sold",
+      data: salesData,
+    },
+    {
+      name: "Revenue (€)",
+      data: revenueData.map((v) => Number(v.toFixed(2))),
+    },
+  ];
+
   const options: ApexOptions = {
     legend: {
-      show: false, // Hide legend
+      show: true,
       position: "top",
-      horizontalAlign: "left",
+      horizontalAlign: "right",
+      fontFamily: "Outfit, sans-serif",
     },
-    colors: ["#465FFF", "#9CB9FF"], // Define line colors
+    colors: ["#10b981", "#465FFF"], // Emerald for Sales, Blue for Revenue
     chart: {
       fontFamily: "Outfit, sans-serif",
       height: 310,
       width: "100%",
-      type: "line", // Set the chart type to 'line'
+      type: "area",
       toolbar: {
-        show: false, // Hide chart toolbar
+        show: false,
       },
     },
     stroke: {
-      curve: "straight", // Define the line style (straight, smooth, or step)
-      width: [2, 2], // Line width for each dataset
+      curve: "smooth",
+      width: [2.5, 2.5],
     },
-
     fill: {
       type: "gradient",
       gradient: {
-        opacityFrom: 0.55,
-        opacityTo: 0,
+        shadeIntensity: 1,
+        opacityFrom: 0.45,
+        opacityTo: 0.05,
       },
     },
     markers: {
-      size: 0, // Size of the marker points
-      strokeColors: "#fff", // Marker border color
+      size: 4,
+      strokeColors: "#fff",
       strokeWidth: 2,
       hover: {
-        size: 6, // Marker size on hover
+        size: 7,
       },
     },
     grid: {
+      borderColor: "#f3f4f6",
+      strokeDashArray: 4,
       xaxis: {
         lines: {
-          show: false, // Hide grid lines on x-axis
+          show: false,
         },
       },
       yaxis: {
         lines: {
-          show: true, // Show grid lines on y-axis
+          show: true,
         },
       },
     },
     dataLabels: {
-      enabled: false, // Disable data labels
+      enabled: false,
     },
     tooltip: {
-      enabled: true, // Enable tooltip
-      x: {
-        format: "dd MMM yyyy", // Format for x-axis tooltip
+      enabled: true,
+      y: {
+        formatter: (val: number, { seriesIndex }: any) => {
+          if (seriesIndex === 0) return `${val} items sold`;
+          return `€${val.toFixed(2)}`;
+        },
       },
     },
     xaxis: {
-      type: "category", // Category-based x-axis
-      categories: [
-        "Jan",
-        "Feb",
-        "Mar",
-        "Apr",
-        "May",
-        "Jun",
-        "Jul",
-        "Aug",
-        "Sep",
-        "Oct",
-        "Nov",
-        "Dec",
-      ],
+      type: "category",
+      categories: monthCategories,
       axisBorder: {
-        show: false, // Hide x-axis border
+        show: false,
       },
       axisTicks: {
-        show: false, // Hide x-axis ticks
+        show: false,
       },
-      tooltip: {
-        enabled: false, // Disable tooltip for x-axis points
+      labels: {
+        style: {
+          colors: "#9ca3af",
+          fontSize: "12px",
+        },
       },
     },
     yaxis: {
       labels: {
         style: {
-          fontSize: "12px", // Adjust font size for y-axis labels
-          colors: ["#6B7280"], // Color of the labels
+          fontSize: "12px",
+          colors: ["#6B7280"],
         },
-      },
-      title: {
-        text: "", // Remove y-axis title
-        style: {
-          fontSize: "0px",
-        },
+        formatter: (val: number) => `€${val.toFixed(0)}`,
       },
     },
   };
 
-  const series = [
-    {
-      name: "Sales",
-      data: [180, 190, 170, 160, 175, 165, 170, 205, 230, 210, 240, 235],
-    },
-    {
-      name: "Revenue",
-      data: [40, 30, 50, 40, 55, 40, 70, 100, 110, 120, 150, 140],
-    },
-  ];
   return (
-    <div className="custom-scrollbar max-w-full overflow-x-auto">
-      <div id="chartEight" className="min-w-[1000px] xl:min-w-full">
+    <div className="custom-scrollbar w-full max-w-full overflow-x-auto">
+      <div id="chartEight" className="min-w-[550px] sm:min-w-[600px] xl:min-w-full">
         <ReactApexChart
           options={options}
           series={series}

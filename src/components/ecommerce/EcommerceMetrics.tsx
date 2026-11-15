@@ -12,7 +12,6 @@ import Badge from "../ui/badge/Badge";
 import {
   getAllGroceryOrders,
   computeGroceryDashboardMetrics,
-  SEEDED_ORDERS,
 } from "@/data/groceryAdminStore";
 import { useLocale, useTranslations } from "next-intl";
 import { formatPrice } from "@/utils/currency";
@@ -22,7 +21,7 @@ export const EcommerceMetrics = () => {
   const locale = useLocale();
 
   const [metrics, setMetrics] = useState(() => {
-    return computeGroceryDashboardMetrics(SEEDED_ORDERS);
+    return computeGroceryDashboardMetrics([]);
   });
 
   useEffect(() => {
@@ -33,8 +32,10 @@ export const EcommerceMetrics = () => {
     };
 
     window.addEventListener("grocery-orders-updated", handleUpdate);
+    window.addEventListener("storage", handleUpdate);
     return () => {
       window.removeEventListener("grocery-orders-updated", handleUpdate);
+      window.removeEventListener("storage", handleUpdate);
     };
   }, []);
 
@@ -63,7 +64,7 @@ export const EcommerceMetrics = () => {
             {formatPrice(metrics.totalRevenue, locale)}
           </h4>
           <p className="mt-1 text-[11px] text-gray-400">
-            Across 8 SuperBarrio departments
+            Total revenue from placed orders
           </p>
         </div>
       </div>
@@ -119,7 +120,7 @@ export const EcommerceMetrics = () => {
             {formatPrice(metrics.avgOrderValue, locale)}
           </h4>
           <p className="mt-1 text-[11px] text-gray-400">
-            4.2 items average per shopping basket
+            Average basket per customer order
           </p>
         </div>
       </div>

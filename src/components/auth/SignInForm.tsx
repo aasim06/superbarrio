@@ -1,41 +1,148 @@
 "use client";
 
+import React, { useState } from "react";
 import Checkbox from "@/components/form/input/Checkbox";
 import Input from "@/components/form/input/InputField";
 import Label from "@/components/form/Label";
 import Button from "@/components/ui/button/Button";
-import { Link } from "@/i18n/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
 import { ChevronLeftIcon, EyeCloseIcon, EyeIcon } from "@/icons";
-import { useState } from "react";
+import { toast } from "sonner";
+import { signInWithPopup, GoogleAuthProvider } from "firebase/auth";
+import { auth, isFirebaseConfigured } from "@/lib/firebase/config";
 
 export default function SignInForm() {
+  const router = useRouter();
+  const [identifier, setIdentifier] = useState("admin");
+  const [password, setPassword] = useState("admin");
   const [showPassword, setShowPassword] = useState(false);
-  const [isChecked, setIsChecked] = useState(false);
+  const [rememberMe, setRememberMe] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!identifier.trim()) {
+      toast.error("Por favor introduzca su usuario o email.");
+      return;
+    }
+    if (!password) {
+      toast.error("Por favor introduzca su contraseña.");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ identifier: identifier.trim(), password }),
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        // Explicitly set client-side cookie so layout guard passes immediately
+        document.cookie = "sb_admin_session=true; path=/; max-age=604800; SameSite=Lax";
+        toast.success("¡Bienvenido! Sesión iniciada correctamente.");
+
+        const callback =
+          typeof window !== "undefined"
+            ? new URLSearchParams(window.location.search).get("callbackUrl") || "/dashboard"
+            : "/dashboard";
+
+        setTimeout(() => {
+          window.location.href = callback;
+        }, 150);
+      } else {
+        toast.error(data.error || "Usuario o contraseña incorrectos.");
+      }
+    } catch (err) {
+      toast.error("Error de conexión al iniciar sesión.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    if (!isFirebaseConfigured || !auth) {
+      toast.error("Google Firebase no está configurado.");
+      return;
+    }
+
+    setIsGoogleLoading(true);
+    try {
+      const provider = new GoogleAuthProvider();
+      const result = await signInWithPopup(auth, provider);
+      const googleEmail = result.user?.email;
+
+      if (!googleEmail) {
+        toast.error("No se pudo obtener el email de Google.");
+        return;
+      }
+
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isGoogle: true, googleEmail }),
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        document.cookie = "sb_admin_session=true; path=/; max-age=604800; SameSite=Lax";
+        toast.success(`¡Bienvenido ${result.user?.displayName || "Admin"}!`);
+        const callback =
+          typeof window !== "undefined"
+            ? new URLSearchParams(window.location.search).get("callbackUrl") || "/dashboard"
+            : "/dashboard";
+
+        setTimeout(() => {
+          window.location.href = callback;
+        }, 150);
+      } else {
+        toast.error(data.error || "Esta cuenta de Google no tiene acceso de administrador.");
+      }
+    } catch (err: any) {
+      if (err?.code !== "auth/popup-closed-by-user") {
+        toast.error("Error al iniciar sesión con Google.");
+      }
+    } finally {
+      setIsGoogleLoading(false);
+    }
+  };
 
   return (
     <div className="flex w-full flex-1 flex-col lg:w-1/2">
       <div className="mx-auto mb-5 w-full max-w-md sm:pt-10">
         <Link
-          href="/dashboard"
-          className="inline-flex items-center text-sm text-gray-500 transition-colors hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+          href="/grocery"
+          className="inline-flex items-center text-sm font-medium text-emerald-600 transition-colors hover:text-emerald-700 dark:text-emerald-400"
         >
           <ChevronLeftIcon className="rtl:rotate-180" />
-          Back to dashboard
+          Volver a la Tienda (SuperBarrio)
         </Link>
       </div>
       <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center">
         <div>
           <div className="mb-5 sm:mb-8">
-            <h1 className="mb-2 text-title-sm font-semibold text-gray-800 sm:text-title-md dark:text-white/90">
-              Sign In
+            <h1 className="mb-2 text-title-sm font-bold text-gray-900 sm:text-title-md dark:text-white">
+              Panel de Administración
             </h1>
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              Enter your email and password to sign in!
+              Introduzca sus credenciales para acceder a la gestión de SuperBarrio.
             </p>
           </div>
+
           <div>
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-5">
-              <button className="inline-flex items-center justify-center gap-3 rounded-lg bg-gray-100 px-7 py-3 text-sm font-normal text-gray-700 transition-colors hover:bg-gray-200 hover:text-gray-800 dark:bg-white/5 dark:text-white/90 dark:hover:bg-white/10">
+            <div className="mb-5">
+              <button
+                type="button"
+                onClick={handleGoogleLogin}
+                disabled={isGoogleLoading}
+                className="inline-flex w-full items-center justify-center gap-3 rounded-xl border border-gray-200 bg-white px-5 py-3 text-sm font-semibold text-gray-700 shadow-xs transition-colors hover:bg-gray-50 hover:text-gray-900 disabled:opacity-50 dark:border-gray-800 dark:bg-white/5 dark:text-white/90 dark:hover:bg-white/10"
+              >
                 <svg
                   width="20"
                   height="20"
@@ -60,94 +167,106 @@ export default function SignInForm() {
                     fill="#EB4335"
                   />
                 </svg>
-                Sign in with Google
-              </button>
-              <button className="inline-flex items-center justify-center gap-3 rounded-lg bg-gray-100 px-7 py-3 text-sm font-normal text-gray-700 transition-colors hover:bg-gray-200 hover:text-gray-800 dark:bg-white/5 dark:text-white/90 dark:hover:bg-white/10">
-                <svg
-                  width="21"
-                  className="fill-current"
-                  height="20"
-                  viewBox="0 0 21 20"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path d="M15.6705 1.875H18.4272L12.4047 8.75833L19.4897 18.125H13.9422L9.59717 12.4442L4.62554 18.125H1.86721L8.30887 10.7625L1.51221 1.875H7.20054L11.128 7.0675L15.6705 1.875ZM14.703 16.475H16.2305L6.37054 3.43833H4.73137L14.703 16.475Z" />
-                </svg>
-                Sign in with X
+                {isGoogleLoading ? "Conectando..." : "Acceder con Google (Admin)"}
               </button>
             </div>
-            <div className="relative py-3 sm:py-5">
+
+            <div className="relative py-3 sm:py-4">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-gray-200 dark:border-gray-800"></div>
               </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="bg-white p-2 text-gray-400 sm:px-5 sm:py-2 dark:bg-gray-900">
-                  Or
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-white px-3 font-semibold text-gray-400 dark:bg-gray-900">
+                  O credenciales directas
                 </span>
               </div>
             </div>
-            <form>
-              <div className="space-y-6">
-                <div>
-                  <Label>
-                    Email <span className="text-error-500">*</span>{" "}
-                  </Label>
-                  <Input placeholder="info@gmail.com" />
-                </div>
-                <div>
-                  <Label>
-                    Password <span className="text-error-500">*</span>{" "}
-                  </Label>
-                  <div className="relative">
-                    <Input
-                      type={showPassword ? "text" : "password"}
-                      placeholder="Enter your password"
-                    />
-                    <span
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="inset-e-4 absolute top-1/2 z-30 -translate-y-1/2 cursor-pointer"
-                    >
-                      {showPassword ? (
-                        <EyeIcon className="fill-gray-500 dark:fill-gray-400" />
-                      ) : (
-                        <EyeCloseIcon className="fill-gray-500 dark:fill-gray-400" />
-                      )}
-                    </span>
+
+            {/* Quick Helper Credentials Card */}
+            <div className="mb-4 rounded-2xl border border-emerald-200 bg-emerald-50/90 p-3.5 shadow-xs dark:border-emerald-900/60 dark:bg-emerald-950/40">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                <div className="text-xs">
+                  <div className="flex items-center gap-1.5 font-bold text-emerald-800 dark:text-emerald-300">
+                    <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                    <span>Credenciales de Acceso Admin:</span>
                   </div>
+                  <p className="mt-1 text-emerald-700/90 dark:text-emerald-400 text-[11px]">
+                    Usuario: <strong className="font-mono bg-white dark:bg-gray-800 px-1.5 py-0.5 rounded text-emerald-900 dark:text-white">admin</strong>{" "}
+                    | Clave: <strong className="font-mono bg-white dark:bg-gray-800 px-1.5 py-0.5 rounded text-emerald-900 dark:text-white">admin</strong>
+                  </p>
                 </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <Checkbox checked={isChecked} onChange={setIsChecked} />
-                    <span className="block text-theme-sm font-normal text-gray-700 dark:text-gray-400">
-                      Keep me logged in
-                    </span>
-                  </div>
-                  <Link
-                    href="/reset-password"
-                    className="text-sm text-brand-500 hover:text-brand-600 dark:text-brand-400"
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIdentifier("admin");
+                    setPassword("admin");
+                  }}
+                  className="self-start sm:self-auto rounded-lg bg-emerald-600 px-2.5 py-1 text-xs font-semibold text-white shadow-xs hover:bg-emerald-700 active:scale-95 transition cursor-pointer"
+                >
+                  Autocompletar
+                </button>
+              </div>
+            </div>
+
+            <form onSubmit={handleLogin} className="space-y-4">
+              <div>
+                <Label>
+                  Usuario o Email <span className="text-error-500">*</span>
+                </Label>
+                <Input
+                  type="text"
+                  value={identifier}
+                  onChange={(e) => setIdentifier(e.target.value)}
+                  placeholder="admin o aasimameer06@gmail.com"
+                  required
+                />
+              </div>
+
+              <div>
+                <Label>
+                  Contraseña <span className="text-error-500">*</span>
+                </Label>
+                <div className="relative">
+                  <Input
+                    type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                    required
+                  />
+                  <span
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute end-4 top-1/2 z-30 -translate-y-1/2 cursor-pointer text-gray-500"
                   >
-                    Forgot password?
-                  </Link>
-                </div>
-                <div>
-                  <Button className="w-full" size="sm">
-                    Sign in
-                  </Button>
+                    {showPassword ? (
+                      <EyeIcon className="size-5 fill-gray-500" />
+                    ) : (
+                      <EyeCloseIcon className="size-5 fill-gray-500" />
+                    )}
+                  </span>
                 </div>
               </div>
-            </form>
 
-            <div className="mt-5">
-              <p className="text-center text-sm font-normal text-gray-700 sm:text-start dark:text-gray-400">
-                Don&apos;t have an account? {""}
-                <Link
-                  href="/signup"
-                  className="text-brand-500 hover:text-brand-600 dark:text-brand-400"
+              <div className="flex items-center justify-between pt-1">
+                <div className="flex items-center gap-2">
+                  <Checkbox checked={rememberMe} onChange={setRememberMe} />
+                  <span className="text-xs font-medium text-gray-600 dark:text-gray-400">
+                    Recordar sesión
+                  </span>
+                </div>
+              </div>
+
+              <div className="pt-2">
+                <Button
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full rounded-xl bg-gradient-to-r from-emerald-600 to-green-600 font-bold text-white shadow-md hover:from-emerald-700 hover:to-green-700"
+                  size="md"
                 >
-                  Sign Up
-                </Link>
-              </p>
-            </div>
+                  {isLoading ? "Verificando..." : "Iniciar Sesión"}
+                </Button>
+              </div>
+            </form>
           </div>
         </div>
       </div>

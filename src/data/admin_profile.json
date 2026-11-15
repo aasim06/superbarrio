@@ -1,0 +1,21 @@
+{
+  "firstName": "Aasim",
+  "lastName": "Ameer",
+  "username": "admin",
+  "password": "admin",
+  "role": "SuperBarrio Director & Store Owner",
+  "email": "aasimameer06@gmail.com",
+  "phone": "+34 612 345 678",
+  "bio": "Master Administrator",
+  "location": "Madrid, España",
+  "avatarUrl": "/uploads/1794678331404-Screenshot_2026-09-21_132329.png",
+  "facebook": "",
+  "twitter": "",
+  "linkedin": "",
+  "instagram": "",
+  "country": "España",
+  "cityState": "Madrid, España",
+  "postalCode": "28013",
+  "taxId": "B-88392011",
+  "twoFactorEnabled": false
+}

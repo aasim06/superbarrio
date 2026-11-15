@@ -1,11 +1,21 @@
+export interface GroceryCategory {
+  id: string;
+  name: string;
+  nameEn?: string;
+  icon: string;
+  status?: "active" | "inactive";
+}
+
 export interface GroceryProduct {
   id: string;
   name: string;
+  nameEn?: string;
   category: string;
   price: number;
   originalPrice?: number;
   costPrice?: number;
   unit: string;
+  unitEn?: string;
   rating: number;
   reviewsCount: number;
   inStock: boolean;
@@ -14,10 +24,13 @@ export interface GroceryProduct {
   sku?: string;
   expiryDate?: string;
   badge?: string;
+  badgeEn?: string;
   emoji: string;
   imageUrl?: string;
   description: string;
+  descriptionEn?: string;
   origin?: string;
+  originEn?: string;
 }
 
 export interface CartItem extends GroceryProduct {
@@ -36,12 +49,14 @@ export type PaymentMethod =
   | "paypal"
   | "apple_google"
   | "cod"
-  | "wallet";
+  | "wallet"
+  | "khata";
 
 export interface CustomerOrder {
   orderId: string;
   customerName: string;
   email?: string;
+  customerUid?: string;
   phone: string;
   address: string;
   streetAddress?: string;

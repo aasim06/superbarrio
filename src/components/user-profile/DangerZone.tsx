@@ -1,73 +1,140 @@
+"use client";
+
+import React, { useState } from "react";
+import { Modal } from "../ui/modal";
+import Button from "../ui/button/Button";
+import Input from "../form/input/InputField";
+import Label from "../form/Label";
+import { useRouter } from "@/i18n/navigation";
+import { toast } from "sonner";
+
 export default function DangerZone() {
+  const router = useRouter();
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [confirmDeleteText, setConfirmDeleteText] = useState("");
+
+  const handleLogoutAll = () => {
+    toast.success("Successfully logged out from all active sessions.");
+    setIsLogoutModalOpen(false);
+    setTimeout(() => {
+      router.push("/signin");
+    }, 600);
+  };
+
+  const handleDeleteAccount = () => {
+    if (confirmDeleteText !== "DELETE") {
+      toast.error("Please type DELETE to confirm account termination.");
+      return;
+    }
+    toast.error("Store administrative account scheduled for decommission.");
+    setIsDeleteModalOpen(false);
+    setTimeout(() => {
+      router.push("/signin");
+    }, 800);
+  };
+
   return (
-    <div className="mb-6 rounded-2xl border border-gray-200 bg-white p-5 lg:p-6 dark:border-gray-800 dark:bg-white/3">
-      <h4 className="mb-4 text-lg font-semibold text-gray-800 lg:mb-6 dark:text-white/90">
-        Danger Zone
-      </h4>
-      <div>
-        <div className="flex flex-col justify-between gap-4 border-b border-gray-200 py-4 first:pt-0 last:border-b-0 last:pb-0 sm:flex-row sm:items-end dark:border-gray-800">
-          <div>
-            <span className="mb-1 block text-base font-medium text-gray-800 dark:text-white/90">
-              Logout all devices
-            </span>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              Sign out from every active session.
-            </p>
-          </div>
-          <div>
-            <button className="flex h-10 items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white py-2.5 pe-4 ps-3.5 text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/3 dark:hover:text-gray-200">
-              <svg
-                className="rtl:-scale-x-100"
-                xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="20"
-                viewBox="0 0 20 20"
-                fill="none"
+    <>
+      <div className="mb-6 rounded-2xl border border-gray-200 bg-white p-5 lg:p-6 dark:border-gray-800 dark:bg-white/3">
+        <h4 className="mb-4 text-lg font-semibold text-gray-800 lg:mb-6 dark:text-white/90">
+          Danger Zone
+        </h4>
+        <div className="space-y-4 divide-y divide-gray-100 dark:divide-gray-800">
+          {/* Logout all devices */}
+          <div className="flex flex-col justify-between gap-4 pt-4 first:pt-0 sm:flex-row sm:items-center">
+            <div>
+              <span className="block text-base font-semibold text-gray-800 dark:text-white/90">
+                Logout All Devices
+              </span>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                Invalidate all active sessions across browsers and mobile terminals.
+              </p>
+            </div>
+            <div>
+              <button
+                onClick={() => setIsLogoutModalOpen(true)}
+                className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50 hover:text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
               >
-                <path
-                  d="M3.33325 10.0003L9.79159 10.0003M6.66599 6.66699L3.33488 10.0002L6.66599 13.3337M8.12492 4.16374V3.54199C8.12492 2.85164 8.68456 2.29199 9.37492 2.29199H14.3749C15.0653 2.29199 15.6249 2.85164 15.6249 3.54199V16.4587C15.6249 17.149 15.0653 17.7087 14.3749 17.7087H9.37492C8.68456 17.7087 8.12492 17.149 8.12492 16.4587V15.8337"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-              Logout
-            </button>
+                Logout All
+              </button>
+            </div>
           </div>
-        </div>
-        <div className="flex flex-col justify-between gap-4 border-b border-gray-200 py-4 first:pt-0 last:border-b-0 last:pb-0 sm:flex-row sm:items-end dark:border-gray-800">
-          <div>
-            <span className="mb-1 block text-base font-medium text-gray-800 dark:text-white/90">
-              Delete account
-            </span>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              Once you delete your account, there is no going back. Please be
-              certain.
-            </p>
-          </div>
-          <div>
-            <button className="inline-flex h-10 cursor-pointer items-center justify-center gap-2 rounded-lg border border-error-500 py-2.5 pe-4 ps-3.5 text-sm font-medium text-error-500 transition-all hover:bg-error-100 dark:border-error-500/15 dark:hover:bg-red-500/15">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="20"
-                viewBox="0 0 20 20"
-                fill="none"
+
+          {/* Delete account */}
+          <div className="flex flex-col justify-between gap-4 pt-4 sm:flex-row sm:items-center">
+            <div>
+              <span className="block text-base font-semibold text-error-600 dark:text-error-400">
+                Decommission Administrator Account
+              </span>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                Permanently revoke master administrative privileges. This action cannot be undone.
+              </p>
+            </div>
+            <div>
+              <button
+                onClick={() => setIsDeleteModalOpen(true)}
+                className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-error-500 bg-white px-4 py-2.5 text-sm font-semibold text-error-600 shadow-sm hover:bg-error-50 dark:border-error-500/30 dark:bg-gray-800 dark:hover:bg-error-950/20"
               >
-                <path
-                  d="M4.37492 4.79199V16.4587C4.37492 17.149 4.93456 17.7087 5.62492 17.7087H14.3749C15.0653 17.7087 15.6249 17.149 15.6249 16.4587V4.79199M3.33325 4.79199H16.6658M4.37492 13.2466V8.24658M15.6249 13.2466V8.24658M8.33325 13.7503V8.75033M11.6666 13.7503V8.75033M12.7078 4.79199V3.54199C12.7078 2.85164 12.1482 2.29199 11.4578 2.29199H8.54118C7.85082 2.29199 7.29118 2.85164 7.29118 3.54199V4.79199H12.7078Z"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-              Delete account
-            </button>
+                Delete Account
+              </button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+
+      {/* Logout Confirmation Modal */}
+      <Modal isOpen={isLogoutModalOpen} onClose={() => setIsLogoutModalOpen(false)} className="m-4 max-w-[450px]">
+        <div className="rounded-3xl bg-white p-6 dark:bg-gray-900">
+          <h4 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+            Confirm Global Logout
+          </h4>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
+            Are you sure you want to sign out from all active sessions? You will need to sign in again.
+          </p>
+          <div className="flex items-center justify-end gap-3">
+            <Button size="sm" variant="outline" onClick={() => setIsLogoutModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button size="sm" onClick={handleLogoutAll}>
+              Logout From All
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal isOpen={isDeleteModalOpen} onClose={() => setIsDeleteModalOpen(false)} className="m-4 max-w-[450px]">
+        <div className="rounded-3xl bg-white p-6 dark:bg-gray-900">
+          <h4 className="text-xl font-bold text-error-600 mb-2">
+            Delete Administrator Account
+          </h4>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+            Type <strong className="text-gray-900 dark:text-white font-mono">DELETE</strong> below to confirm.
+          </p>
+          <div className="mb-6">
+            <Label>Confirmation</Label>
+            <Input
+              type="text"
+              value={confirmDeleteText}
+              onChange={(e) => setConfirmDeleteText(e.target.value)}
+              placeholder="Type DELETE"
+            />
+          </div>
+          <div className="flex items-center justify-end gap-3">
+            <Button size="sm" variant="outline" onClick={() => setIsDeleteModalOpen(false)}>
+              Cancel
+            </Button>
+            <button
+              onClick={handleDeleteAccount}
+              disabled={confirmDeleteText !== "DELETE"}
+              className="px-4 py-2 text-xs font-bold rounded-xl bg-error-600 text-white hover:bg-error-700 disabled:opacity-40 transition"
+            >
+              Confirm Deletion
+            </button>
+          </div>
+        </div>
+      </Modal>
+    </>
   );
 }

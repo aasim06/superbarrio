@@ -11,6 +11,7 @@ import Image from "next/image";
 import { useRef, useState } from "react";
 import { Dropdown } from "../ui/dropdown/Dropdown";
 import { DropdownItem } from "../ui/dropdown/DropdownItem";
+import { useAdminProfile } from "@/context/ProfileContext";
 
 export default function UserDropdown() {
   const t = useTranslations("userDropdown");
@@ -20,6 +21,11 @@ export default function UserDropdown() {
   const [isOpen, setIsOpen] = useState(false);
   const [isSubDropdownOpen, setIsSubDropdownOpen] = useState(false);
   const subDropdownRef = useRef<HTMLLIElement>(null);
+
+  const { profile } = useAdminProfile();
+  const adminName = `${profile.firstName || ""} ${profile.lastName || ""}`.trim() || "Admin";
+  const adminEmail = profile.email || "admin@superbarrio.es";
+  const adminAvatar = profile.avatarUrl || "/images/user/owner.png";
 
   const currentLang = getLanguage(locale);
   const CurrentFlagIcon = currentLang.FlagIcon;
@@ -41,8 +47,21 @@ export default function UserDropdown() {
   };
 
   const handleSelectLanguage = (id: Locale) => {
-    router.replace(pathname, { locale: id });
+    document.cookie = `NEXT_LOCALE=${id};path=/;max-age=31536000;SameSite=Lax`;
     setIsSubDropdownOpen(false);
+    router.replace(pathname, { locale: id });
+    window.location.reload();
+  };
+
+  const handleSignOut = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+    } catch {
+      // ignore
+    }
+    document.cookie = "sb_admin_session=; path=/; max-age=0;";
+    window.location.href = "/signin";
   };
 
   return (
@@ -51,16 +70,22 @@ export default function UserDropdown() {
         onClick={toggleDropdown}
         className="dropdown-toggle flex items-center text-gray-700 dark:text-gray-400"
       >
-        <span className="me-3 h-11 w-11 overflow-hidden rounded-full">
+        <span className="me-3 size-11 shrink-0 overflow-hidden rounded-full border border-gray-200 dark:border-gray-700">
           <Image
+            unoptimized
             width={44}
             height={44}
-            src="/images/user/owner.png"
+            src={adminAvatar || "/images/user/owner.png"}
+            className="h-full w-full rounded-full object-cover"
             alt="User"
+            onError={(e) => {
+              (e.target as HTMLImageElement).src = "/images/user/owner.png";
+            }}
+            priority
           />
         </span>
 
-        <span className="me-1 block text-theme-sm font-medium">Musharof</span>
+        <span className="me-1 block text-theme-sm font-medium">{adminName}</span>
 
         <ChevronDownIcon
           className={`size-5 text-gray-500 transition-transform duration-200 dark:text-gray-400 ${
@@ -76,10 +101,10 @@ export default function UserDropdown() {
       >
         <div>
           <span className="block text-theme-sm font-medium text-gray-700 dark:text-gray-400">
-            Musharof Chowdhury
+            {adminName}
           </span>
           <span className="mt-0.5 block text-theme-xs text-gray-500 dark:text-gray-400">
-            randomuser@pimjo.com
+            {adminEmail}
           </span>
         </div>
 
@@ -245,12 +270,13 @@ export default function UserDropdown() {
             )}
           </li>
         </ul>
-        <Link
-          href="/signin"
-          className="group mt-3 flex items-center justify-center gap-3 rounded-lg border border-gray-200 px-3 py-2 text-theme-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-700 dark:border-gray-800 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
+        <button
+          type="button"
+          onClick={handleSignOut}
+          className="group mt-3 flex w-full items-center justify-center gap-3 rounded-lg border border-gray-200 px-3 py-2 text-theme-sm font-medium text-gray-700 hover:bg-red-50 hover:text-red-600 dark:border-gray-800 dark:text-gray-400 dark:hover:bg-red-950/20 dark:hover:text-red-400"
         >
           {t("signOut")}
-        </Link>
+        </button>
       </Dropdown>
     </div>
   );

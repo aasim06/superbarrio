@@ -2,6 +2,7 @@
 
 import React from "react";
 import { motion } from "framer-motion";
+import { useLocale } from "next-intl";
 import { ShieldCheckIcon, StarIcon } from "@/icons";
 
 interface Testimonial {
@@ -14,10 +15,46 @@ interface Testimonial {
   quote: string;
 }
 
-const TESTIMONIALS: Testimonial[] = [
+const TESTIMONIALS_ES: Testimonial[] = [
   {
     id: 1,
-    name: "Elena Vance",
+    name: "Elena Vance (Madrid)",
+    role: "Cliente Verificada SuperBarrio",
+    avatar:
+      "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
+    stars: 5,
+    favoriteItem: "Pan de Masa Madre y Leche de Granja",
+    quote:
+      "¡SuperBarrio me entrega las frutas ecológicas y el pan de masa madre recién hecho en menos de 20 minutos! La frescura supera con creces a la del supermercado tradicional.",
+  },
+  {
+    id: 2,
+    name: "Marcos Sterling (Barcelona)",
+    role: "Entusiasta de la Cocina",
+    avatar:
+      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
+    stars: 5,
+    favoriteItem: "Aceite Virgen Extra de Jaén y Huevos Camperos",
+    quote:
+      "La calidad de los huevos camperos con yemas doradas y el aceite de oliva virgen extra es insuperable. Mis desayunos han cambiado por completo.",
+  },
+  {
+    id: 3,
+    name: "Sofía Rodríguez (Valencia)",
+    role: "Compradora Semanal Familiar",
+    avatar:
+      "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&auto=format&fit=crop&q=80",
+    stars: 5,
+    favoriteItem: "Chips de Plátano y Cacahuetes Tostados",
+    quote:
+      "Los chips de plátano macho y los cacahuetes especiados son un vicio. Los repartidores siempre llegan puntuales y con una sonrisa en cada entrega.",
+  },
+];
+
+const TESTIMONIALS_EN: Testimonial[] = [
+  {
+    id: 1,
+    name: "Elena Vance (Madrid)",
     role: "Verified SuperBarrio Member",
     avatar:
       "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
@@ -28,7 +65,7 @@ const TESTIMONIALS: Testimonial[] = [
   },
   {
     id: 2,
-    name: "Marcus Sterling",
+    name: "Marcus Sterling (Barcelona)",
     role: "Culinary Enthusiast",
     avatar:
       "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
@@ -39,7 +76,7 @@ const TESTIMONIALS: Testimonial[] = [
   },
   {
     id: 3,
-    name: "Sofia Rodriguez",
+    name: "Sofia Rodriguez (Valencia)",
     role: "Weekly Household Shopper",
     avatar:
       "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&auto=format&fit=crop&q=80",
@@ -51,24 +88,30 @@ const TESTIMONIALS: Testimonial[] = [
 ];
 
 export const TestimonialsSection: React.FC = () => {
+  const locale = useLocale();
+  const isEs = locale === "es";
+  const testimonials = isEs ? TESTIMONIALS_ES : TESTIMONIALS_EN;
+
   return (
     <div className="mt-16 w-full">
       {/* Section Header */}
       <div className="text-center max-w-xl mx-auto pb-8">
         <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100/90 px-3 py-1 text-xs font-black tracking-wider uppercase text-emerald-800 shadow-xs dark:bg-emerald-950/80 dark:text-emerald-300">
-          ⭐ Real Customer Stories
+          {isEs ? "⭐ Historias Reales de Clientes" : "⭐ Real Customer Stories"}
         </span>
         <h3 className="mt-3 font-outfit text-2xl sm:text-3xl font-black tracking-tight text-gray-900 dark:text-white">
-          Loved by 12,000+ Happy Kitchens
+          {isEs ? "Más de 12.000 hogares felices en España" : "Loved by 12,000+ Happy Kitchens"}
         </h3>
         <p className="mt-1 text-xs sm:text-sm font-medium text-gray-500 dark:text-emerald-300/70">
-          Discover why neighborhood households trust SuperBarrio for daily groceries
+          {isEs
+            ? "Descubre por qué tantas familias en España confían en SuperBarrio para su compra diaria"
+            : "Discover why neighborhood households trust SuperBarrio for daily groceries"}
         </p>
       </div>
 
       {/* Testimonials Cards: Swipeable carousel on mobile, 3-column grid on desktop */}
       <div className="flex overflow-x-auto gap-4 pb-3 no-scrollbar snap-x md:grid md:grid-cols-3 md:gap-6 md:pb-0">
-        {TESTIMONIALS.map((item, index) => (
+        {testimonials.map((item, index) => (
           <motion.div
             key={item.id}
             initial={{ opacity: 0, y: 24 }}
@@ -88,7 +131,7 @@ export const TestimonialsSection: React.FC = () => {
                 </div>
                 <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
                   <ShieldCheckIcon className="h-3.5 w-3.5" />
-                  <span>Verified Buyer</span>
+                  <span>{isEs ? "Comprador Verificado" : "Verified Buyer"}</span>
                 </span>
               </div>
 
@@ -115,7 +158,7 @@ export const TestimonialsSection: React.FC = () => {
                     {item.role}
                   </p>
                   <p className="mt-0.5 text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
-                    Favorite: {item.favoriteItem}
+                    {isEs ? "Favorito:" : "Favorite:"} {item.favoriteItem}
                   </p>
                 </div>
               </div>

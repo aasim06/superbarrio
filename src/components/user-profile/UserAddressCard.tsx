@@ -1,19 +1,54 @@
 "use client";
 
+import React, { useState, useEffect } from "react";
 import { useModal } from "@/hooks/useModal";
 import { PencilIcon } from "@/icons";
 import Input from "../form/input/InputField";
 import Label from "../form/Label";
 import Button from "../ui/button/Button";
 import { Modal } from "../ui/modal";
+import { useAdminProfile } from "@/context/ProfileContext";
+import { toast } from "sonner";
 
 export default function UserAddressCard() {
+  const { profile, updateProfile, isSaving } = useAdminProfile();
   const { isOpen, openModal, closeModal } = useModal();
 
-  const handleSave = () => {
-    // Handle save logic here
-    console.log("Saving changes...");
-    closeModal();
+  const [country, setCountry] = useState(profile.country);
+  const [cityState, setCityState] = useState(profile.cityState);
+  const [postalCode, setPostalCode] = useState(profile.postalCode);
+  const [taxId, setTaxId] = useState(profile.taxId);
+
+  useEffect(() => {
+    if (isOpen) {
+      setCountry(profile.country);
+      setCityState(profile.cityState);
+      setPostalCode(profile.postalCode);
+      setTaxId(profile.taxId);
+    }
+  }, [isOpen, profile]);
+
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!country.trim() || !cityState.trim() || !postalCode.trim()) {
+      toast.error("Please fill in all address fields.");
+      return;
+    }
+
+    const success = await updateProfile({
+      country: country.trim(),
+      cityState: cityState.trim(),
+      postalCode: postalCode.trim(),
+      taxId: taxId.trim(),
+    });
+
+    if (success) {
+      toast.success("Store & address details updated!");
+      closeModal();
+    } else {
+      toast.error("Failed to update address. Please try again.");
+    }
   };
 
   return (
@@ -22,99 +57,123 @@ export default function UserAddressCard() {
         <div className="flex flex-col gap-6 sm:flex-row lg:items-start lg:justify-between">
           <div className="flex-1">
             <h4 className="mb-4 text-lg font-semibold text-gray-800 lg:mb-6 dark:text-white/90">
-              Address
+              Store & Fiscal Address
             </h4>
 
-            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-7 2xl:gap-x-32">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:gap-7 2xl:gap-x-32">
               <div>
-                <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
+                <p className="mb-1 text-xs font-semibold tracking-wider text-gray-400 uppercase">
                   Country
                 </p>
                 <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                  United States
+                  {profile.country || "España"}
                 </p>
               </div>
 
               <div>
-                <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-                  City/State
+                <p className="mb-1 text-xs font-semibold tracking-wider text-gray-400 uppercase">
+                  City / State
                 </p>
                 <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                  Phoenix, Arizona, United States.
+                  {profile.cityState || "Madrid, España"}
                 </p>
               </div>
 
               <div>
-                <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
+                <p className="mb-1 text-xs font-semibold tracking-wider text-gray-400 uppercase">
                   Postal Code
                 </p>
                 <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                  ERT 2489
+                  {profile.postalCode || "28013"}
                 </p>
               </div>
 
               <div>
-                <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-                  TAX ID
+                <p className="mb-1 text-xs font-semibold tracking-wider text-gray-400 uppercase">
+                  TAX / CIF ID
                 </p>
                 <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                  AS4568384
+                  {profile.taxId || "B-88392011"}
                 </p>
               </div>
             </div>
           </div>
 
-          <div>
-            <button
-              onClick={openModal}
-              className="flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 lg:inline-flex lg:w-auto dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/3 dark:hover:text-gray-200"
-            >
-              <PencilIcon className="size-5" />
-              Edit
-            </button>
-          </div>
+          <button
+            onClick={openModal}
+            className="flex h-10 w-full items-center justify-center gap-2 rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50 hover:text-gray-900 lg:inline-flex lg:w-auto dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+          >
+            <PencilIcon className="size-4" />
+            Edit Address
+          </button>
         </div>
       </div>
-      <Modal isOpen={isOpen} onClose={closeModal} className="m-4 max-w-[700px]">
-        <div className="relative no-scrollbar w-full overflow-y-auto rounded-3xl bg-white p-4 lg:p-11 dark:bg-gray-900">
-          <div className="px-2 pe-14">
-            <h4 className="mb-2 text-2xl font-semibold text-gray-800 dark:text-white/90">
-              Edit Address
+
+      {/* Edit Address Modal */}
+      <Modal isOpen={isOpen} onClose={closeModal} className="m-4 max-w-[600px]">
+        <div className="relative no-scrollbar w-full max-w-[600px] overflow-y-auto rounded-3xl bg-white p-6 lg:p-8 dark:bg-gray-900">
+          <div className="mb-6">
+            <h4 className="text-2xl font-bold text-gray-900 dark:text-white">
+              Edit Address & Fiscal Details
             </h4>
-            <p className="mb-6 text-sm text-gray-500 lg:mb-7 dark:text-gray-400">
-              Update your details to keep your profile up-to-date.
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Update fiscal information for official grocery invoice receipts.
             </p>
           </div>
-          <form className="flex flex-col">
-            <div className="custom-scrollbar overflow-y-auto px-2">
-              <div className="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-2">
-                <div>
-                  <Label>Country</Label>
-                  <Input type="text" defaultValue="United States" />
-                </div>
 
-                <div>
-                  <Label>City/State</Label>
-                  <Input type="text" defaultValue="Arizona, United States." />
-                </div>
+          <form onSubmit={handleSave} className="flex flex-col gap-4">
+            <div>
+              <Label>Country *</Label>
+              <Input
+                type="text"
+                value={country}
+                onChange={(e) => setCountry(e.target.value)}
+                placeholder="España"
+                required
+              />
+            </div>
 
-                <div>
-                  <Label>Postal Code</Label>
-                  <Input type="text" defaultValue="ERT 2489" />
-                </div>
+            <div>
+              <Label>City / State *</Label>
+              <Input
+                type="text"
+                value={cityState}
+                onChange={(e) => setCityState(e.target.value)}
+                placeholder="Madrid, España"
+                required
+              />
+            </div>
 
-                <div>
-                  <Label>TAX ID</Label>
-                  <Input type="text" defaultValue="AS4568384" />
-                </div>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div>
+                <Label>Postal Code *</Label>
+                <Input
+                  type="text"
+                  value={postalCode}
+                  onChange={(e) => setPostalCode(e.target.value)}
+                  placeholder="28013"
+                  required
+                />
+              </div>
+
+              <div>
+                <Label>TAX / NIF / CIF ID *</Label>
+                <Input
+                  type="text"
+                  value={taxId}
+                  onChange={(e) => setTaxId(e.target.value)}
+                  placeholder="B-88392011"
+                  required
+                />
               </div>
             </div>
-            <div className="mt-6 flex items-center gap-3 px-2 lg:justify-end">
-              <Button size="sm" variant="outline" onClick={closeModal}>
-                Close
+
+            <div className="mt-4 flex items-center justify-end gap-3 pt-4 border-t border-gray-100 dark:border-gray-800">
+              <Button type="button" size="sm" variant="outline" onClick={closeModal}>
+                Cancel
               </Button>
-              <Button size="sm" onClick={handleSave}>
-                Save Changes
+              <Button type="submit" size="sm" disabled={isSaving}>
+                {isSaving ? "Saving..." : "Save Address"}
               </Button>
             </div>
           </form>

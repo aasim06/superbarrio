@@ -3,6 +3,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Link, useRouter } from "@/i18n/navigation";
 import { CustomerOrder } from "@/types/grocery";
+import { getProductLocalized } from "@/data/groceryData";
 import {
   WhatsAppIcon,
   BoxIcon,
@@ -247,7 +248,7 @@ export const OrderSuccessView: React.FC = () => {
       ? `¡Hola! Acabo de hacer un pedido de alimentos frescos en SuperBarrio España.\n\n*Nº de Pedido:* #${orderId}\n*Total:* ${formatPrice(total, locale)}\n*Franja de entrega:* ${slot}\n*Dirección:* ${address}\n\n¿Podrían confirmarme la hora aproximada de llegada? ¡Muchas gracias!`
       : `Hi! I just placed a fresh grocery order at SuperBarrio Spain.\n\n*Order ID:* #${orderId}\n*Total:* ${formatPrice(total, locale)}\n*Delivery Slot:* ${slot}\n*Address:* ${address}\n\nCould you please update me on arrival? Thank you!`;
 
-    return `https://wa.me/34612345678?text=${encodeURIComponent(text)}`;
+    return `https://wa.me/34632250561?text=${encodeURIComponent(text)}`;
   };
 
   // Re-order past order items
@@ -516,35 +517,38 @@ export const OrderSuccessView: React.FC = () => {
 
                 {/* Items List */}
                 <div className="divide-y divide-gray-100 dark:divide-emerald-950/60 max-h-72 overflow-y-auto pe-1">
-                  {items.map((item) => (
-                    <div
-                      key={item.id}
-                      className="flex items-center justify-between py-3 text-xs"
-                    >
-                      <div className="flex items-center gap-3 min-w-0">
-                        <div className="h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-gray-100 dark:bg-gray-800">
-                          <img
-                            src={item.imageUrl}
-                            alt={item.name}
-                            className="h-full w-full object-cover"
-                            loading="lazy"
-                          />
+                  {items.map((item) => {
+                    const loc = getProductLocalized(item, locale);
+                    return (
+                      <div
+                        key={item.id}
+                        className="flex items-center justify-between py-3 text-xs"
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-gray-100 dark:bg-gray-800">
+                            <img
+                              src={item.imageUrl}
+                              alt={loc.name}
+                              className="h-full w-full object-cover"
+                              loading="lazy"
+                            />
+                          </div>
+                          <div className="truncate">
+                            <h5 className="font-bold text-gray-900 dark:text-white truncate">
+                              {loc.name}
+                            </h5>
+                            <span className="text-[11px] text-gray-500 dark:text-emerald-300/60">
+                              {item.quantity} x {formatPrice(item.price, locale)} ({loc.unit})
+                            </span>
+                          </div>
                         </div>
-                        <div className="truncate">
-                          <h5 className="font-bold text-gray-900 dark:text-white truncate">
-                            {item.name}
-                          </h5>
-                          <span className="text-[11px] text-gray-500 dark:text-emerald-300/60">
-                            {item.quantity} x {formatPrice(item.price, locale)} ({item.unit})
-                          </span>
-                        </div>
-                      </div>
 
-                      <span className="font-outfit font-black text-gray-900 dark:text-white">
-                        {formatPrice(item.price * item.quantity, locale)}
-                      </span>
-                    </div>
-                  ))}
+                        <span className="font-outfit font-black text-gray-900 dark:text-white">
+                          {formatPrice(item.price * item.quantity, locale)}
+                        </span>
+                      </div>
+                    );
+                  })}
                 </div>
 
                 {/* Financial Summary */}
