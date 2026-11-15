@@ -23,6 +23,8 @@ const svgrLoader = {
 
 const nextConfig: NextConfig = {
   /* config options here */
+  compress: true,
+  poweredByHeader: false,
   experimental: {
     optimizePackageImports: [
       "lucide-react",
@@ -48,8 +50,8 @@ const nextConfig: NextConfig = {
   images: {
     // Modern formats: AVIF first (best compression), WebP fallback
     formats: ["image/avif", "image/webp"],
-    // 24-hour client/edge cache for optimized images
-    minimumCacheTTL: 86400,
+    // 1-year client/edge cache for optimized images
+    minimumCacheTTL: 31536000,
     // Responsive device widths for srcset generation
     deviceSizes: [390, 640, 750, 828, 1080, 1200, 1920],
     // Image sizes for fixed-width images (product cards, thumbnails)
@@ -78,6 +80,19 @@ const nextConfig: NextConfig = {
         as: "*.js",
       },
     },
+  },
+  async headers() {
+    return [
+      {
+        source: "/:all*(svg|jpg|png|webp|avif|ico|woff|woff2)",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=31536000, immutable",
+          },
+        ],
+      },
+    ];
   },
   async rewrites() {
     return [

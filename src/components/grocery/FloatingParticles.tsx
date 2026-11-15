@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import { motion, useReducedMotion } from "framer-motion";
 import { LeafIcon, FruitIcon, ShootingStarIcon } from "@/icons";
 
 interface Particle {
@@ -26,44 +25,27 @@ const PARTICLES: Particle[] = [
 ];
 
 export const FloatingParticles: React.FC = () => {
-  const shouldReduceMotion = useReducedMotion();
-
   return (
     <div
       aria-hidden="true"
       className="pointer-events-none absolute inset-0 z-10 overflow-hidden select-none"
     >
       {PARTICLES.map((p) => (
-        <motion.div
+        <div
           key={p.id}
-          initial={{ opacity: 0.2 }}
-          animate={
-            shouldReduceMotion
-              ? { opacity: 0.2 }
-              : {
-                  y: [0, -18, 0],
-                  x: [0, 8, -8, 0],
-                  rotate: [0, 15, -10, 0],
-                  opacity: [0.2, 0.45, 0.2],
-                }
-          }
-          transition={{
-            duration: p.duration,
-            repeat: Infinity,
-            delay: p.delay,
-            ease: "easeInOut",
-          }}
-          className={`absolute ${p.colorClass} filter drop-shadow-xs`}
+          className={`absolute ${p.colorClass} filter drop-shadow-xs animate-float-slow`}
           style={{
             top: p.top,
             left: p.left,
             right: p.right,
+            animationDuration: `${p.duration}s`,
+            animationDelay: `${p.delay}s`,
           }}
         >
           {p.type === "leaf" && <LeafIcon className={p.sizeClass} />}
           {p.type === "fruit" && <FruitIcon className={p.sizeClass} />}
           {p.type === "star" && <ShootingStarIcon className={p.sizeClass} />}
-        </motion.div>
+        </div>
       ))}
     </div>
   );

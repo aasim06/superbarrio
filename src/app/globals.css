@@ -1248,5 +1248,21 @@ nav,
   height: calc(72px + env(safe-area-inset-bottom, 0px));
 }
 
+/* GPU Hardware-Accelerated Floating Animation (Zero JS Thread Usage) */
+@keyframes floatSlow {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+    opacity: 0.25;
+  }
+  50% {
+    transform: translateY(-16px) rotate(12deg);
+    opacity: 0.5;
+  }
+}
+.animate-float-slow {
+  animation: floatSlow ease-in-out infinite;
+  will-change: transform;
+}
+
 
 

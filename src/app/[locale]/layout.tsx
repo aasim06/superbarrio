@@ -76,6 +76,12 @@ export default async function RootLayout({
 
   return (
     <html lang={locale} dir={isRtl(locale as Locale) ? "rtl" : "ltr"}>
+      <head>
+        <link rel="preconnect" href="https://images.unsplash.com" />
+        <link rel="dns-prefetch" href="https://images.unsplash.com" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+      </head>
       <body className={`${outfit.className} dark:bg-gray-900`}>
         <NextIntlClientProvider>
           <ThemeProvider>
