@@ -13,6 +13,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { SearchIcon } from "@/icons";
 import { motion, AnimatePresence, type Variants } from "framer-motion";
 import { searchGroceryWithFuzzy } from "@/utils/fuzzySearch";
+import { ProductGridSkeleton } from "@/components/grocery/GrocerySkeleton";
 
 // Dynamically import heavy below-the-fold components (reduce initial JS bundle)
 const RecentlyViewedSection = dynamic(
@@ -48,6 +49,16 @@ export const GroceryCatalog: React.FC = () => {
   const [products, setProducts] = useState<GroceryProduct[]>(
     () => GROCERY_PRODUCTS,
   );
+  const [isFiltering, setIsFiltering] = useState(false);
+
+  // Micro skeleton shimmer feedback when user changes category
+  useEffect(() => {
+    setIsFiltering(true);
+    const timer = setTimeout(() => {
+      setIsFiltering(false);
+    }, 160);
+    return () => clearTimeout(timer);
+  }, [activeCategory]);
 
   useEffect(() => {
     setProducts(getAllProducts());
@@ -209,9 +220,19 @@ export const GroceryCatalog: React.FC = () => {
           <SortFilterBar totalCount={filteredProducts.length} />
         </div>
 
-        {/* Empty State vs Animated Product Grid */}
+        {/* Empty State vs Animated Product Grid vs Skeleton */}
         <AnimatePresence mode="wait">
-          {filteredProducts.length === 0 ? (
+          {isFiltering ? (
+            <motion.div
+              key="filtering-skeleton"
+              initial={{ opacity: 0.6 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.15 }}
+            >
+              <ProductGridSkeleton count={8} />
+            </motion.div>
+          ) : filteredProducts.length === 0 ? (
             <motion.div
               key="empty-state"
               initial={{ opacity: 0, scale: 0.96 }}

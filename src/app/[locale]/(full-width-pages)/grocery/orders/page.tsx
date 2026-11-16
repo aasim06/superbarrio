@@ -24,6 +24,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { toast } from "sonner";
+import { OrdersSkeleton } from "@/components/grocery/GrocerySkeleton";
 
 export default function CustomerOrdersPage() {
   const { user, setIsAuthModalOpen } = useCustomerAuth();
@@ -195,10 +196,7 @@ export default function CustomerOrdersPage() {
 
         {/* Main Content */}
         {isLoading ? (
-          <div className="flex h-64 flex-col items-center justify-center gap-3 text-gray-400">
-            <div className="h-8 w-8 animate-spin rounded-full border-2 border-emerald-500 border-t-transparent" />
-            <p className="text-xs font-semibold">Loading your orders...</p>
-          </div>
+          <OrdersSkeleton />
         ) : orders.length === 0 ? (
           /* Empty State */
           <div className="rounded-3xl border border-gray-200/80 bg-white p-12 text-center shadow-xs dark:border-emerald-950/60 dark:bg-[#071910]">

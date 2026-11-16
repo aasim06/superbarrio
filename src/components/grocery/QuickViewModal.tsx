@@ -103,7 +103,7 @@ export const QuickViewModal: React.FC = () => {
 
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
             {/* Left: Product Image */}
-            <div className="relative flex h-64 sm:h-80 w-full items-center justify-center overflow-hidden rounded-2xl bg-gray-100/90 dark:bg-gray-800/60">
+            <div className="relative flex h-64 sm:h-80 w-full items-center justify-center overflow-hidden rounded-2xl bg-gray-100/90 dark:bg-gray-800/60 animate-shimmer">
               {imageError ? (
                 /* Inline SVG fallback */
                 <div className="flex h-full w-full items-center justify-center bg-gray-100 dark:bg-gray-800">
