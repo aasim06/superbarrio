@@ -1,76 +1,49 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useState } from "react";
 import { usePathname } from "@/i18n/navigation";
-import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
+import {
+  motion,
+  AnimatePresence,
+  useScroll,
+  useSpring,
+  useMotionValueEvent,
+  useReducedMotion,
+} from "framer-motion";
 import { ArrowUpIcon } from "@/icons";
 
+/**
+ * BackToTopButton — Ultra-Smooth Physics-Based Circular Scroll Progress.
+ * Uses Framer Motion's useScroll + critically damped useSpring to turn
+ * discrete mousewheel ticks into buttery 120 FPS continuous liquid motion.
+ */
 export const BackToTopButton: React.FC = () => {
   const pathname = usePathname();
   const [isVisible, setIsVisible] = useState(false);
-  const isVisibleRef = useRef(false);
-  const progressRef = useRef(0);
-  const circleRef = useRef<SVGCircleElement>(null);
   const shouldReduceMotion = useReducedMotion();
 
-  const radius = 18;
-  const circumference = 2 * Math.PI * radius;
-
-  // Hide on checkout & order-success to keep checkout funnel 100% focused
+  // Hide on checkout & order-success to keep checkout funnel focused
   const isExcludedPage =
     pathname.includes("/checkout") || pathname.includes("/order-success");
 
-  useEffect(() => {
+  // 1. Hardware-accelerated native scroll tracking (0 layout reflows)
+  const { scrollYProgress } = useScroll();
+
+  // 2. Critically damped spring physics: eliminates wheel stutter and jerking
+  const smoothProgress = useSpring(scrollYProgress, {
+    stiffness: 280,
+    damping: 32,
+    restDelta: 0.001,
+  });
+
+  // 3. Smart visibility threshold (shows after ~4% scroll down)
+  useMotionValueEvent(scrollYProgress, "change", (latest) => {
     if (isExcludedPage) return;
-
-    let rafId: number | null = null;
-
-    const updateProgress = (currentScrollY?: number) => {
-      const scrollY =
-        typeof currentScrollY === "number" ? currentScrollY : window.scrollY;
-      const totalHeight =
-        document.documentElement.scrollHeight - window.innerHeight;
-      const progress =
-        totalHeight > 0
-          ? Math.min(100, Math.max(0, (scrollY / totalHeight) * 100))
-          : 0;
-
-      progressRef.current = progress;
-
-      // Direct DOM update: 0ms latency, zero CSS delay, 60/120 FPS real-time response
-      if (circleRef.current) {
-        const offset = circumference - (progress / 100) * circumference;
-        circleRef.current.style.strokeDashoffset = `${offset}`;
-      }
-
-      // Only trigger React state re-render when visibility threshold (300px) changes
-      const nextVisible = scrollY > 300;
-      if (nextVisible !== isVisibleRef.current) {
-        isVisibleRef.current = nextVisible;
-        setIsVisible(nextVisible);
-      }
-    };
-
-    const handleScroll = () => {
-      if (rafId !== null) return;
-      rafId = requestAnimationFrame(() => {
-        updateProgress();
-        rafId = null;
-      });
-    };
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    window.addEventListener("resize", handleScroll, { passive: true });
-
-    // Initial check
-    updateProgress();
-
-    return () => {
-      if (rafId !== null) cancelAnimationFrame(rafId);
-      window.removeEventListener("scroll", handleScroll);
-      window.removeEventListener("resize", handleScroll);
-    };
-  }, [isExcludedPage, circumference]);
+    const nextVisible = latest > 0.035;
+    if (nextVisible !== isVisible) {
+      setIsVisible(nextVisible);
+    }
+  });
 
   if (isExcludedPage) {
     return null;
@@ -83,8 +56,6 @@ export const BackToTopButton: React.FC = () => {
     });
   };
 
-  const initialOffset = circumference;
-
   return (
     <AnimatePresence>
       {isVisible && (
@@ -92,44 +63,49 @@ export const BackToTopButton: React.FC = () => {
           initial={{
             opacity: 0,
             scale: shouldReduceMotion ? 1 : 0.8,
-            y: shouldReduceMotion ? 0 : 20,
+            y: shouldReduceMotion ? 0 : 16,
           }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{
             opacity: 0,
             scale: shouldReduceMotion ? 1 : 0.8,
-            y: shouldReduceMotion ? 0 : 20,
+            y: shouldReduceMotion ? 0 : 16,
           }}
-          whileHover={shouldReduceMotion ? {} : { scale: 1.1 }}
-          whileTap={shouldReduceMotion ? {} : { scale: 0.9 }}
+          whileHover={shouldReduceMotion ? {} : { scale: 1.08 }}
+          whileTap={shouldReduceMotion ? {} : { scale: 0.92 }}
           onClick={scrollToTop}
-          className="fixed bottom-[calc(3.75rem+env(safe-area-inset-bottom)+68px)] end-3.5 sm:end-6 md:bottom-24 md:end-8 z-30 flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-full bg-white text-emerald-700 shadow-xl transition-all dark:bg-[#071910] dark:text-emerald-400 dark:border dark:border-emerald-950/80 cursor-pointer hover:shadow-2xl hover:scale-105 active:scale-95"
+          className="fixed bottom-[calc(3.75rem+env(safe-area-inset-bottom)+68px)] end-3.5 sm:end-6 md:bottom-24 md:end-8 z-30 flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-full bg-white text-emerald-700 shadow-xl dark:bg-[#071910] dark:text-emerald-400 dark:border dark:border-emerald-950/80 cursor-pointer select-none transition-shadow hover:shadow-2xl"
           aria-label="Volver arriba / Scroll back to top"
           title="Volver arriba"
         >
-          {/* SVG Circular Progress Ring */}
-          <svg className="pointer-events-none absolute inset-0 h-12 w-12 -rotate-90 transform">
+          {/* Circular SVG Progress Ring with explicit viewBox for pixel-perfect subpixel rendering */}
+          <svg
+            className="pointer-events-none absolute inset-0 h-full w-full -rotate-90 transform"
+            viewBox="0 0 48 48"
+          >
+            {/* Background Track Circle */}
             <circle
               cx="24"
               cy="24"
-              r={radius}
+              r="18"
               stroke="currentColor"
               strokeWidth="2.5"
               fill="transparent"
-              className="text-gray-200/60 dark:text-emerald-950/60"
+              className="text-gray-200/70 dark:text-emerald-950/70"
             />
-            {/* Real-time progress circle: NO transition classes so it moves synchronously with scroll */}
-            <circle
-              ref={circleRef}
+
+            {/* Liquid Continuous Progress Circle driven by GPU pathLength */}
+            <motion.circle
               cx="24"
               cy="24"
-              r={radius}
+              r="18"
               stroke="currentColor"
               strokeWidth="2.5"
-              fill="transparent"
-              strokeDasharray={circumference}
-              strokeDashoffset={initialOffset}
               strokeLinecap="round"
+              fill="transparent"
+              style={{
+                pathLength: smoothProgress,
+              }}
               className="text-emerald-500"
             />
           </svg>
