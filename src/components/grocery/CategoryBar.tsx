@@ -43,7 +43,7 @@ const categoryTranslations: Record<string, { es: string; en: string }> = {
 };
 
 export const CategoryBar: React.FC = () => {
-  const { activeCategory, setActiveCategory } = useGroceryCart();
+  const { activeCategory, setActiveCategory, setSearchQuery } = useGroceryCart();
   const t = useTranslations("grocery");
   const locale = useLocale();
 
@@ -77,6 +77,7 @@ export const CategoryBar: React.FC = () => {
               onClick={() => {
                 triggerHaptic("selection");
                 setActiveCategory(cat.id);
+                setSearchQuery("");
               }}
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.97 }}

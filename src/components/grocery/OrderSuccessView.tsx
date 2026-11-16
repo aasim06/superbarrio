@@ -270,7 +270,7 @@ export const OrderSuccessView: React.FC = () => {
         {/* Top Breadcrumb / Navigation */}
         <div className="mb-6 flex items-center justify-between">
           <Link
-            href="/grocery"
+            href="/"
             className="group inline-flex items-center gap-2 text-xs font-bold text-emerald-600 transition hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300"
           >
             <span className="transition-transform group-hover:-translate-x-1">
@@ -634,7 +634,7 @@ export const OrderSuccessView: React.FC = () => {
               {/* Action Buttons */}
               <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-4 border-t border-gray-100 dark:border-emerald-950/60">
                 <Link
-                  href="/grocery"
+                  href="/"
                   className="w-full sm:w-auto rounded-2xl bg-gradient-to-r from-emerald-600 to-green-600 px-7 py-3.5 text-center text-xs font-black text-white shadow-xl shadow-emerald-600/30 transition hover:scale-105 active:scale-95"
                 >
                   {t("continueShopping")}

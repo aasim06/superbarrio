@@ -90,22 +90,22 @@ export const GroceryFooter: React.FC = () => {
   ];
 
   const categories = [
-    { name: isEs ? "Frutas y Verduras" : "Fruits & Vegetables", href: "/grocery?category=fruits-vegetables" },
-    { name: isEs ? "Lácteos y Huevos" : "Dairy & Eggs", href: "/grocery?category=dairy-eggs" },
-    { name: isEs ? "Panadería Artesana" : "Artisan Bakery", href: "/grocery?category=bakery" },
-    { name: isEs ? "Carnes y Charcutería" : "Meat & Deli", href: "/grocery?category=meat-seafood" },
-    { name: isEs ? "Despensa y Aceites" : "Pantry & Oils", href: "/grocery?category=pantry-cooking" },
-    { name: isEs ? "Bebidas y Cafés" : "Beverages & Coffee", href: "/grocery?category=beverages" },
-    { name: isEs ? "Ofertas Especiales" : "Special Deals", href: "/grocery" },
+    { name: isEs ? "Frutas y Verduras" : "Fruits & Vegetables", href: "/?category=fruits-vegetables" },
+    { name: isEs ? "Lácteos y Huevos" : "Dairy & Eggs", href: "/?category=dairy-eggs" },
+    { name: isEs ? "Panadería Artesana" : "Artisan Bakery", href: "/?category=bakery" },
+    { name: isEs ? "Carnes y Charcutería" : "Meat & Deli", href: "/?category=meat-poultry" },
+    { name: isEs ? "Despensa y Aceites" : "Pantry & Oils", href: "/?category=pantry-cooking" },
+    { name: isEs ? "Bebidas y Cafés" : "Beverages & Coffee", href: "/?category=beverages" },
+    { name: isEs ? "Ofertas Especiales" : "Special Deals", href: "/?category=all" },
   ];
 
   const supportLinks = [
-    { name: isEs ? "¿Cómo funciona el reparto?" : "How delivery works", href: "/grocery" },
-    { name: isEs ? "Horarios y Zonas de Envío" : "Delivery times & zones", href: "/grocery" },
-    { name: isEs ? "Preguntas Frecuentes (FAQ)" : "Frequently Asked Questions", href: "/grocery" },
-    { name: isEs ? "Garantía de Devolución" : "Refund & Freshness Policy", href: "/grocery" },
-    { name: isEs ? "Seguimiento de Pedido" : "Order Tracking", href: "/grocery" },
-    { name: isEs ? "Contacto por WhatsApp" : "WhatsApp Support", href: "https://wa.me/34612345678" },
+    { name: isEs ? "¿Cómo funciona el reparto?" : "How delivery works", href: "/" },
+    { name: isEs ? "Horarios y Zonas de Envío" : "Delivery times & zones", href: "/" },
+    { name: isEs ? "Preguntas Frecuentes (FAQ)" : "Frequently Asked Questions", href: "/" },
+    { name: isEs ? "Garantía de Devolución" : "Refund & Freshness Policy", href: "/" },
+    { name: isEs ? "Seguimiento de Pedido" : "Order Tracking", href: "/grocery/orders" },
+    { name: isEs ? "Contacto por WhatsApp" : "WhatsApp Support", href: "https://wa.me/34632250561" },
   ];
 
   const legalLinks = [

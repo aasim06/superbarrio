@@ -29,8 +29,8 @@ export const MobileBottomNav: React.FC = () => {
       setActiveTab("orders");
     } else if (pathname.includes("/profile")) {
       setActiveTab("account");
-    } else if (pathname.includes("/grocery")) {
-      if (window.scrollY < 200) {
+    } else {
+      if (typeof window !== "undefined" && window.scrollY < 200) {
         setActiveTab("home");
       }
     }
@@ -66,22 +66,22 @@ export const MobileBottomNav: React.FC = () => {
   const handleHome = () => {
     triggerHaptic("selection");
     setActiveTab("home");
-    if (pathname === "/grocery") {
+    if (pathname === "/" || pathname === "") {
       window.scrollTo({ top: 0, behavior: "smooth" });
     } else {
-      router.push("/grocery");
+      router.push("/");
     }
   };
 
   const handleCategories = () => {
     triggerHaptic("selection");
     setActiveTab("categories");
-    if (pathname !== "/grocery") {
-      router.push("/grocery");
+    if (pathname !== "/" && pathname !== "") {
+      router.push("/");
       setTimeout(() => {
         const el = document.getElementById("category-bar-section");
         el?.scrollIntoView({ behavior: "smooth", block: "start" });
-      }, 300);
+      }, 350);
     } else {
       const el = document.getElementById("category-bar-section");
       el?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -91,8 +91,8 @@ export const MobileBottomNav: React.FC = () => {
   const handleSearch = () => {
     triggerHaptic("selection");
     setActiveTab("search");
-    if (pathname !== "/grocery") {
-      router.push("/grocery");
+    if (pathname !== "/" && pathname !== "") {
+      router.push("/");
     }
     window.scrollTo({ top: 0, behavior: "smooth" });
     setTimeout(() => {

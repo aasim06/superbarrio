@@ -268,13 +268,19 @@ export const GroceryCatalog: React.FC = () => {
       </div>
 
       {/* Recently Viewed & Recommendations */}
-      <RecentlyViewedSection />
+      <div className="min-h-[60px]">
+        <RecentlyViewedSection />
+      </div>
 
       {/* Customer Testimonials Carousel & Reviews */}
-      <TestimonialsSection />
+      <div className="min-h-[60px]">
+        <TestimonialsSection />
+      </div>
 
       {/* Newsletter Subscription with Animated Gradient Border */}
-      <NewsletterSection />
+      <div className="min-h-[60px]">
+        <NewsletterSection />
+      </div>
     </div>
   );
 };

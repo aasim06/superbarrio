@@ -65,36 +65,8 @@ export const BackToTopButton: React.FC = () => {
     // Initial check
     updateProgress();
 
-    // Hook into Lenis smooth-scroll instance for instant frame-by-frame progress
-    const checkLenis = () => {
-      const lenis = (window as unknown as { __lenis?: { on?: (event: string, cb: (e: { scroll?: number }) => void) => void; off?: (event: string, cb: (e: { scroll?: number }) => void) => void; scrollTo?: (pos: number, opts: { duration: number }) => void } }).__lenis;
-      if (lenis && typeof lenis.on === "function") {
-        const lenisHandler = (e: { scroll?: number }) => {
-          updateProgress(e?.scroll);
-        };
-        lenis.on("scroll", lenisHandler);
-        return () => {
-          if (lenis && typeof lenis.off === "function") {
-            lenis.off("scroll", lenisHandler);
-          }
-        };
-      }
-      return null;
-    };
-
-    let cleanupLenis = checkLenis();
-    let retryTimer: NodeJS.Timeout | null = null;
-
-    if (!cleanupLenis) {
-      retryTimer = setTimeout(() => {
-        cleanupLenis = checkLenis();
-      }, 150);
-    }
-
     return () => {
       if (rafId !== null) cancelAnimationFrame(rafId);
-      if (retryTimer) clearTimeout(retryTimer);
-      if (cleanupLenis) cleanupLenis();
       window.removeEventListener("scroll", handleScroll);
       window.removeEventListener("resize", handleScroll);
     };
@@ -105,15 +77,10 @@ export const BackToTopButton: React.FC = () => {
   }
 
   const scrollToTop = () => {
-    const lenis = (window as unknown as { __lenis?: { scrollTo?: (pos: number, opts: { duration: number }) => void } }).__lenis;
-    if (lenis && typeof lenis.scrollTo === "function" && !shouldReduceMotion) {
-      lenis.scrollTo(0, { duration: 1.0 });
-    } else {
-      window.scrollTo({
-        top: 0,
-        behavior: shouldReduceMotion ? "auto" : "smooth",
-      });
-    }
+    window.scrollTo({
+      top: 0,
+      behavior: shouldReduceMotion ? "auto" : "smooth",
+    });
   };
 
   const initialOffset = circumference;
@@ -136,7 +103,7 @@ export const BackToTopButton: React.FC = () => {
           whileHover={shouldReduceMotion ? {} : { scale: 1.1 }}
           whileTap={shouldReduceMotion ? {} : { scale: 0.9 }}
           onClick={scrollToTop}
-          className="fixed bottom-36 start-4 sm:bottom-24 sm:start-8 z-30 flex h-12 w-12 items-center justify-center rounded-full bg-white text-emerald-700 shadow-xl transition-shadow dark:bg-[#071910] dark:text-emerald-400 dark:border dark:border-emerald-950/80 cursor-pointer"
+          className="fixed bottom-[calc(3.75rem+env(safe-area-inset-bottom)+68px)] end-3.5 sm:end-6 md:bottom-24 md:end-8 z-30 flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-full bg-white text-emerald-700 shadow-xl transition-all dark:bg-[#071910] dark:text-emerald-400 dark:border dark:border-emerald-950/80 cursor-pointer hover:shadow-2xl hover:scale-105 active:scale-95"
           aria-label="Volver arriba / Scroll back to top"
           title="Volver arriba"
         >

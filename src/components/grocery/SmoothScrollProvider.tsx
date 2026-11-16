@@ -1,55 +1,38 @@
 "use client";
 
 import React, { useEffect } from "react";
-import Lenis from "lenis";
-import "lenis/dist/lenis.css";
 
+/**
+ * SmoothScrollProvider — Native GPU-Accelerated 120Hz Responsive Scrolling.
+ * Replaces heavy virtual wheel hijacking with fluid, zero-lag browser scrolling.
+ */
 export const SmoothScrollProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   useEffect(() => {
-    // Check if user prefers reduced motion or is on mobile/touch device
-    const prefersReducedMotion = window.matchMedia(
-      "(prefers-reduced-motion: reduce)",
-    ).matches;
-
-    const isTouchOrMobile =
-      window.innerWidth < 1024 ||
-      "ontouchstart" in window ||
-      navigator.maxTouchPoints > 0;
-
-    // Keep native 120Hz GPU momentum scrolling on mobile/touch screens
-    if (prefersReducedMotion || isTouchOrMobile) return;
-
-    const lenis = new Lenis({
-      duration: 1.2,
-      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-      orientation: "vertical",
-      gestureOrientation: "vertical",
-      smoothWheel: true,
-      wheelMultiplier: 0.9,
-      touchMultiplier: 1.5,
-    });
-
+    // Provide lightweight, native programmatic scrollTo without wheel hijacking
     if (typeof window !== "undefined") {
-      (window as any).__lenis = lenis;
+      (window as any).__lenis = {
+        scrollTo: (
+          pos: number | HTMLElement,
+          opts?: { duration?: number; offset?: number },
+        ) => {
+          if (typeof pos === "number") {
+            window.scrollTo({
+              top: Math.max(0, pos + (opts?.offset || 0)),
+              behavior: "smooth",
+            });
+          } else if (pos && typeof (pos as HTMLElement).scrollIntoView === "function") {
+            (pos as HTMLElement).scrollIntoView({ behavior: "smooth", block: "start" });
+          }
+        },
+      };
     }
-
-    let animationFrameId: number;
-
-    function raf(time: number) {
-      lenis.raf(time);
-      animationFrameId = requestAnimationFrame(raf);
-    }
-
-    animationFrameId = requestAnimationFrame(raf);
 
     return () => {
-      cancelAnimationFrame(animationFrameId);
       if (typeof window !== "undefined") {
         (window as any).__lenis = null;
       }
-      lenis.destroy();
     };
   }, []);
 

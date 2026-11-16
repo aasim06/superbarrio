@@ -77,10 +77,11 @@ export const GroceryHeader: React.FC = () => {
     setQuickViewProduct(product);
   };
 
-  // Helper to highlight matching text
+  // Helper to highlight matching text safely
   const highlightMatch = (text: string, query: string) => {
     if (!query.trim()) return text;
-    const parts = text.split(new RegExp(`(${query})`, "gi"));
+    const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const parts = text.split(new RegExp(`(${escaped})`, "gi"));
     return parts.map((part, i) =>
       part.toLowerCase() === query.toLowerCase() ? (
         <span

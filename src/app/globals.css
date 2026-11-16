@@ -1225,38 +1225,13 @@ pre[class*="language-"].line-numbers {
   }
 }
 
-/* Lenis Smooth Scroll Configuration */
-html.lenis,
-html.lenis body {
-  height: auto;
-}
-
-.lenis.lenis-smooth {
-  scroll-behavior: auto !important;
-}
-
-.lenis.lenis-smooth [data-lenis-prevent] {
-  overscroll-behavior: contain;
-}
-
-.lenis.lenis-stopped {
-  overflow: hidden;
-}
-
-.lenis.lenis-smooth iframe {
-  pointer-events: none;
-}
-
-/* ==========================================================================
-   Native Mobile App Optimizations (iOS & Android)
-   ========================================================================== */
-* {
-  -webkit-tap-highlight-color: transparent;
-  -webkit-touch-callout: none;
+/* Native Smooth Hardware-Accelerated Scrolling */
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  overscroll-behavior-y: none;
+  overscroll-behavior-y: auto;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
