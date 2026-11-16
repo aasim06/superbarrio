@@ -23,6 +23,10 @@ const CustomerAuthModal = dynamic(
   () => import("@/components/grocery/CustomerAuthModal"),
   { ssr: false },
 );
+const CookieConsentBanner = dynamic(
+  () => import("@/components/grocery/CookieConsentBanner"),
+  { ssr: false },
+);
 
 /**
  * GroceryOverlays — Client-side only overlay manager.
@@ -49,6 +53,7 @@ export default function GroceryOverlays() {
       <MobileBottomNav />
       <FlyingCartOverlay />
       <CustomerAuthModal />
+      <CookieConsentBanner />
     </>
   );
 }

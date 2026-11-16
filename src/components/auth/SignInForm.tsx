@@ -117,7 +117,7 @@ export default function SignInForm() {
     <div className="flex w-full flex-1 flex-col lg:w-1/2">
       <div className="mx-auto mb-5 w-full max-w-md sm:pt-10">
         <Link
-          href="/grocery"
+          href="/"
           className="inline-flex items-center text-sm font-medium text-emerald-600 transition-colors hover:text-emerald-700 dark:text-emerald-400"
         >
           <ChevronLeftIcon className="rtl:rotate-180" />

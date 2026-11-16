@@ -2,6 +2,74 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* =========================================================
+   Ultra-Smooth Hardware-Accelerated Theme Transition
+   Uses Native View Transitions API with CSS Fallback
+   ========================================================= */
+::view-transition-image-pair(root) {
+  isolation: isolate;
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 350ms;
+  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  mix-blend-mode: normal !important;
+}
+
+::view-transition-old(root) {
+  animation-name: theme-fade-out;
+  z-index: 1;
+}
+
+::view-transition-new(root) {
+  animation-name: theme-fade-in;
+  z-index: 2;
+}
+
+@keyframes theme-fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes theme-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Fallback CSS Transition for browsers without View Transitions */
+html.theme-transition,
+html.theme-transition *,
+html.theme-transition *::before,
+html.theme-transition *::after {
+  transition: background-color 380ms cubic-bezier(0.4, 0, 0.2, 1),
+              border-color 380ms cubic-bezier(0.4, 0, 0.2, 1),
+              color 380ms cubic-bezier(0.4, 0, 0.2, 1),
+              fill 380ms cubic-bezier(0.4, 0, 0.2, 1),
+              stroke 380ms cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 380ms cubic-bezier(0.4, 0, 0.2, 1) !important;
+  transition-delay: 0s !important;
+}
+
+/* Cookie Banner Responsive Card */
+.cookie-banner-responsive {
+  width: 100% !important;
+}
+@media (min-width: 768px) {
+  .cookie-banner-responsive {
+    width: auto !important;
+    max-width: 560px !important;
+  }
+}
+
 @theme {
   --font-*: initial;
   --font-outfit: Outfit, sans-serif;
@@ -182,6 +250,14 @@
   ::backdrop,
   ::file-selector-button {
     border-color: var(--color-gray-200, currentColor);
+  }
+
+  .dark *,
+  .dark ::after,
+  .dark ::before,
+  .dark ::backdrop,
+  .dark ::file-selector-button {
+    border-color: rgba(6, 78, 59, 0.35);
   }
 
   button:not(:disabled),

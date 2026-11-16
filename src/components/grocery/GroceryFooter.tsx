@@ -17,6 +17,7 @@ import {
 } from "@/icons";
 import { motion, useReducedMotion } from "framer-motion";
 import SuperBarrioLogo from "@/components/common/SuperBarrioLogo";
+import { openCookieSettings } from "./CookieConsentBanner";
 import {
   BizumLogo,
   VisaLogo,
@@ -108,10 +109,10 @@ export const GroceryFooter: React.FC = () => {
   ];
 
   const legalLinks = [
-    { name: isEs ? "Aviso Legal" : "Legal Notice", href: "/grocery" },
-    { name: isEs ? "Política de Privacidad (RGPD)" : "Privacy Policy (GDPR)", href: "/grocery" },
-    { name: isEs ? "Política de Cookies" : "Cookie Policy", href: "/grocery" },
-    { name: isEs ? "Términos y Condiciones" : "Terms & Conditions", href: "/grocery" },
+    { name: isEs ? "Aviso Legal" : "Legal Notice", href: "/grocery/aviso-legal" },
+    { name: isEs ? "Política de Privacidad (RGPD)" : "Privacy Policy (GDPR)", href: "/grocery/privacidad" },
+    { name: isEs ? "Política de Cookies" : "Cookie Policy", href: "/grocery/politica-cookies" },
+    { name: isEs ? "Términos y Condiciones" : "Terms & Conditions", href: "/grocery/terminos" },
     { name: isEs ? "Panel de Administración" : "Admin Dashboard", href: "/dashboard" },
   ];
 
@@ -150,7 +151,7 @@ export const GroceryFooter: React.FC = () => {
         <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-12 lg:gap-8">
           {/* Column 1: Brand & Contact Info (4 Columns) */}
           <div className="sm:col-span-2 lg:col-span-4 space-y-4">
-            <Link href="/grocery" className="inline-block transition-transform hover:scale-102">
+            <Link href="/" className="inline-block transition-transform hover:scale-102">
               <SuperBarrioLogo showSubtitle={false} />
             </Link>
             <p className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed max-w-sm">
@@ -260,6 +261,15 @@ export const GroceryFooter: React.FC = () => {
                   </Link>
                 </li>
               ))}
+              <li>
+                <button
+                  type="button"
+                  onClick={openCookieSettings}
+                  className="text-emerald-600 font-semibold hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300 transition-colors text-xs flex items-center gap-1 mt-1"
+                >
+                  🍪 {isEs ? "Configurar Cookies" : "Cookie Preferences"}
+                </button>
+              </li>
             </ul>
           </div>
 
@@ -268,12 +278,12 @@ export const GroceryFooter: React.FC = () => {
             <h4 className="font-outfit text-xs font-bold uppercase tracking-wider text-gray-900 dark:text-white">
               {isEs ? "Pedidos Rápidos" : "Quick Orders"}
             </h4>
-            <div className="rounded-2xl border border-emerald-500/20 bg-gradient-to-br from-emerald-50/80 to-green-50/50 p-4 dark:border-emerald-950/80 dark:bg-emerald-950/30">
+            <div className="rounded-2xl border border-emerald-500/20 bg-gradient-to-br from-emerald-50/80 to-green-50/50 p-4 dark:border-emerald-700/50 dark:from-[#062417] dark:to-[#03140c] dark:bg-[#051c12] shadow-xs">
               <div className="flex items-center gap-2 text-emerald-800 dark:text-emerald-300 text-xs font-bold">
                 <TimeIcon className="h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
                 <span>{isEs ? "Reparto Express" : "Express Delivery"}</span>
               </div>
-              <p className="mt-1.5 text-[11px] text-gray-600 dark:text-gray-300 leading-snug">
+              <p className="mt-1.5 text-[11px] text-gray-600 dark:text-emerald-100/80 leading-snug">
                 {isEs
                   ? "Entregas en 25 minutos con furgonetas refrigeradas en tu barrio."
                   : "25-minute deliveries with temperature-controlled vans to your door."}
@@ -282,7 +292,7 @@ export const GroceryFooter: React.FC = () => {
                 href="https://wa.me/34612345678?text=Hola%20SuperBarrio,%20quiero%20hacer%20un%20pedido%20fresco."
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-3 inline-flex w-full items-center justify-center gap-1.5 rounded-xl bg-emerald-600 px-3 py-2 text-xs font-bold text-white shadow-xs transition hover:bg-emerald-700 active:scale-95"
+                className="mt-3 inline-flex w-full items-center justify-center gap-1.5 rounded-xl bg-emerald-600 px-3 py-2 text-xs font-bold text-white shadow-xs transition hover:bg-emerald-700 active:scale-95 dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-gray-950"
               >
                 <WhatsAppIcon className="h-3.5 w-3.5" />
                 <span>{isEs ? "Pedir por WhatsApp" : "Order via WhatsApp"}</span>

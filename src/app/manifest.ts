@@ -5,7 +5,7 @@ export default function manifest(): MetadataRoute.Manifest {
     name: "SuperBarrio Supermercado",
     short_name: "SuperBarrio",
     description: "Supermercado online en Madrid con alimentos frescos de granja directos a tu puerta en 25 minutos.",
-    start_url: "/es/grocery",
+    start_url: "/",
     display: "standalone",
     background_color: "#0E382C",
     theme_color: "#0E382C",

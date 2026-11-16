@@ -60,6 +60,21 @@ export default function GroceryAIVoiceBot() {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [voiceEnabled, setVoiceEnabled] = useState(true);
+  const [hasCookieConsent, setHasCookieConsent] = useState(true);
+
+  useEffect(() => {
+    const checkConsent = () => {
+      try {
+        const consent = localStorage.getItem("sb_cookie_consent");
+        setHasCookieConsent(!!consent);
+      } catch {
+        setHasCookieConsent(true);
+      }
+    };
+    checkConsent();
+    window.addEventListener("sb_cookie_consent_updated", checkConsent);
+    return () => window.removeEventListener("sb_cookie_consent_updated", checkConsent);
+  }, []);
 
   // Live product catalog — includes custom products from localStorage
   const [liveProducts, setLiveProducts] =
@@ -413,7 +428,7 @@ export default function GroceryAIVoiceBot() {
   return (
     <>
       {/* ─── 1. FLOATING PILL BUTTON (Bottom-Left) ─── */}
-      {!isOpen && (
+      {!isOpen && hasCookieConsent && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

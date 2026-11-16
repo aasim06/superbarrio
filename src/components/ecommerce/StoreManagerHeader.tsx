@@ -66,7 +66,7 @@ export default function StoreManagerHeader() {
 
         {/* Visit Grocery Storefront Link */}
         <Link
-          href="/grocery"
+          href="/"
           className="inline-flex w-full sm:w-auto justify-center items-center gap-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 px-4 py-2 text-xs font-bold text-gray-950 shadow-theme-xs transition hover:from-emerald-400 hover:to-teal-400 active:scale-95 whitespace-nowrap"
         >
           <CartIcon className="h-4 w-4" />

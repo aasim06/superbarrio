@@ -1,5 +1,4 @@
-import React from "react";
-import GroceryCatalog from "@/components/grocery/GroceryCatalog";
+import { redirect } from "@/i18n/navigation";
 import { setRequestLocale } from "next-intl/server";
 
 interface PageProps {
@@ -10,5 +9,5 @@ export default async function GroceryPage({ params }: PageProps) {
   const { locale } = await params;
   setRequestLocale(locale);
 
-  return <GroceryCatalog />;
+  redirect({ href: "/", locale });
 }

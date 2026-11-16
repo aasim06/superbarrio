@@ -137,7 +137,7 @@ export default function CustomerOrdersPage() {
         <div className="mb-6 flex flex-wrap items-center justify-between gap-4 border-b border-gray-200/60 pb-4 dark:border-emerald-950/60">
           <div className="flex items-center gap-3">
             <Link
-              href="/grocery"
+              href="/"
               className="flex h-10 w-10 items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-600 shadow-sm transition-colors hover:bg-gray-50 dark:border-emerald-950 dark:bg-[#071910] dark:text-gray-300"
             >
               <ArrowLeft className="h-5 w-5" />
@@ -210,7 +210,7 @@ export default function CustomerOrdersPage() {
               You haven't placed any grocery orders yet. Choose from our fresh farm produce and get delivery in 20 minutes!
             </p>
             <Link
-              href="/grocery"
+              href="/"
               className="mt-6 inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-emerald-600 to-green-600 px-6 py-3 text-xs font-bold text-white shadow-md transition-all hover:from-emerald-700 hover:to-green-700 hover:shadow-lg"
             >
               <ShoppingBag className="h-4 w-4" />

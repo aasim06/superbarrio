@@ -119,7 +119,7 @@ const operationsNavItems: NavItem[] = [
     icon: <CartIcon />,
     key: "storefront",
     label: "Live Storefront",
-    path: "/grocery",
+    path: "/",
   },
 ];
 

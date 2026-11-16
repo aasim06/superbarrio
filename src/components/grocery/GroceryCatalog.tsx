@@ -12,6 +12,7 @@ import { useGroceryCart } from "@/context/GroceryCartContext";
 import { useLocale, useTranslations } from "next-intl";
 import { SearchIcon } from "@/icons";
 import { motion, AnimatePresence, type Variants } from "framer-motion";
+import { searchGroceryWithFuzzy } from "@/utils/fuzzySearch";
 
 // Dynamically import heavy below-the-fold components (reduce initial JS bundle)
 const RecentlyViewedSection = dynamic(
@@ -58,20 +59,11 @@ export const GroceryCatalog: React.FC = () => {
       window.removeEventListener("grocery-products-updated", handleUpdate);
   }, []);
 
-  const filteredProducts = useMemo(() => {
-    let result = products.filter((product) => {
+  const { filteredProducts, autoCorrection } = useMemo(() => {
+    let base = products.filter((product) => {
       // Category check
       const matchesCategory =
         activeCategory === "all" || product.category === activeCategory;
-
-      // Search query check
-      const matchesSearch =
-        !searchQuery ||
-        product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        Boolean(product.nameEn && product.nameEn.toLowerCase().includes(searchQuery.toLowerCase())) ||
-        product.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        Boolean(product.descriptionEn && product.descriptionEn.toLowerCase().includes(searchQuery.toLowerCase())) ||
-        product.category.toLowerCase().includes(searchQuery.toLowerCase());
 
       // In stock only filter
       const matchesStock = !filterInStockOnly || product.inStock;
@@ -81,22 +73,31 @@ export const GroceryCatalog: React.FC = () => {
         !filterOnSaleOnly ||
         Boolean(product.originalPrice && product.originalPrice > product.price);
 
-      return matchesCategory && matchesSearch && matchesStock && matchesSale;
+      return matchesCategory && matchesStock && matchesSale;
     });
+
+    let didYouMean: string | undefined = undefined;
+
+    // Intelligent Fuzzy Search with Typo Tolerance
+    if (searchQuery.trim()) {
+      const fuzzy = searchGroceryWithFuzzy(base, searchQuery, locale);
+      base = fuzzy.results;
+      didYouMean = fuzzy.didYouMean;
+    }
 
     // Apply Sorting
     switch (sortBy) {
       case "price-asc":
-        result = [...result].sort((a, b) => a.price - b.price);
+        base = [...base].sort((a, b) => a.price - b.price);
         break;
       case "price-desc":
-        result = [...result].sort((a, b) => b.price - a.price);
+        base = [...base].sort((a, b) => b.price - a.price);
         break;
       case "rating-desc":
-        result = [...result].sort((a, b) => b.rating - a.rating);
+        base = [...base].sort((a, b) => b.rating - a.rating);
         break;
       case "discount":
-        result = [...result].sort((a, b) => {
+        base = [...base].sort((a, b) => {
           const discountA = a.originalPrice ? a.originalPrice - a.price : 0;
           const discountB = b.originalPrice ? b.originalPrice - b.price : 0;
           return discountB - discountA;
@@ -108,7 +109,7 @@ export const GroceryCatalog: React.FC = () => {
         break;
     }
 
-    return result;
+    return { filteredProducts: base, autoCorrection: didYouMean };
   }, [
     products,
     activeCategory,
@@ -116,6 +117,7 @@ export const GroceryCatalog: React.FC = () => {
     sortBy,
     filterInStockOnly,
     filterOnSaleOnly,
+    locale,
   ]);
 
   return (
@@ -173,6 +175,35 @@ export const GroceryCatalog: React.FC = () => {
           )}
         </div>
 
+        {/* Typo Auto-Correction Notification Banner */}
+        {searchQuery && autoCorrection && (
+          <motion.div
+            initial={{ opacity: 0, y: -6 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-emerald-500/30 bg-emerald-50/80 p-3.5 backdrop-blur-sm dark:border-emerald-700/50 dark:bg-emerald-950/40 shadow-xs"
+          >
+            <div className="flex items-center gap-2 text-xs sm:text-sm text-emerald-900 dark:text-emerald-200">
+              <span className="text-base">✨</span>
+              <span>
+                {isEs ? "Mostrando resultados para" : "Showing results for"}:{" "}
+                <strong className="font-extrabold text-emerald-700 dark:text-emerald-300 underline">
+                  "{autoCorrection}"
+                </strong>
+              </span>
+              <span className="text-xs text-gray-500 dark:text-gray-400">
+                ({isEs ? `corregido automáticamente de "${searchQuery}"` : `auto-corrected from "${searchQuery}"`})
+              </span>
+            </div>
+            <button
+              onClick={() => setSearchQuery(autoCorrection)}
+              className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-3.5 py-1.5 text-xs font-bold text-white shadow-xs transition hover:bg-emerald-700 active:scale-95 dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-gray-950"
+            >
+              <span>✓</span>
+              <span>{isEs ? `Aceptar "${autoCorrection}"` : `Apply "${autoCorrection}"`}</span>
+            </button>
+          </motion.div>
+        )}
+
         {/* Sort & Filter Bar */}
         <div className="relative z-30">
           <SortFilterBar totalCount={filteredProducts.length} />
@@ -198,6 +229,23 @@ export const GroceryCatalog: React.FC = () => {
               <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 max-w-sm">
                 {t("noItemsDesc")}
               </p>
+              
+              {/* Popular Search Suggestions on Empty State */}
+              <div className="mt-4 flex flex-wrap items-center justify-center gap-1.5 max-w-md">
+                <span className="text-[11px] font-medium text-gray-400 dark:text-emerald-400/70 w-full mb-1">
+                  {isEs ? "Prueba buscando alimentos populares:" : "Try searching popular essentials:"}
+                </span>
+                {["Plátanos", "Tomates", "Manzanas", "Aguacates", "Fresas", "Patatas", "Leche"].map((term) => (
+                  <button
+                    key={term}
+                    onClick={() => setSearchQuery(term)}
+                    className="rounded-lg border border-gray-200 bg-gray-50 px-2.5 py-1 text-xs font-semibold text-gray-700 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-300 dark:border-emerald-900/60 dark:bg-emerald-950/40 dark:text-emerald-300 dark:hover:bg-emerald-900/60 transition-colors"
+                  >
+                    {term}
+                  </button>
+                ))}
+              </div>
+
               <button
                 onClick={() => setSearchQuery("")}
                 className="mt-5 rounded-2xl bg-gradient-to-r from-emerald-600 to-green-600 px-5 py-2.5 text-xs font-bold text-white shadow-md shadow-emerald-600/30 transition-transform hover:scale-105 active:scale-95"

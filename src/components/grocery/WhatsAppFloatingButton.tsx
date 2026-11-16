@@ -21,9 +21,24 @@ export const WhatsAppFloatingButton: React.FC<WhatsAppFloatingButtonProps> = ({
   const { cart, total, discountAmount, promoCode, totalItems } = useGroceryCart();
   const [isHovered, setIsHovered] = useState(false);
   const shouldReduceMotion = useReducedMotion();
+  const [hasCookieConsent, setHasCookieConsent] = useState(true);
 
-  // Hide on checkout & order-success to keep checkout funnel 100% focused and unblocked
-  if (pathname.includes("/checkout") || pathname.includes("/order-success")) {
+  React.useEffect(() => {
+    const checkConsent = () => {
+      try {
+        const consent = localStorage.getItem("sb_cookie_consent");
+        setHasCookieConsent(!!consent);
+      } catch {
+        setHasCookieConsent(true);
+      }
+    };
+    checkConsent();
+    window.addEventListener("sb_cookie_consent_updated", checkConsent);
+    return () => window.removeEventListener("sb_cookie_consent_updated", checkConsent);
+  }, []);
+
+  // Hide on checkout & order-success, or when cookie consent banner is waiting for action
+  if (pathname.includes("/checkout") || pathname.includes("/order-success") || !hasCookieConsent) {
     return null;
   }
 

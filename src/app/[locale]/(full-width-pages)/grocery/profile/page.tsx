@@ -131,7 +131,7 @@ export default function CustomerProfilePage() {
         <div className="mb-6 flex items-center justify-between border-b border-gray-200/60 pb-4 dark:border-emerald-950/60">
           <div className="flex items-center gap-3">
             <Link
-              href="/grocery"
+              href="/"
               className="flex h-10 w-10 items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-600 shadow-sm transition-colors hover:bg-gray-50 dark:border-emerald-950 dark:bg-[#071910] dark:text-gray-300"
             >
               <ArrowLeft className="h-5 w-5" />

@@ -37,6 +37,7 @@ export const ProductCard: React.FC<ProductCardProps> = React.memo(function Produ
 
   const imageRef = useRef<HTMLDivElement>(null);
   const [imageError, setImageError] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
 
   const isEs = locale === "es";
   const localized = getProductLocalized(product, locale);
@@ -45,23 +46,12 @@ export const ProductCard: React.FC<ProductCardProps> = React.memo(function Produ
     e.stopPropagation();
     triggerHaptic("medium");
     addToCart(product, 1, null);
-    toast.success(
-      isEs
-        ? `¡${localized.name} añadido a la cesta!`
-        : `Added ${localized.name} to basket!`,
-    );
   };
 
   const handleIncrement = (e: React.MouseEvent) => {
     e.stopPropagation();
     triggerHaptic("light");
     addToCart(product, 1, null);
-    toast.success(
-      isEs
-        ? `Cantidad actualizada para ${localized.name}`
-        : `Updated quantity for ${localized.name}`,
-      { duration: 1500 },
-    );
   };
 
   const handleDecrement = (e: React.MouseEvent) => {
@@ -110,7 +100,7 @@ export const ProductCard: React.FC<ProductCardProps> = React.memo(function Produ
           handleCardClick();
         }
       }}
-      className="group relative flex h-full flex-col justify-between rounded-2xl sm:rounded-3xl border border-gray-200/80 bg-white p-2.5 sm:p-4 shadow-sm transition-all duration-300 hover:border-emerald-300 hover:shadow-[0_16px_32px_-8px_rgba(22,163,74,0.18)] dark:border-emerald-950/60 dark:bg-[#071d12]/70 dark:hover:border-emerald-700/80 dark:hover:shadow-[0_16px_32px_-8px_rgba(34,197,94,0.15)] cursor-pointer select-none overflow-hidden focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:outline-none"
+      className="group relative flex h-full flex-col justify-between rounded-2xl sm:rounded-3xl border border-gray-200/80 bg-white p-2.5 sm:p-4 shadow-sm transition-[border-color,box-shadow] duration-200 hover:border-emerald-300 hover:shadow-[0_16px_32px_-8px_rgba(22,163,74,0.18)] dark:border-emerald-950/80 dark:bg-[#071d12]/70 dark:hover:border-emerald-700/80 dark:hover:shadow-[0_16px_32px_-8px_rgba(34,197,94,0.15)] cursor-pointer select-none overflow-hidden focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:outline-none"
     >
       {/* High-Performance Pure CSS Ambient Glow on Hover (Zero Re-renders) */}
       <div
@@ -120,8 +110,8 @@ export const ProductCard: React.FC<ProductCardProps> = React.memo(function Produ
       <div className="relative z-10 flex flex-1 flex-col justify-between">
         {/* Product Visual Container with Skeleton Shimmer (aspect-square keeps all cards consistent) */}
         <div ref={imageRef} className="relative flex aspect-square w-full items-center justify-center overflow-hidden rounded-xl sm:rounded-2xl bg-gray-50/80 dark:bg-gray-800/60">
-          {/* Skeleton Shimmer Loader */}
-          {!imageError && (
+          {/* Skeleton Shimmer Loader — disappears completely when image is loaded */}
+          {!imageLoaded && !imageError && (
             <div className="absolute inset-0 animate-pulse bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 dark:from-emerald-950/40 dark:via-gray-800 dark:to-emerald-950/40" />
           )}
 
@@ -142,6 +132,7 @@ export const ProductCard: React.FC<ProductCardProps> = React.memo(function Produ
               sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 20vw"
               className="object-cover transition-all duration-500 ease-out group-hover:scale-[1.08]"
               loading="lazy"
+              onLoad={() => setImageLoaded(true)}
               onError={() => setImageError(true)}
             />
           )}

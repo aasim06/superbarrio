@@ -49,11 +49,6 @@ export const QuickViewModal: React.FC = () => {
 
   const handleAddToCart = () => {
     addToCart(quickViewProduct, 1, null);
-    toast.success(
-      isEs
-        ? `¡"${localized.name}" añadido a la cesta!`
-        : `Added "${localized.name}" to basket!`,
-    );
   };
 
   const handleWishlistToggle = () => {

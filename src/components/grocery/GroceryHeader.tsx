@@ -13,6 +13,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { GROCERY_PRODUCTS, getProductLocalized } from "@/data/groceryData";
 import { GroceryProduct } from "@/types/grocery";
 import { triggerHaptic } from "@/utils/haptics";
+import { searchGroceryWithFuzzy } from "@/utils/fuzzySearch";
 
 export const GroceryHeader: React.FC = () => {
   const t = useTranslations("grocery");
@@ -28,35 +29,33 @@ export const GroceryHeader: React.FC = () => {
   } = useGroceryCart();
 
   const [suggestions, setSuggestions] = useState<GroceryProduct[]>([]);
+  const [autoCorrection, setAutoCorrection] = useState<string | undefined>(undefined);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const searchContainerRef = useRef<HTMLDivElement>(null);
 
-  // Debounced live search suggestions
+  // Debounced live search suggestions with Fuzzy Typo Tolerance & Spell Correction
   useEffect(() => {
     if (!searchQuery.trim()) {
       setSuggestions([]);
+      setAutoCorrection(undefined);
       setShowSuggestions(false);
       return;
     }
 
     const timer = setTimeout(() => {
-      const q = searchQuery.toLowerCase().trim();
-      const matches = GROCERY_PRODUCTS.filter((p) => {
-        const loc = getProductLocalized(p, locale);
-        return (
-          loc.name.toLowerCase().includes(q) ||
-          loc.description.toLowerCase().includes(q) ||
-          p.name.toLowerCase().includes(q) ||
-          (p.nameEn && p.nameEn.toLowerCase().includes(q))
-        );
-      }).slice(0, 5);
+      const { results, didYouMean } = searchGroceryWithFuzzy(
+        GROCERY_PRODUCTS,
+        searchQuery,
+        locale
+      );
 
-      setSuggestions(matches);
+      setSuggestions(results.slice(0, 5));
+      setAutoCorrection(didYouMean);
       setShowSuggestions(true);
-    }, 250);
+    }, 200);
 
     return () => clearTimeout(timer);
-  }, [searchQuery]);
+  }, [searchQuery, locale]);
 
   // Click outside to close suggestions
   useEffect(() => {
@@ -114,7 +113,7 @@ export const GroceryHeader: React.FC = () => {
       <div className="mx-auto flex w-full max-w-[1920px] items-center justify-between gap-2 sm:gap-3 px-3 py-2 sm:px-6 md:gap-6 md:py-3.5 lg:px-8 xl:px-10">
         {/* Brand / Logo */}
         <Link
-          href="/grocery"
+          href="/"
           className="group flex items-center gap-2 sm:gap-3 transition-transform duration-200 active:scale-95"
         >
           <div className="relative flex h-9 w-9 sm:h-11 sm:w-11 items-center justify-center rounded-xl sm:rounded-2xl bg-gradient-to-br from-emerald-500 to-green-600 text-white shadow-[0_6px_16px_-2px_rgba(22,163,74,0.4)] transition-all duration-300 group-hover:scale-105 group-hover:shadow-[0_8px_20px_-2px_rgba(22,163,74,0.5)]">
@@ -170,8 +169,14 @@ export const GroceryHeader: React.FC = () => {
             value={searchQuery}
             onFocus={() => searchQuery.trim() && setShowSuggestions(true)}
             onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && autoCorrection) {
+                setSearchQuery(autoCorrection);
+                setShowSuggestions(false);
+              }
+            }}
             placeholder={t("searchPlaceholder")}
-            className="w-full rounded-2xl border border-gray-200/80 bg-gray-50/80 py-2.5 pe-9 ps-11 text-sm font-medium text-gray-800 placeholder-gray-400 shadow-xs backdrop-blur-sm transition-all duration-200 focus:border-emerald-500 focus:bg-white focus:shadow-[0_0_0_3px_rgba(22,163,74,0.15)] focus:outline-none dark:border-emerald-950/80 dark:bg-gray-900/60 dark:text-white dark:placeholder-gray-500 dark:focus:border-emerald-500 dark:focus:bg-gray-900"
+            className="w-full rounded-2xl border border-gray-200/80 bg-gray-50/80 py-2.5 pe-9 ps-11 text-sm font-medium text-gray-800 placeholder-gray-400 shadow-xs backdrop-blur-sm transition-all duration-200 focus:border-emerald-500 focus:bg-white focus:shadow-[0_0_0_3px_rgba(22,163,74,0.15)] focus:outline-none dark:border-emerald-700/60 dark:bg-gray-900/70 dark:text-white dark:placeholder-gray-400 dark:hover:border-emerald-600/80 dark:focus:border-emerald-400 dark:focus:bg-gray-900 dark:focus:shadow-[0_0_0_3px_rgba(16,185,129,0.25)]"
           />
 
           {searchQuery && (
@@ -194,10 +199,34 @@ export const GroceryHeader: React.FC = () => {
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 8, scale: 0.98 }}
                 transition={{ duration: 0.2 }}
-                className="absolute inset-x-0 top-full mt-2 z-50 overflow-hidden rounded-2xl border border-gray-200/90 bg-white/95 p-2 shadow-2xl backdrop-blur-xl dark:border-emerald-950/90 dark:bg-[#071910]/95"
+                className="absolute inset-x-0 top-full mt-2 z-50 overflow-hidden rounded-2xl border border-gray-200/90 bg-white/95 p-2 shadow-2xl backdrop-blur-xl dark:border-emerald-700/60 dark:bg-[#071910]/95 dark:shadow-[0_12px_36px_rgba(0,0,0,0.6)]"
               >
+                {autoCorrection && (
+                  <div
+                    onClick={() => {
+                      setSearchQuery(autoCorrection);
+                    }}
+                    className="mx-1 mb-2 flex items-center justify-between rounded-xl bg-gradient-to-r from-emerald-500/15 via-emerald-500/10 to-green-500/10 px-3 py-2 text-xs font-semibold text-emerald-900 border border-emerald-500/30 dark:bg-emerald-950/70 dark:text-emerald-200 dark:border-emerald-700/50 cursor-pointer hover:bg-emerald-500/20 transition-all shadow-xs"
+                  >
+                    <div className="flex items-center gap-2 truncate">
+                      <span className="text-sm">✨</span>
+                      <span className="truncate">
+                        {locale === "es" ? "¿Quisiste decir" : "Did you mean"}:{" "}
+                        <strong className="font-extrabold underline text-emerald-700 dark:text-emerald-300">
+                          {autoCorrection}
+                        </strong>
+                        ?
+                      </span>
+                    </div>
+                    <span className="shrink-0 text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
+                      {locale === "es" ? "Corregir ➔" : "Apply ➔"}
+                    </span>
+                  </div>
+                )}
                 <div className="px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-gray-400 dark:text-emerald-400/60">
-                  Matching Products
+                  {autoCorrection
+                    ? (locale === "es" ? `Sugerencias para "${autoCorrection}"` : `Matches for "${autoCorrection}"`)
+                    : (locale === "es" ? "Productos Encontrados" : "Matching Products")}
                 </div>
                 <div className="divide-y divide-gray-100 dark:divide-emerald-950/60">
                   {suggestions.map((item) => {
@@ -309,9 +338,9 @@ export const GroceryHeader: React.FC = () => {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder={t("searchMobilePlaceholder")}
-            className="w-full rounded-xl border border-gray-200/80 bg-gray-50/80 py-2 pe-3 ps-9 text-xs font-medium text-gray-800 placeholder-gray-400 focus:border-emerald-500 focus:outline-none dark:border-emerald-900/60 dark:bg-gray-900/80 dark:text-white"
+            className="w-full rounded-xl border border-gray-200/80 bg-gray-50/80 py-2 pe-3 ps-9 text-xs font-medium text-gray-800 placeholder-gray-400 focus:border-emerald-500 focus:outline-none dark:border-emerald-700/60 dark:bg-gray-900/80 dark:text-white dark:placeholder-gray-400 dark:focus:border-emerald-400 dark:focus:shadow-[0_0_0_3px_rgba(16,185,129,0.25)]"
           />
-          <span className="pointer-events-none absolute inset-y-0 start-0 flex items-center ps-3 text-gray-400">
+          <span className="pointer-events-none absolute inset-y-0 start-0 flex items-center ps-3 text-gray-400 dark:text-emerald-400/70">
             <SearchIcon className="h-3.5 w-3.5" />
           </span>
         </div>

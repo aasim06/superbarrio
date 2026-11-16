@@ -8,7 +8,7 @@ import { ChevronDownIcon } from "@/icons";
 import { cn } from "@/utils";
 import { useLocale, useTranslations } from "next-intl";
 import Image from "next/image";
-import { useRef, useState } from "react";
+import { useRef, useState, useTransition } from "react";
 import { Dropdown } from "../ui/dropdown/Dropdown";
 import { DropdownItem } from "../ui/dropdown/DropdownItem";
 import { useAdminProfile } from "@/context/ProfileContext";
@@ -46,11 +46,21 @@ export default function UserDropdown() {
     setIsSubDropdownOpen(false);
   };
 
+  const [isPending, startTransition] = useTransition();
+
   const handleSelectLanguage = (id: Locale) => {
+    const currentScrollY = typeof window !== "undefined" ? window.scrollY : 0;
     document.cookie = `NEXT_LOCALE=${id};path=/;max-age=31536000;SameSite=Lax`;
     setIsSubDropdownOpen(false);
-    router.replace(pathname, { locale: id });
-    window.location.reload();
+    startTransition(() => {
+      router.replace(pathname, { locale: id, scroll: false });
+      router.refresh();
+    });
+    if (currentScrollY > 0) {
+      requestAnimationFrame(() => {
+        window.scrollTo({ top: currentScrollY, behavior: "instant" });
+      });
+    }
   };
 
   const handleSignOut = async (e: React.MouseEvent) => {

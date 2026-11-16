@@ -615,7 +615,7 @@ export const CheckoutView: React.FC = () => {
         {/* Primary Action Button */}
         <div className="mt-7 flex justify-center">
           <Link
-            href="/grocery"
+            href="/"
             className="group inline-flex items-center gap-2.5 rounded-2xl bg-gradient-to-r from-emerald-600 to-green-600 px-7 py-4 text-xs font-black text-white shadow-xl shadow-emerald-600/35 transition-all duration-200 hover:scale-105 active:scale-95 hover:shadow-2xl hover:shadow-emerald-600/45"
           >
             <span className="transition-transform group-hover:-translate-x-1 font-bold">
@@ -638,7 +638,7 @@ export const CheckoutView: React.FC = () => {
       <div className="mb-5 sm:mb-8">
         <div className="flex items-center justify-between pb-3 sm:pb-4 border-b border-gray-100/80 sm:border-0 dark:border-emerald-950/60">
           <Link
-            href="/grocery"
+            href="/"
             className="group inline-flex items-center gap-2 rounded-xl bg-gray-100/90 sm:bg-transparent px-3 py-1.5 sm:p-0 text-xs font-extrabold text-emerald-700 transition-all hover:text-emerald-800 active:scale-95 dark:bg-emerald-950/50 sm:dark:bg-transparent dark:text-emerald-400 dark:hover:text-emerald-300"
           >
             <span className="flex h-5 w-5 items-center justify-center rounded-lg bg-emerald-600/10 text-emerald-600 sm:bg-transparent sm:text-current dark:bg-emerald-500/20">
