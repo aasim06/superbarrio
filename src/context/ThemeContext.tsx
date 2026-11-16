@@ -83,21 +83,27 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({
 
     localStorage.setItem("theme-mode", themeMode);
 
+    if (typeof window === "undefined" || typeof document === "undefined") {
+      applyTheme(theme);
+      return;
+    }
+
+    const doc = document;
     // Modern Chrome / Edge GPU-accelerated View Transitions API
-    if (typeof document !== "undefined" && "startViewTransition" in document) {
-      (document as any).startViewTransition(() => {
+    if (Boolean((doc as any).startViewTransition)) {
+      (doc as any).startViewTransition(() => {
         applyTheme(theme);
       });
       return;
     }
 
     // Fallback: CSS transition with forced reflow
-    document.documentElement.classList.add("theme-transition");
-    void document.documentElement.offsetHeight;
+    doc.documentElement.classList.add("theme-transition");
+    void doc.documentElement.offsetHeight;
     applyTheme(theme);
 
     const timer = setTimeout(() => {
-      document.documentElement.classList.remove("theme-transition");
+      doc.documentElement.classList.remove("theme-transition");
     }, 450);
 
     return () => clearTimeout(timer);
