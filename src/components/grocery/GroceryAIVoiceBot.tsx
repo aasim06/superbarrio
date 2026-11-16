@@ -36,6 +36,9 @@ const ENGLISH_SUGGESTIONS = [
 const INITIAL_URDU_MESSAGE =
   "السلام علیکم! سوپر بیریو گروسری میں خوش آمدید۔ میں آپ کا اے آئی وائس اسسٹنٹ ہوں۔ آپ مجھ سے کسی بھی پھل، سبزی، دودھ، بیکری، قیمتوں یا ڈیلیوری کے بارے میں لائیو پوچھ سکتے ہیں یا بول کر بات کر سکتے ہیں۔";
 
+const INITIAL_ENGLISH_MESSAGE =
+  "Welcome to SuperBarrio! I am your AI voice assistant. Feel free to ask about our fresh produce, dairy, bakery, daily prices, or express delivery.";
+
 const isUrduText = (str: string) => /[\u0600-\u06FF]/.test(str);
 
 export default function GroceryAIVoiceBot() {
@@ -84,6 +87,52 @@ export default function GroceryAIVoiceBot() {
   const recognitionRef = useRef<any>(null);
   const currentAudioRef = useRef<HTMLAudioElement | null>(null);
   const autoSendTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  // Preloaded audio elements for instant 0ms welcome playback
+  const preloadedWelcomeAudioRef = useRef<{ [key: string]: HTMLAudioElement }>({});
+
+  // Preload welcome audio assets on mount for immediate speech on click
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    try {
+      const asad = new Audio("/audio/welcome-ur-asad.mp3");
+      asad.preload = "auto";
+
+      const uzma = new Audio("/audio/welcome-ur-uzma.mp3");
+      uzma.preload = "auto";
+
+      const aria = new Audio("/audio/welcome-en-aria.mp3");
+      aria.preload = "auto";
+
+      preloadedWelcomeAudioRef.current = {
+        "ur-PK-AsadNeural": asad,
+        "ur-PK-UzmaNeural": uzma,
+        "en-US-AriaNeural": aria,
+      };
+    } catch (e) {
+      console.warn("Failed to preload welcome audio:", e);
+    }
+  }, []);
+
+  // Keep initial welcome message text in sync with language switch if chat has not started
+  useEffect(() => {
+    setMessages((prev) => {
+      if (prev.length <= 1) {
+        return [
+          {
+            id: "welcome-1",
+            sender: "bot",
+            text:
+              selectedLang === "ur-PK"
+                ? INITIAL_URDU_MESSAGE
+                : INITIAL_ENGLISH_MESSAGE,
+            timestamp: "Just now",
+          },
+        ];
+      }
+      return prev;
+    });
+  }, [selectedLang]);
 
   // Load & keep the product catalog in sync (picks up localStorage custom products)
   useEffect(() => {
@@ -276,6 +325,63 @@ export default function GroceryAIVoiceBot() {
     [voiceEnabled, selectedVoice, selectedLang, fallbackWebSpeech],
   );
 
+  // Instant zero-delay welcome speech trigger (0ms latency using preloaded audio)
+  const playWelcomeSpeech = useCallback(
+    (langOverride?: "ur-PK" | "en-US", voiceOverride?: string) => {
+      if (!voiceEnabled || typeof window === "undefined") return;
+
+      // Stop any existing playing audio or web speech
+      if (currentAudioRef.current) {
+        currentAudioRef.current.pause();
+        currentAudioRef.current.currentTime = 0;
+      }
+      if ("speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
+      }
+
+      const lang = langOverride || selectedLang;
+      const voice =
+        voiceOverride ||
+        (lang === "ur-PK" ? selectedVoice : "en-US-AriaNeural");
+
+      const audioSrc =
+        lang === "ur-PK"
+          ? voice === "ur-PK-UzmaNeural"
+            ? "/audio/welcome-ur-uzma.mp3"
+            : "/audio/welcome-ur-asad.mp3"
+          : "/audio/welcome-en-aria.mp3";
+
+      const preloaded = preloadedWelcomeAudioRef.current[voice];
+      const audio = preloaded || new Audio(audioSrc);
+      audio.currentTime = 0;
+      currentAudioRef.current = audio;
+
+      audio.onplay = () => setIsSpeaking(true);
+      audio.onended = () => setIsSpeaking(false);
+      audio.onerror = () => {
+        setIsSpeaking(false);
+        speakText(
+          lang === "ur-PK" ? INITIAL_URDU_MESSAGE : INITIAL_ENGLISH_MESSAGE,
+        );
+      };
+
+      const playPromise = audio.play();
+      if (playPromise !== undefined) {
+        playPromise
+          .then(() => {
+            setIsSpeaking(true);
+          })
+          .catch((err) => {
+            console.warn("Direct welcome audio play prevented, falling back:", err);
+            speakText(
+              lang === "ur-PK" ? INITIAL_URDU_MESSAGE : INITIAL_ENGLISH_MESSAGE,
+            );
+          });
+      }
+    },
+    [voiceEnabled, selectedLang, selectedVoice, speakText],
+  );
+
   // Toggle voice mute
   const toggleVoice = () => {
     if (isSpeaking) {
@@ -442,8 +548,8 @@ export default function GroceryAIVoiceBot() {
           <button
             onClick={() => {
               setIsOpen(true);
-              if (messages.length === 1 && voiceEnabled) {
-                speakText(messages[0].text);
+              if (voiceEnabled) {
+                playWelcomeSpeech();
               }
             }}
             className="group flex items-center gap-2 sm:gap-3 rounded-full bg-gray-950/95 p-1.5 sm:px-4 sm:py-3 shadow-[0_12px_32px_rgba(0,0,0,0.45)] border border-gray-800/80 backdrop-blur-md transition-all duration-300 hover:scale-105 hover:border-emerald-500/50 hover:shadow-[0_12px_36px_rgba(16,185,129,0.25)] select-none"
@@ -531,6 +637,9 @@ export default function GroceryAIVoiceBot() {
                     const nextLang =
                       selectedLang === "ur-PK" ? "en-US" : "ur-PK";
                     setSelectedLang(nextLang);
+                    if (voiceEnabled && messages.length <= 1) {
+                      playWelcomeSpeech(nextLang);
+                    }
                   }}
                   title="Switch Language"
                   className="rounded-lg bg-emerald-500/15 border border-emerald-500/25 px-2 py-0.5 text-[10px] font-bold text-emerald-300 transition-all hover:bg-emerald-500/30"
@@ -543,11 +652,14 @@ export default function GroceryAIVoiceBot() {
                   <button
                     type="button"
                     onClick={() => {
-                      setSelectedVoice((prev) =>
-                        prev === "ur-PK-AsadNeural"
+                      const nextVoice =
+                        selectedVoice === "ur-PK-AsadNeural"
                           ? "ur-PK-UzmaNeural"
-                          : "ur-PK-AsadNeural",
-                      );
+                          : "ur-PK-AsadNeural";
+                      setSelectedVoice(nextVoice);
+                      if (voiceEnabled && messages.length <= 1) {
+                        playWelcomeSpeech("ur-PK", nextVoice);
+                      }
                     }}
                     title="Change Voice (Asad / Uzma)"
                     className="rounded-lg bg-white/10 px-2 py-0.5 text-[10px] font-medium text-gray-300 transition-all hover:bg-white/20"
