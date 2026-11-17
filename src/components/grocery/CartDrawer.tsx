@@ -114,7 +114,7 @@ export const CartDrawer: React.FC = () => {
             onClick={() => setIsCartOpen(false)}
           />
 
-          <div className="fixed inset-x-0 bottom-0 top-auto sm:top-0 sm:bottom-0 sm:inset-y-0 sm:end-0 sm:start-auto flex w-full max-h-[92vh] sm:max-h-full sm:max-w-md sm:ps-10">
+          <div className="fixed inset-x-0 bottom-0 top-auto sm:top-0 sm:bottom-0 sm:inset-y-0 sm:end-0 sm:start-auto flex flex-col w-full h-[88dvh] max-h-[90dvh] sm:h-full sm:max-h-full sm:max-w-md sm:ps-10 z-50 pointer-events-auto">
             {/* Animated Sliding Drawer / Native Mobile Bottom Sheet */}
             <motion.div
               initial={isMobile ? { y: "100%" } : { x: "100%" }}
@@ -124,12 +124,16 @@ export const CartDrawer: React.FC = () => {
               className="flex h-full w-full flex-col bg-white shadow-2xl rounded-t-[32px] sm:rounded-none dark:bg-[#071910] dark:border-s dark:border-emerald-950/80 overflow-hidden"
             >
               {/* Native Mobile Bottom Sheet Drag Handle */}
-              <div className="sm:hidden flex justify-center pt-2.5 pb-1">
-                <div className="h-1.5 w-12 rounded-full bg-gray-300 dark:bg-emerald-800/60" />
+              <div
+                className="sm:hidden flex shrink-0 justify-center pt-2.5 pb-1 cursor-pointer select-none"
+                onClick={() => setIsCartOpen(false)}
+                title="Cerrar cesta"
+              >
+                <div className="h-1.5 w-12 rounded-full bg-gray-300 dark:bg-emerald-800/60 transition hover:bg-gray-400" />
               </div>
 
               {/* Drawer Header */}
-              <div className="flex items-center justify-between border-b border-gray-200/80 px-4 py-3 sm:px-6 sm:py-4.5 dark:border-emerald-950/80">
+              <div className="flex shrink-0 items-center justify-between border-b border-gray-200/80 px-4 py-3 sm:px-6 sm:py-4.5 dark:border-emerald-950/80">
                 <div className="flex items-center gap-3">
                   <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600 shadow-xs dark:bg-emerald-950/60 dark:text-emerald-400">
                     <CartIcon className="h-5 w-5" />
@@ -167,7 +171,7 @@ export const CartDrawer: React.FC = () => {
               </div>
 
               {/* Free delivery tracker with Animated Fill */}
-              <div className="border-b border-gray-100 bg-emerald-50/60 p-4 dark:border-emerald-950/60 dark:bg-emerald-950/30">
+              <div className="shrink-0 border-b border-gray-100 bg-emerald-50/60 p-3.5 sm:p-4 dark:border-emerald-950/60 dark:bg-emerald-950/30">
                 <div className="flex items-center justify-between text-xs">
                   {amountNeededForFreeDelivery === 0 ? (
                     <span className="flex items-center gap-1.5 font-bold text-emerald-600 dark:text-emerald-400">
@@ -201,7 +205,7 @@ export const CartDrawer: React.FC = () => {
               </div>
 
               {/* Items List */}
-              <div className="flex-1 overflow-y-auto p-3.5 sm:p-5">
+              <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain p-3.5 sm:p-5 custom-scrollbar">
                 {cart.length === 0 ? (
                   <div className="flex h-full flex-col items-center justify-center text-center py-10">
                     <div className="relative mx-auto flex h-28 w-28 items-center justify-center">
@@ -321,9 +325,9 @@ export const CartDrawer: React.FC = () => {
 
               {/* Drawer Footer / Checkout Actions */}
               {cart.length > 0 && (
-                <div className="border-t border-gray-200/80 bg-gray-50/90 p-3.5 sm:p-5 pb-[max(1rem,env(safe-area-inset-bottom))] dark:border-emerald-950/80 dark:bg-[#05130b]">
+                <div className="shrink-0 border-t border-gray-200/80 bg-gray-50/95 p-3.5 sm:p-5 pb-[max(1rem,env(safe-area-inset-bottom))] shadow-[0_-8px_25px_rgba(0,0,0,0.08)] backdrop-blur-md dark:border-emerald-950/80 dark:bg-[#05130b]/95">
                   {/* Promo Code Input Box */}
-                  <div className="mb-3.5">
+                  <div className="mb-2.5 sm:mb-3.5">
                     {discountRate > 0 ? (
                       <div className="flex items-center justify-between rounded-xl sm:rounded-2xl border border-emerald-500/40 bg-emerald-50/90 px-3 py-2 sm:px-3.5 sm:py-2.5 text-xs text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300">
                         <div className="flex items-center gap-2 min-w-0">
@@ -349,11 +353,11 @@ export const CartDrawer: React.FC = () => {
                           value={inputCoupon}
                           onChange={(e) => setInputCoupon(e.target.value)}
                           placeholder="Código (FRESH20)"
-                          className="flex-1 min-w-0 rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs font-semibold uppercase tracking-wider text-gray-800 placeholder-gray-400 focus:border-emerald-500 focus:outline-none dark:border-emerald-950/80 dark:bg-[#071910] dark:text-white"
+                          className="flex-1 min-w-0 rounded-xl border border-gray-200 bg-white px-3 py-1.5 sm:py-2 text-xs font-semibold uppercase tracking-wider text-gray-800 placeholder-gray-400 focus:border-emerald-500 focus:outline-none dark:border-emerald-950/80 dark:bg-[#071910] dark:text-white"
                         />
                         <button
                           type="submit"
-                          className="shrink-0 rounded-xl bg-emerald-600 px-4 py-2 text-xs font-black text-white shadow-xs transition hover:bg-emerald-700"
+                          className="shrink-0 rounded-xl bg-emerald-600 px-3.5 py-1.5 sm:py-2 text-xs font-black text-white shadow-xs transition hover:bg-emerald-700"
                         >
                           {isEs ? "Aplicar" : "Apply"}
                         </button>
@@ -404,23 +408,26 @@ export const CartDrawer: React.FC = () => {
                   </div>
 
                   {/* Checkout & WhatsApp Order Actions */}
-                  <div className="mt-4 flex flex-col gap-2.5">
+                  <div className="mt-3 sm:mt-4 flex flex-col gap-2">
                     <Link
                       href="/grocery/checkout"
                       onClick={() => setIsCartOpen(false)}
-                      className="group flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-emerald-600 to-green-600 py-3.5 text-sm font-black text-white shadow-lg shadow-emerald-600/30 transition-all duration-200 hover:shadow-xl hover:shadow-emerald-600/40 active:scale-98"
+                      className="group flex w-full items-center justify-between rounded-2xl bg-gradient-to-r from-emerald-600 via-green-600 to-emerald-700 px-5 py-3 sm:py-3.5 text-sm font-black text-white shadow-lg shadow-emerald-600/30 transition-all duration-200 hover:shadow-xl hover:shadow-emerald-600/40 active:scale-98"
                     >
-                      <span>{t("proceedToCheckout")}</span>
-                      <span className="transition-transform duration-200 group-hover:translate-x-1">
-                        ➔
-                      </span>
+                      <span className="font-extrabold">{t("proceedToCheckout")}</span>
+                      <div className="flex items-center gap-1.5 font-outfit text-base">
+                        <span>{formatPrice(total, locale)}</span>
+                        <span className="transition-transform duration-200 group-hover:translate-x-1">
+                          ➔
+                        </span>
+                      </div>
                     </Link>
 
                     <a
                       href={getWhatsAppOrderUrl()}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex w-full items-center justify-center gap-2 rounded-2xl border border-emerald-500/30 bg-[#25D366]/10 py-3 text-xs font-bold text-[#128C7E] transition-all duration-200 hover:bg-[#25D366] hover:text-white dark:bg-[#25D366]/20 dark:text-emerald-300 dark:hover:bg-[#25D366] dark:hover:text-white"
+                      className="flex w-full items-center justify-center gap-2 rounded-2xl border border-emerald-500/30 bg-[#25D366]/10 py-2.5 text-xs font-bold text-[#128C7E] transition-all duration-200 hover:bg-[#25D366] hover:text-white dark:bg-[#25D366]/20 dark:text-emerald-300 dark:hover:bg-[#25D366] dark:hover:text-white"
                     >
                       <WhatsAppIcon className="h-4 w-4 fill-current" />
                       <span>{t("orderViaWhatsApp")}</span>
