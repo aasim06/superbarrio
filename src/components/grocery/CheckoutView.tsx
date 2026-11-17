@@ -32,6 +32,11 @@ import {
 import { useLocale, useTranslations } from "next-intl";
 import { useCustomerAuth } from "@/context/CustomerAuthContext";
 import { formatPrice } from "@/utils/currency";
+import {
+  formatClientToCompanyOrderMessage,
+  getClientToCompanyWhatsAppUrl,
+  SUPERBARRIO_WHATSAPP_NUMBER,
+} from "@/utils/whatsappMessages";
 import { motion, AnimatePresence, useReducedMotion, type Variants } from "framer-motion";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -510,6 +515,25 @@ export const CheckoutView: React.FC = () => {
       }
     }
 
+    // Store formatted WhatsApp message for client & company
+    const clientOrderMsg = formatClientToCompanyOrderMessage(newOrder, locale);
+    const clientWhatsAppUrl = getClientToCompanyWhatsAppUrl(newOrder, SUPERBARRIO_WHATSAPP_NUMBER, locale);
+    try {
+      localStorage.setItem("tailgrocery_last_order_msg", clientOrderMsg);
+      localStorage.setItem("tailgrocery_last_order_wa_url", clientWhatsAppUrl);
+    } catch {
+      // ignore
+    }
+
+    // Auto-open WhatsApp with the client's pre-filled cart & address message
+    try {
+      if (typeof window !== "undefined") {
+        window.open(clientWhatsAppUrl, "_blank");
+      }
+    } catch {
+      // ignore popup blocker
+    }
+
     setIsSuccess(true);
     setTimeout(() => {
       clearCart();
@@ -518,26 +542,25 @@ export const CheckoutView: React.FC = () => {
   };
 
   const getWhatsAppOrderUrl = () => {
-    let msg = `*Nuevo Pedido en SuperBarrio España*\n\n`;
-    cart.forEach((item, index) => {
-      const loc = getProductLocalized(item, locale);
-      msg += `${index + 1}. *${loc.name}* (${loc.unit}) x ${item.quantity} = ${formatPrice(item.price * item.quantity, locale)}\n`;
-    });
-    msg += `\n*Subtotal:* ${formatPrice(subtotal, locale)}`;
-    if (discountAmount > 0) {
-      msg += `\n*Descuento (${promoCode}):* -${formatPrice(discountAmount, locale)}`;
-    }
-    msg += `\n*Gastos de Envío:* ${deliveryFee === 0 ? "GRATIS" : formatPrice(deliveryFee, locale)}`;
-    msg += `\n*Total a Pagar:* ${formatPrice(total, locale)}\n\n`;
-    if (formData.fullName) msg += `*Cliente:* ${formData.fullName}\n`;
-    if (formData.phone) msg += `*Teléfono:* +34 ${formData.phone}\n`;
-    if (formData.street) {
-      msg += `*Dirección:* ${formData.street}${formData.apartment ? `, ${formData.apartment}` : ""}, ${formData.postalCode} ${formData.city} (${formData.province})\n`;
-    }
-    msg += `*Entrega:* ${isEs ? "Express (25-35 min)" : "Express (25-35 mins)"}\n`;
-    msg += `\n¡Por favor confirmen la disponibilidad y hora de entrega! Muchas gracias.`;
-
-    return `https://wa.me/34632250561?text=${encodeURIComponent(msg)}`;
+    const dummyOrder: CustomerOrder = {
+      orderId: `ES-${Math.floor(100000 + Math.random() * 900000)}`,
+      customerName: formData.fullName || user?.displayName || "Cliente",
+      phone: formData.phone ? `+34 ${formData.phone}` : "+34 632 250 561",
+      address: `${formData.street || ""}${formData.apartment ? `, ${formData.apartment}` : ""}, ${formData.postalCode || ""} ${formData.city || ""} (${formData.province || ""})`.trim() || "España",
+      city: formData.city || "Madrid",
+      notes: formData.notes,
+      deliverySlot: isEs ? "Entrega Express (25-35 min)" : "Express Delivery (25-35 mins)",
+      paymentMethod,
+      items: cart,
+      subtotal,
+      discount: discountAmount,
+      promoCode: promoCode || undefined,
+      deliveryFee,
+      total,
+      status: "placed",
+      createdAt: new Date().toISOString(),
+    };
+    return getClientToCompanyWhatsAppUrl(dummyOrder, SUPERBARRIO_WHATSAPP_NUMBER, locale);
   };
 
   // If still hydrating from localStorage, show shimmering Skeleton Loader

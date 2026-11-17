@@ -210,3 +210,30 @@ export async function disconnect(logout = false): Promise<void> {
   });
 }
 
+/** Send a text message to a given phone number (international format e.g. 34632250561 or +34632250561). */
+export async function sendWhatsAppMessage(
+  toPhone: string,
+  text: string
+): Promise<{ success: boolean; error?: string }> {
+  if (!sock || currentState.status !== "connected") {
+    return { success: false, error: "WhatsApp socket is not connected" };
+  }
+
+  try {
+    const cleanNumber = toPhone.replace(/^00/, "").replace(/\D/g, "");
+    if (!cleanNumber) {
+      return { success: false, error: "Invalid phone number" };
+    }
+    const jid = `${cleanNumber}@s.whatsapp.net`;
+    await sock.sendMessage(jid, { text });
+    return { success: true };
+  } catch (err) {
+    console.error("sendWhatsAppMessage error:", err);
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : "Failed to send WhatsApp message",
+    };
+  }
+}
+
+

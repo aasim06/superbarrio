@@ -24,6 +24,12 @@ import { formatPrice } from "@/utils/currency";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { useGroceryCart } from "@/context/GroceryCartContext";
+import {
+  formatClientToCompanyOrderMessage,
+  formatCompanyToClientThanksMessage,
+  getClientToCompanyWhatsAppUrl,
+  SUPERBARRIO_WHATSAPP_NUMBER,
+} from "@/utils/whatsappMessages";
 
 // 60FPS Native Canvas Confetti Burst (Zero external dependencies)
 const ConfettiCanvas: React.FC = () => {
@@ -242,8 +248,11 @@ export const OrderSuccessView: React.FC = () => {
     setTimeout(() => setHasCopied(false), 2500);
   };
 
-  // WhatsApp formatted share link
+  // WhatsApp formatted share link (Client -> Company with all cart items + address)
   const getShareWhatsAppUrl = () => {
+    if (order) {
+      return getClientToCompanyWhatsAppUrl(order, SUPERBARRIO_WHATSAPP_NUMBER, locale);
+    }
     const text = isEs
       ? `¡Hola! Acabo de hacer un pedido de alimentos frescos en SuperBarrio España.\n\n*Nº de Pedido:* #${orderId}\n*Total:* ${formatPrice(total, locale)}\n*Franja de entrega:* ${slot}\n*Dirección:* ${address}\n\n¿Podrían confirmarme la hora aproximada de llegada? ¡Muchas gracias!`
       : `Hi! I just placed a fresh grocery order at SuperBarrio Spain.\n\n*Order ID:* #${orderId}\n*Total:* ${formatPrice(total, locale)}\n*Delivery Slot:* ${slot}\n*Address:* ${address}\n\nCould you please update me on arrival? Thank you!`;
@@ -628,6 +637,45 @@ export const OrderSuccessView: React.FC = () => {
                   <p className="mt-1 text-[11px] text-gray-500">
                     Estado: <span className="font-bold text-emerald-600">Abonado / Confirmado</span>
                   </p>
+                </div>
+              </div>
+
+              {/* 🟢 Two-Way WhatsApp Order & Thanks Confirmation Card */}
+              <div className="rounded-2xl border border-emerald-500/30 bg-emerald-50/70 p-4 sm:p-5 dark:border-emerald-900/50 dark:bg-emerald-950/20">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                  <div className="flex items-start gap-3">
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#25D366] text-white shadow-md shadow-[#25D366]/30">
+                      <WhatsAppIcon className="h-6 w-6 fill-current" />
+                    </div>
+                    <div>
+                      <h4 className="font-outfit text-sm font-black text-gray-900 dark:text-white flex items-center gap-2">
+                        <span>{isEs ? "Notificación WhatsApp en Ambos Sentidos" : "2-Way WhatsApp Notifications"}</span>
+                        <span className="rounded-full bg-emerald-600/10 px-2 py-0.5 text-[10px] font-bold text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300">
+                          {isEs ? "Automático" : "Automated"}
+                        </span>
+                      </h4>
+                      <div className="mt-1.5 space-y-1 text-xs text-gray-600 dark:text-gray-300">
+                        <p className="flex items-start gap-1.5">
+                          <span className="text-emerald-600 font-bold">1. Cliente ➔ Empresa:</span>
+                          <span>{isEs ? `Lista completa con ${items.length} productos, nombre y dirección preparada para SuperBarrio (+34 632 250 561).` : `Full list of ${items.length} items, name and address prepared for SuperBarrio.`}</span>
+                        </p>
+                        <p className="flex items-start gap-1.5">
+                          <span className="text-emerald-600 font-bold">2. Empresa ➔ Cliente:</span>
+                          <span>{isEs ? "Mensaje de agradecimiento y confirmación: «¡Gracias por tu pedido! Tus alimentos frescos se están preparando en 25-35 min»." : "Thank-you & confirmation message: 'Thanks for your order! Your fresh groceries are being prepared in 25-35 mins'."}</span>
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <a
+                    href={getShareWhatsAppUrl()}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full sm:w-auto shrink-0 inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#25D366] to-[#1ebe5b] px-5 py-3 text-xs font-black text-white shadow-lg shadow-[#25D366]/30 transition hover:scale-105 active:scale-95"
+                  >
+                    <WhatsAppIcon className="h-4 w-4 fill-current" />
+                    <span>{isEs ? "Enviar Pedido a SuperBarrio" : "Send Order to SuperBarrio"}</span>
+                  </a>
                 </div>
               </div>
 

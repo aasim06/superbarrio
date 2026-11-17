@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getOrders, createOrder } from "@/lib/firebase/db";
 import { CreateOrderSchema } from "@/lib/validations/grocery";
+import { sendWhatsAppMessage } from "@/lib/whatsapp";
+import {
+  formatClientToCompanyOrderMessage,
+  formatCompanyToClientThanksMessage,
+  SUPERBARRIO_WHATSAPP_NUMBER,
+} from "@/utils/whatsappMessages";
 
 export async function GET() {
   try {
@@ -26,6 +32,25 @@ export async function POST(request: NextRequest) {
 
     // SERVER-ONLY CALCULATION & VERIFICATION
     const order = await createOrder(parseResult.data);
+
+    // Automated 2-Way WhatsApp Notifications (Background)
+    try {
+      // 1. Company -> Client ("¡Gracias por tu pedido!")
+      if (order.phone) {
+        await sendWhatsAppMessage(
+          order.phone,
+          formatCompanyToClientThanksMessage(order, "es")
+        );
+      }
+      // 2. Client -> Company (All items + Address to SuperBarrio)
+      await sendWhatsAppMessage(
+        SUPERBARRIO_WHATSAPP_NUMBER,
+        formatClientToCompanyOrderMessage(order, "es")
+      );
+    } catch (waErr) {
+      console.warn("Background WhatsApp dispatch note:", waErr);
+    }
+
     return NextResponse.json({ success: true, data: order }, { status: 201 });
   } catch (error: any) {
     console.error("POST /api/orders error:", error);

@@ -5,7 +5,7 @@
  * POST → Control actions (connect / disconnect / logout)
  */
 
-import { connect, disconnect, subscribe, getState } from "@/lib/whatsapp";
+import { connect, disconnect, subscribe, getState, sendWhatsAppMessage } from "@/lib/whatsapp";
 
 // Force dynamic — this route must never be cached
 export const dynamic = "force-dynamic";
@@ -99,6 +99,22 @@ export async function POST(request: Request) {
 
       case "status":
         return Response.json({ ok: true, state: getState() });
+
+      case "send": {
+        const to = body?.to as string;
+        const message = body?.message as string;
+        if (!to || !message) {
+          return Response.json(
+            { ok: false, error: "Missing 'to' or 'message'" },
+            { status: 400 },
+          );
+        }
+        const result = await sendWhatsAppMessage(to, message);
+        return Response.json({
+          ok: result.success,
+          error: result.error,
+        });
+      }
 
       default:
         return Response.json(
