@@ -144,12 +144,19 @@ export const TestimonialsSection: React.FC = () => {
             {/* Customer Profile & Favorite Item */}
             <div className="mt-6 border-t border-gray-100 pt-4 dark:border-emerald-950/60">
               <div className="flex items-center gap-3">
-                <img
-                  src={item.avatar}
-                  alt={item.name}
-                  className="h-11 w-11 rounded-2xl object-cover ring-2 ring-emerald-500/30"
-                  loading="lazy"
-                />
+                <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-full ring-2 ring-emerald-500/40 shadow-sm bg-gray-100 dark:bg-emerald-950">
+                  <img
+                    src={item.avatar}
+                    alt={item.name}
+                    className="h-full w-full rounded-full object-cover aspect-square"
+                    loading="lazy"
+                    onError={(e) => {
+                      (e.currentTarget as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                        item.name
+                      )}&background=10b981&color=fff&bold=true`;
+                    }}
+                  />
+                </div>
                 <div>
                   <h4 className="font-outfit text-sm font-extrabold text-gray-900 dark:text-white">
                     {item.name}
