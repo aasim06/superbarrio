@@ -9,15 +9,15 @@ const MAX_CACHE_SIZE = 120;
 
 /**
  * SuperBarrio Edge-TTS Route
- * Provides natural Pakistani Urdu voice synthesis using Microsoft Edge-TTS (100% Free)
- * Voices: ur-PK-AsadNeural (Male) / ur-PK-UzmaNeural (Female)
+ * Provides natural Spanish (Spain) voice synthesis using Microsoft Edge-TTS (100% Free)
+ * Voices: es-ES-ElviraNeural (Female - Spain) / es-ES-AlvaroNeural (Male - Spain)
  */
 export async function POST(req: NextRequest) {
   try {
     const {
       text,
-      voice = "ur-PK-AsadNeural",
-      lang = "ur-PK",
+      voice = "es-ES-ElviraNeural",
+      lang = "es-ES",
     } = await req.json();
 
     if (!text || typeof text !== "string" || !text.trim()) {
@@ -27,10 +27,14 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Clean text for speech: strip emojis, symbols, markdown markers
+    // Clean text for speech: strip markdown, currency symbols to natural words, emojis
     const cleanText = text
-      .replace(/[*_#`~>•]/g, "")
+      .replace(/\*\*(.*?)\*\*/g, "$1")
+      .replace(/\*(.*?)\*/g, "$1")
+      .replace(/[_#`~>•]/g, "")
       .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, "")
+      .replace(/(\d+)[,.](\d{2})\s*€/g, "$1 euros con $2 céntimos")
+      .replace(/(\d+)\s*€/g, "$1 euros")
       .replace(/\s+/g, " ")
       .trim();
 
@@ -41,8 +45,8 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const selectedVoice = voice || "ur-PK-AsadNeural";
-    const selectedLang = lang || "ur-PK";
+    const selectedVoice = voice || "es-ES-ElviraNeural";
+    const selectedLang = lang || "es-ES";
     const cacheKey = `${selectedVoice}_${selectedLang}_${cleanText}`;
 
     // Instant return if previously synthesized
@@ -59,14 +63,15 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    const tts = new EdgeTTS({
-      voice: selectedVoice,
-      lang: selectedLang,
-      outputFormat: "audio-24khz-48kbitrate-mono-mp3",
-    });
-
     const chunks: Buffer[] = [];
-    try {
+
+    async function streamFromEdge(): Promise<Buffer[]> {
+      const tts = new EdgeTTS({
+        voice: selectedVoice,
+        lang: selectedLang,
+        outputFormat: "audio-24khz-48kbitrate-mono-mp3",
+      });
+      const collected: Buffer[] = [];
       for await (const chunk of tts.streamAudio(cleanText)) {
         if (
           chunk &&
@@ -74,11 +79,23 @@ export async function POST(req: NextRequest) {
             chunk instanceof Uint8Array ||
             (chunk as any).byteLength !== undefined)
         ) {
-          chunks.push(Buffer.from(chunk as any));
+          collected.push(Buffer.from(chunk as any));
         }
       }
+      return collected;
+    }
+
+    try {
+      const result = await streamFromEdge();
+      chunks.push(...result);
     } catch (streamErr) {
-      console.error("[TTS] streamAudio error:", streamErr);
+      console.warn("[TTS] Attempt 1 failed, retrying once...", streamErr);
+      try {
+        const retryResult = await streamFromEdge();
+        chunks.push(...retryResult);
+      } catch (retryErr) {
+        console.error("[TTS] StreamAudio retry error:", retryErr);
+      }
     }
 
     if (chunks.length === 0) {
@@ -106,14 +123,11 @@ export async function POST(req: NextRequest) {
         "X-TTS-Cache": "MISS",
       },
     });
-  } catch (error) {
-    console.error("[Edge-TTS API Error]:", error);
+  } catch (err: any) {
+    console.error("[TTS API Route Error]:", err);
     return NextResponse.json(
-      {
-        error: error instanceof Error ? error.message : "TTS Generation failed",
-      },
+      { error: err?.message || "Internal TTS server error" },
       { status: 500 },
     );
   }
 }
-

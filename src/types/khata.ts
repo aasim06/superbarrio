@@ -26,9 +26,9 @@ export interface KhataEntry {
   facturaNumber?: string;
   description: string;
   items?: KhataItemBreakdown[];
-  debit: number; // Total factura (€)
-  credit: number; // Pago recibido / wasooli (€)
-  balance: number; // Saldo pendiente (€)
+  debit: number; // Invoice total (€)
+  credit: number; // Payment received / collection (€)
+  balance: number; // Outstanding balance (€)
   paymentMode?: "cash" | "bank_transfer" | "bizum" | "card" | "domiciliacion";
   notes?: string;
 }

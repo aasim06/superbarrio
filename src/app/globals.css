@@ -1358,5 +1358,19 @@ nav,
   will-change: transform;
 }
 
+/* Hide header navbar when any modal or dialog is open */
+body.modal-open header,
+body:has(.modal-backdrop-active) header {
+  opacity: 0 !important;
+  pointer-events: none !important;
+  visibility: hidden !important;
+  transform: translateY(-100%) !important;
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease, visibility 0.25s ease !important;
+}
+
+header {
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease, visibility 0.25s ease;
+}
+
 
 

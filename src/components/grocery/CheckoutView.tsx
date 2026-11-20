@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { Link, useRouter } from "@/i18n/navigation";
 import { useGroceryCart } from "@/context/GroceryCartContext";
 import {
@@ -8,6 +8,7 @@ import {
   TOP_SPAIN_CITIES,
 } from "@/data/spainCheckoutData";
 import { CustomerOrder, PaymentMethod } from "@/types/grocery";
+import { KhataCustomer } from "@/types/khata";
 import { getProductLocalized } from "@/data/groceryData";
 import { recordKhataPurchase, getKhataCustomers } from "@/data/khataStore";
 import {
@@ -41,6 +42,7 @@ import { motion, AnimatePresence, useReducedMotion, type Variants } from "framer
 import { toast } from "sonner";
 import { z } from "zod";
 import CustomSelect from "../ui/dropdown/CustomSelect";
+import Select from "@/components/form/Select";
 
 // Zod Validation Schema for Spain Checkout Form
 const spainCheckoutSchema = z.object({
@@ -247,6 +249,53 @@ export const CheckoutView: React.FC = () => {
 
   // Payment Method
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("card");
+
+  // B2B Khata Customers (Hotels & Clubs) State
+  const [availableKhataClients, setAvailableKhataClients] = useState<KhataCustomer[]>([]);
+  const [selectedKhataClientId, setSelectedKhataClientId] = useState<string>("");
+
+  useEffect(() => {
+    try {
+      const list = getKhataCustomers();
+      setAvailableKhataClients(list);
+      if (list.length > 0) {
+        setSelectedKhataClientId(list[0].id);
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  const selectedKhataClient = useMemo(() => {
+    return availableKhataClients.find((c) => c.id === selectedKhataClientId);
+  }, [availableKhataClients, selectedKhataClientId]);
+
+  const khataClientSelectOptions = useMemo(() => {
+    return availableKhataClients.map((client) => {
+      const available = Math.max(0, client.creditLimit - client.currentBalance);
+      return {
+        value: client.id,
+        label: `${client.commercialName} (${client.contactPerson})`,
+        sublabel: `Available Credit: €${available.toFixed(2)}`,
+      };
+    });
+  }, [availableKhataClients]);
+
+  const handleSelectKhataClient = (id: string) => {
+    setSelectedKhataClientId(id);
+    const client = availableKhataClients.find((c) => c.id === id);
+    if (client) {
+      setFormData((prev) => ({
+        ...prev,
+        fullName: client.commercialName,
+        phone: client.phone.replace("+34", "").trim(),
+        street: client.address,
+        city: client.city || "Valencia",
+        province: client.province || "Valencia",
+        notes: `B2B Order - Chef/Contact: ${client.contactPerson}`,
+      }));
+    }
+  };
 
   // Promo code in checkout
   const [couponInput, setCouponInput] = useState("");
@@ -484,15 +533,16 @@ export const CheckoutView: React.FC = () => {
     // If customer selected Monthly Khata, record directly into their ledger
     if (paymentMethod === "khata") {
       try {
-        const khataCustomers = getKhataCustomers();
-        const matched =
-          khataCustomers.find(
+        const client =
+          selectedKhataClient ||
+          availableKhataClients.find(
             (c) =>
               c.phone.replace(/\D/g, "").includes(formData.phone.replace(/\D/g, "")) ||
               (c.name || c.commercialName || "").toLowerCase().includes(formData.fullName.toLowerCase()),
-          ) || khataCustomers[0];
+          ) ||
+          availableKhataClients[0];
 
-        if (matched) {
+        if (client) {
           const breakdown = cart.map((it) => ({
             id: it.id,
             name: it.nameEn || it.name,
@@ -502,12 +552,12 @@ export const CheckoutView: React.FC = () => {
             total: Number((it.price * it.quantity).toFixed(2)),
           }));
           recordKhataPurchase(
-            matched.id,
+            client.id,
             breakdown,
             total,
-            `Online Order #${newOrder.orderId}`,
+            `Online B2B Order #${newOrder.orderId}`,
             newOrder.orderId,
-            `Delivery to ${formData.city}`,
+            `Delivery to ${client.address} (Chef/Contact: ${client.contactPerson})`,
           );
         }
       } catch (err) {
@@ -1415,6 +1465,69 @@ export const CheckoutView: React.FC = () => {
                     )}
                   </div>
                 </motion.div>
+
+                {/* B2B Khata Account Selection Box */}
+                {paymentMethod === "khata" && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    className="rounded-2xl border border-purple-200 bg-purple-50/60 p-4 dark:border-purple-900/60 dark:bg-purple-950/30 text-xs mt-2"
+                  >
+                    <div className="flex items-center gap-2 mb-2.5 font-bold text-purple-900 dark:text-purple-300">
+                      <LeafIcon className="h-4 w-4" />
+                      <span>Select Corporate Client Account (B2B Commercial Credit)</span>
+                    </div>
+
+                    <label className="block text-[11px] font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
+                      Client / Business Account:
+                    </label>
+                    <div className="w-full">
+                      <Select
+                        options={khataClientSelectOptions}
+                        value={selectedKhataClientId}
+                        onChange={handleSelectKhataClient}
+                        placeholder="Select Client Account"
+                      />
+                    </div>
+
+                    {selectedKhataClient && (
+                      <div className="mt-3.5 space-y-1.5 pt-2.5 border-t border-purple-200/80 dark:border-purple-900/50">
+                        <div className="flex justify-between text-[11px]">
+                          <span className="text-gray-600 dark:text-gray-400">Total Credit Line:</span>
+                          <span className="font-mono font-bold text-gray-800 dark:text-gray-200">
+                            €{selectedKhataClient.creditLimit.toFixed(2)}
+                          </span>
+                        </div>
+                        <div className="flex justify-between text-[11px]">
+                          <span className="text-gray-600 dark:text-gray-400">Outstanding Balance:</span>
+                          <span className="font-mono font-bold text-rose-600">
+                            €{selectedKhataClient.currentBalance.toFixed(2)}
+                          </span>
+                        </div>
+                        <div className="flex justify-between text-[11px]">
+                          <span className="text-gray-600 dark:text-gray-400">Available Credit:</span>
+                          <span className="font-mono font-black text-emerald-600">
+                            €{Math.max(0, selectedKhataClient.creditLimit - selectedKhataClient.currentBalance).toFixed(2)}
+                          </span>
+                        </div>
+
+                        {selectedKhataClient.status === "blocked" ? (
+                          <div className="mt-2 rounded-xl bg-rose-50 border border-rose-200 p-2.5 text-rose-700 text-[11px] font-bold dark:bg-rose-950/50 dark:border-rose-900 dark:text-rose-300">
+                            <strong>Account Blocked:</strong> This corporate account is currently frozen. Please contact store management to clear pending settlements.
+                          </div>
+                        ) : total > (selectedKhataClient.creditLimit - selectedKhataClient.currentBalance) ? (
+                          <div className="mt-2 rounded-xl bg-amber-50 border border-amber-200 p-2.5 text-amber-800 text-[11px] font-semibold dark:bg-amber-950/50 dark:border-amber-900 dark:text-amber-300">
+                            <strong>Credit Limit Warning:</strong> This order (€{total.toFixed(2)}) exceeds your available credit line. Order requires store manager pre-approval.
+                          </div>
+                        ) : (
+                          <div className="mt-1.5 rounded-lg bg-emerald-50/80 border border-emerald-200/60 p-2 text-[11px] text-emerald-800 dark:bg-emerald-950/40 dark:border-emerald-900 dark:text-emerald-300 font-medium">
+                            Within Credit Limit: Order approved for direct delivery with delivery note and slip.
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </motion.div>
+                )}
               </div>
             </motion.div>
 

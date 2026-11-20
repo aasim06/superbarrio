@@ -5,10 +5,9 @@ import Image from "next/image";
 import { GroceryProduct } from "@/types/grocery";
 import { getProductLocalized } from "@/data/groceryData";
 import { useGroceryCart } from "@/context/GroceryCartContext";
-import { LeafIcon, HeartIcon, EyeIcon, StarIcon } from "@/icons";
+import { HeartIcon, EyeIcon, StarIcon } from "@/icons";
 import { useLocale, useTranslations } from "next-intl";
 import { formatPrice } from "@/utils/currency";
-import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { triggerHaptic } from "@/utils/haptics";
 
@@ -37,7 +36,6 @@ export const ProductCard: React.FC<ProductCardProps> = React.memo(function Produ
 
   const imageRef = useRef<HTMLDivElement>(null);
   const [imageError, setImageError] = useState(false);
-  const [imageLoaded, setImageLoaded] = useState(false);
 
   const isEs = locale === "es";
   const localized = getProductLocalized(product, locale);
@@ -83,10 +81,8 @@ export const ProductCard: React.FC<ProductCardProps> = React.memo(function Produ
   };
 
   return (
-    <motion.div
+    <div
       onClick={handleCardClick}
-      whileHover={{ y: -6 }}
-      transition={{ duration: 0.25, ease: "easeOut" }}
       role="button"
       tabIndex={0}
       aria-label={
@@ -100,7 +96,7 @@ export const ProductCard: React.FC<ProductCardProps> = React.memo(function Produ
           handleCardClick();
         }
       }}
-      className="group relative flex h-full flex-col justify-between rounded-2xl sm:rounded-3xl border border-gray-200/80 bg-white p-2.5 sm:p-4 shadow-sm transition-[border-color,box-shadow] duration-200 hover:border-emerald-300 hover:shadow-[0_16px_32px_-8px_rgba(22,163,74,0.18)] dark:border-emerald-950/80 dark:bg-[#071d12]/70 dark:hover:border-emerald-700/80 dark:hover:shadow-[0_16px_32px_-8px_rgba(34,197,94,0.15)] cursor-pointer select-none overflow-hidden focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:outline-none"
+      className="group relative flex h-full flex-col justify-between rounded-2xl sm:rounded-3xl border border-gray-200/80 bg-white p-2.5 sm:p-4 shadow-xs transition-all duration-200 hover:-translate-y-1.5 hover:border-emerald-300 hover:shadow-[0_16px_32px_-8px_rgba(22,163,74,0.18)] dark:border-emerald-950/80 dark:bg-[#071d12]/70 dark:hover:border-emerald-700/80 dark:hover:shadow-[0_16px_32px_-8px_rgba(34,197,94,0.15)] cursor-pointer select-none overflow-hidden focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:outline-none"
     >
       {/* High-Performance Pure CSS Ambient Glow on Hover (Zero Re-renders) */}
       <div
@@ -108,13 +104,8 @@ export const ProductCard: React.FC<ProductCardProps> = React.memo(function Produ
       />
 
       <div className="relative z-10 flex flex-1 flex-col justify-between">
-        {/* Product Visual Container with Skeleton Shimmer (aspect-square keeps all cards consistent) */}
-        <div ref={imageRef} className="relative flex aspect-square w-full items-center justify-center overflow-hidden rounded-xl sm:rounded-2xl bg-gray-50/80 dark:bg-gray-800/60">
-          {/* Skeleton Shimmer Loader — disappears completely when image is loaded */}
-          {!imageLoaded && !imageError && (
-            <div className="absolute inset-0 animate-pulse bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 dark:from-emerald-950/40 dark:via-gray-800 dark:to-emerald-950/40" />
-          )}
-
+        {/* Product Visual Container with Static Light Background for Instant Zero-Jank Loading */}
+        <div ref={imageRef} className="relative flex aspect-square w-full items-center justify-center overflow-hidden rounded-xl sm:rounded-2xl bg-gray-100/90 dark:bg-emerald-950/40">
           {imageError ? (
             /* Inline SVG fallback — never shows broken icon box */
             <div className="flex h-full w-full items-center justify-center bg-gray-100 dark:bg-gray-800">
@@ -130,48 +121,37 @@ export const ProductCard: React.FC<ProductCardProps> = React.memo(function Produ
               alt={localized.name}
               fill
               sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 20vw"
-              className="object-cover transition-all duration-500 ease-out group-hover:scale-[1.08]"
+              className="object-cover transition-transform duration-300 ease-out group-hover:scale-[1.07]"
               loading="lazy"
-              onLoad={() => setImageLoaded(true)}
+              decoding="async"
               onError={() => setImageError(true)}
             />
           )}
 
-          {/* Offer / Category Badge with Subtle Pulsing glow */}
+          {/* Offer / Category Badge (Static, crisp, GPU-friendly) */}
           {localized.badge && (
             <div className="absolute start-1.5 top-1.5 sm:start-2.5 sm:top-2.5 z-10 max-w-[65%]">
-              <span className="block truncate rounded-full bg-gradient-to-r from-amber-500 to-orange-500 px-2 py-0.5 text-[9px] sm:text-[10px] font-black tracking-wide text-white shadow-xs animate-[pulse_2.5s_infinite]">
+              <span className="block truncate rounded-full bg-gradient-to-r from-emerald-600 to-teal-600 px-2 py-0.5 text-[9px] sm:text-[10px] font-black tracking-wide text-white shadow-xs">
                 {localized.badge}
               </span>
             </div>
           )}
 
-          {/* Top-Right Heart Wishlist Button with Heart Burst Animation */}
-          <motion.button
-            whileTap={{ scale: 0.8 }}
+          {/* Top-Right Heart Wishlist Button */}
+          <button
+            type="button"
             onClick={handleWishlistClick}
-            className="absolute end-1.5 top-1.5 sm:end-2.5 sm:top-2.5 z-20 flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-full bg-white/90 shadow-sm backdrop-blur-md transition-all hover:scale-110 active:scale-90 dark:bg-gray-900/90"
+            className="absolute end-1.5 top-1.5 sm:end-2.5 sm:top-2.5 z-20 flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-full bg-white/90 shadow-sm backdrop-blur-md transition-transform hover:scale-110 active:scale-90 dark:bg-gray-900/90"
             title="Add to Wishlist"
           >
-            <motion.span
-              key={wishlisted ? "heart-active" : "heart-idle"}
-              animate={
+            <HeartIcon
+              className={`h-3.5 w-3.5 sm:h-4 sm:w-4 transition-colors ${
                 wishlisted
-                  ? { scale: [1, 1.3, 0.9, 1.15, 1] }
-                  : { scale: 1 }
-              }
-              transition={{ duration: 0.35 }}
-              className="flex items-center justify-center select-none"
-            >
-              <HeartIcon
-                className={`h-3.5 w-3.5 sm:h-4 sm:w-4 transition-colors ${
-                  wishlisted
-                    ? "fill-rose-500 text-rose-500"
-                    : "text-gray-400 dark:text-gray-500 hover:text-rose-500"
-                }`}
-              />
-            </motion.span>
-          </motion.button>
+                  ? "fill-rose-500 text-rose-500"
+                  : "text-gray-400 dark:text-gray-500 hover:text-rose-500"
+              }`}
+            />
+          </button>
 
           {/* Quick View Hover Eye Overlay */}
           <div className="pointer-events-none absolute inset-0 z-10 hidden sm:flex items-center justify-center bg-black/20 opacity-0 backdrop-blur-[1px] transition-opacity duration-200 group-hover:opacity-100">
@@ -220,67 +200,47 @@ export const ProductCard: React.FC<ProductCardProps> = React.memo(function Produ
           )}
         </div>
 
-        {/* Stepper with Smooth Expand/Collapse Transition */}
+        {/* Stepper / Add Button with Zero-Jank CSS Transitions */}
         <div className="shrink-0" onClick={(e) => e.stopPropagation()}>
-          <AnimatePresence mode="wait">
-            {quantity === 0 ? (
-              <motion.button
-                key="add-btn"
-                layout
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                transition={{ duration: 0.2 }}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.92 }}
-                onClick={handleAdd}
-                className="inline-flex shrink-0 items-center gap-1 rounded-xl border border-emerald-500/60 bg-emerald-50/80 px-1.5 2xsm:px-2 sm:px-3 py-1 sm:py-1.5 text-[10px] 2xsm:text-[11px] sm:text-xs font-black text-emerald-700 shadow-xs transition-colors duration-200 hover:bg-emerald-600 hover:text-white dark:border-emerald-500/80 dark:bg-emerald-950/40 dark:text-emerald-300 dark:hover:bg-emerald-600 dark:hover:text-white whitespace-nowrap"
+          {quantity === 0 ? (
+            <button
+              type="button"
+              onClick={handleAdd}
+              className="inline-flex shrink-0 items-center gap-1 rounded-xl border border-emerald-500/60 bg-emerald-50/80 px-2 sm:px-3 py-1 sm:py-1.5 text-[10px] sm:text-xs font-black text-emerald-700 shadow-xs transition-all duration-150 hover:bg-emerald-600 hover:text-white hover:scale-105 active:scale-95 dark:border-emerald-500/80 dark:bg-emerald-950/40 dark:text-emerald-300 dark:hover:bg-emerald-600 dark:hover:text-white whitespace-nowrap"
+            >
+              <span className="text-xs sm:text-sm font-black">+</span>
+              <span>{t("addToCart")}</span>
+            </button>
+          ) : (
+            <div
+              className="inline-flex items-center rounded-xl bg-gradient-to-r from-emerald-600 to-green-600 text-white shadow-md shadow-emerald-600/30 overflow-hidden"
+            >
+              <button
+                type="button"
+                onClick={handleDecrement}
+                className="flex h-6 w-6 sm:h-7 sm:w-7 items-center justify-center text-xs font-black hover:bg-emerald-700/60 active:scale-90 transition-colors"
+                title="Decrease"
               >
-                <span className="text-xs sm:text-sm font-black">+</span>
-                <span>{t("addToCart")}</span>
-              </motion.button>
-            ) : (
-              <motion.div
-                key="stepper"
-                layout
-                initial={{ opacity: 0, scale: 0.85 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.85 }}
-                transition={{ type: "spring", stiffness: 500, damping: 28 }}
-                className="inline-flex items-center rounded-xl bg-gradient-to-r from-emerald-600 to-green-600 text-white shadow-md shadow-emerald-600/30 overflow-hidden"
+                -
+              </button>
+
+              <span className="px-1.5 sm:px-2 text-[11px] sm:text-xs font-black min-w-4 sm:min-w-5 text-center select-none">
+                {quantity}
+              </span>
+
+              <button
+                type="button"
+                onClick={handleIncrement}
+                className="flex h-6 w-6 sm:h-7 sm:w-7 items-center justify-center text-xs font-black hover:bg-emerald-700/60 active:scale-90 transition-colors"
+                title="Increase"
               >
-                <motion.button
-                  whileTap={{ scale: 0.85 }}
-                  onClick={handleDecrement}
-                  className="flex h-6 w-6 sm:h-7 sm:w-7 items-center justify-center text-xs font-black hover:bg-emerald-700/60 transition-colors"
-                  title="Decrease"
-                >
-                  -
-                </motion.button>
-
-                <motion.span
-                  key={quantity}
-                  initial={{ scale: 0.7 }}
-                  animate={{ scale: 1 }}
-                  className="px-1.5 sm:px-2 text-[11px] sm:text-xs font-black min-w-4 sm:min-w-5 text-center"
-                >
-                  {quantity}
-                </motion.span>
-
-                <motion.button
-                  whileTap={{ scale: 0.85 }}
-                  onClick={handleIncrement}
-                  className="flex h-6 w-6 sm:h-7 sm:w-7 items-center justify-center text-xs font-black hover:bg-emerald-700/60 transition-colors"
-                  title="Increase"
-                >
-                  +
-                </motion.button>
-              </motion.div>
-            )}
-          </AnimatePresence>
+                +
+              </button>
+            </div>
+          )}
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 });
 

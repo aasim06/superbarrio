@@ -1,22 +1,18 @@
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
-import KhataManagerView from "@/components/khata/KhataManagerView";
-import { getTranslations } from "next-intl/server";
+import KhataClientsView from "@/components/khata/KhataClientsView";
 
 export async function generateMetadata() {
-  const t = await getTranslations("b2bInvoices");
   return {
-    title: `${t("pageTitle")} | SuperBarrio Admin`,
-    description: t("pageDescription"),
+    title: "B2B Clients Directory | SuperBarrio Admin",
+    description: "Manage B2B hospitality clients, credit limits, and balances.",
   };
 }
 
 export default async function KhataPage() {
-  const t = await getTranslations("b2bInvoices");
-
   return (
     <div>
-      <PageBreadcrumb pageTitle={t("pageTitle")} />
-      <KhataManagerView />
+      <PageBreadcrumb pageTitle="B2B Clients Directory" />
+      <KhataClientsView />
     </div>
   );
 }

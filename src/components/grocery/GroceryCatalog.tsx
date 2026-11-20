@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useRef } from "react";
 import dynamic from "next/dynamic";
 import GroceryHeroBanner from "@/components/grocery/GroceryHeroBanner";
 import CategoryBar from "@/components/grocery/CategoryBar";
@@ -11,11 +11,11 @@ import { GroceryProduct } from "@/types/grocery";
 import { useGroceryCart } from "@/context/GroceryCartContext";
 import { useLocale, useTranslations } from "next-intl";
 import { SearchIcon } from "@/icons";
-import { motion, AnimatePresence, type Variants } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { searchGroceryWithFuzzy } from "@/utils/fuzzySearch";
 import { ProductGridSkeleton } from "@/components/grocery/GrocerySkeleton";
 
-// Dynamically import heavy below-the-fold components (reduce initial JS bundle)
+// Dynamically import heavy below-the-fold components
 const RecentlyViewedSection = dynamic(
   () => import("@/components/grocery/RecentlyViewedSection").then((m) => ({ default: m.RecentlyViewedSection ?? m.default })),
   { ssr: false },
@@ -51,17 +51,33 @@ export const GroceryCatalog: React.FC = () => {
   );
   const [isFiltering, setIsFiltering] = useState(false);
 
+  // ─── High-Performance Infinite Scroll & Virtual Rendering ───
+  // Initial 40 products (8 rows on 5-col desktop, 20 rows on mobile)
+  const INITIAL_BATCH = 40;
+  // Load 30 products per chunk (6 full rows)
+  const BATCH_SIZE = 30;
+  const [visibleCount, setVisibleCount] = useState(INITIAL_BATCH);
+  const loadMoreObserverRef = useRef<HTMLDivElement>(null);
+
+  // Reset pagination on category or filter change
+  useEffect(() => {
+    setVisibleCount(INITIAL_BATCH);
+  }, [activeCategory, searchQuery, sortBy, filterInStockOnly, filterOnSaleOnly]);
+
   // Micro skeleton shimmer feedback when user changes category
   useEffect(() => {
     setIsFiltering(true);
     const timer = setTimeout(() => {
       setIsFiltering(false);
-    }, 160);
+    }, 140);
     return () => clearTimeout(timer);
   }, [activeCategory]);
 
   useEffect(() => {
-    setProducts(getAllProducts());
+    const loaded = getAllProducts();
+    if (loaded !== GROCERY_PRODUCTS) {
+      setProducts(loaded);
+    }
     const handleUpdate = () => {
       setProducts(getAllProducts());
     };
@@ -131,33 +147,63 @@ export const GroceryCatalog: React.FC = () => {
     locale,
   ]);
 
+  const displayedProducts = useMemo(
+    () => filteredProducts.slice(0, visibleCount),
+    [filteredProducts, visibleCount],
+  );
+  const hasMore = visibleCount < filteredProducts.length;
+
+  // Ultra-responsive IntersectionObserver with 1000px lookahead buffer
+  // Pre-fetches the next 30 items BEFORE the user reaches the bottom
+  useEffect(() => {
+    if (!hasMore) return;
+    const target = loadMoreObserverRef.current;
+    if (!target) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setVisibleCount((prev) =>
+            Math.min(prev + BATCH_SIZE, filteredProducts.length),
+          );
+        }
+      },
+      { rootMargin: "1000px" },
+    );
+
+    observer.observe(target);
+    return () => {
+      observer.disconnect();
+    };
+  }, [hasMore, visibleCount, filteredProducts.length]);
+
   return (
     <div className="mx-auto w-full max-w-[1920px] px-3 py-3 sm:px-6 md:py-8 lg:px-8 xl:px-10 pb-20 md:pb-8">
-      {/* Top Hero Promotions with Scroll Reveal */}
+      {/* Top Hero Promotions */}
       <motion.div
-        initial={{ opacity: 0, y: 24 }}
+        initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.55, ease: "easeOut" }}
+        transition={{ duration: 0.4, ease: "easeOut" }}
       >
         <GroceryHeroBanner />
       </motion.div>
 
-      {/* Sticky Category Pills Bar - Placed directly below Hero for instant mobile filtering */}
+      {/* Sticky Category Pills Bar */}
       <motion.div
-        initial={{ opacity: 0, y: 18 }}
+        initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.1, ease: "easeOut" }}
+        transition={{ duration: 0.35, delay: 0.08, ease: "easeOut" }}
         className="mt-2.5 sm:mt-6"
       >
         <CategoryBar />
       </motion.div>
 
-      {/* Infinite Organic Ticker Marquee Strip - Kept on desktop */}
+      {/* Infinite Organic Ticker Marquee Strip */}
       <div className="hidden sm:block">
         <MarqueeStrip />
       </div>
 
-      {/* Products Catalog Grid with Scroll Reveal */}
+      {/* Products Catalog Grid */}
       <div id="grocery-catalog" className="mt-4 sm:mt-8 scroll-mt-32">
         {/* Section Header */}
         <div className="flex items-center justify-between pb-3">
@@ -175,24 +221,19 @@ export const GroceryCatalog: React.FC = () => {
           </div>
 
           {searchQuery && (
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+            <button
+              type="button"
               onClick={() => setSearchQuery("")}
-              className="rounded-xl border border-gray-200 bg-white px-3.5 py-1.5 text-xs font-bold text-gray-700 shadow-xs hover:bg-gray-50 dark:border-emerald-950/80 dark:bg-gray-900 dark:text-gray-300"
+              className="rounded-xl border border-gray-200 bg-white px-3.5 py-1.5 text-xs font-bold text-gray-700 shadow-xs hover:bg-gray-50 active:scale-95 dark:border-emerald-950/80 dark:bg-gray-900 dark:text-gray-300 transition-all"
             >
               {t("clearSearch")}
-            </motion.button>
+            </button>
           )}
         </div>
 
         {/* Typo Auto-Correction Notification Banner */}
         {searchQuery && autoCorrection && (
-          <motion.div
-            initial={{ opacity: 0, y: -6 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-emerald-500/30 bg-emerald-50/80 p-3.5 backdrop-blur-sm dark:border-emerald-700/50 dark:bg-emerald-950/40 shadow-xs"
-          >
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-emerald-500/30 bg-emerald-50/80 p-3.5 backdrop-blur-sm dark:border-emerald-700/50 dark:bg-emerald-950/40 shadow-xs">
             <div className="flex items-center gap-2 text-xs sm:text-sm text-emerald-900 dark:text-emerald-200">
               <span className="text-base">✨</span>
               <span>
@@ -212,7 +253,7 @@ export const GroceryCatalog: React.FC = () => {
               <span>✓</span>
               <span>{isEs ? `Aceptar "${autoCorrection}"` : `Apply "${autoCorrection}"`}</span>
             </button>
-          </motion.div>
+          </div>
         )}
 
         {/* Sort & Filter Bar */}
@@ -220,7 +261,7 @@ export const GroceryCatalog: React.FC = () => {
           <SortFilterBar totalCount={filteredProducts.length} />
         </div>
 
-        {/* Empty State vs Animated Product Grid vs Skeleton */}
+        {/* Empty State vs Optimized Product Grid vs Skeleton */}
         <AnimatePresence mode="wait">
           {isFiltering ? (
             <motion.div
@@ -228,17 +269,17 @@ export const GroceryCatalog: React.FC = () => {
               initial={{ opacity: 0.6 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.15 }}
+              transition={{ duration: 0.12 }}
             >
-              <ProductGridSkeleton count={8} />
+              <ProductGridSkeleton count={10} />
             </motion.div>
           ) : filteredProducts.length === 0 ? (
             <motion.div
               key="empty-state"
-              initial={{ opacity: 0, scale: 0.96 }}
+              initial={{ opacity: 0, scale: 0.98 }}
               animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.96 }}
-              transition={{ duration: 0.3 }}
+              exit={{ opacity: 0, scale: 0.98 }}
+              transition={{ duration: 0.2 }}
               className="flex flex-col items-center justify-center rounded-3xl border border-gray-200/80 bg-white p-12 text-center shadow-sm dark:border-emerald-950/60 dark:bg-[#071d12]/60"
             >
               <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400">
@@ -275,15 +316,53 @@ export const GroceryCatalog: React.FC = () => {
               </button>
             </motion.div>
           ) : (
-            <div
-              className="relative z-10 grid grid-cols-2 gap-2.5 sm:grid-cols-3 sm:gap-4 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-5 2xl:grid-cols-5 gap-y-4 sm:gap-y-6"
-            >
-              {filteredProducts.map((product) => (
-                <div key={product.id}>
-                  <ProductCard product={product} />
+            <>
+              {/* Native Virtualized Grid with CSS content-visibility: auto */}
+              <div
+                className="relative z-10 grid grid-cols-2 gap-2.5 sm:grid-cols-3 sm:gap-4 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-5 2xl:grid-cols-5 gap-y-4 sm:gap-y-6"
+              >
+                {displayedProducts.map((product) => (
+                  <div
+                    key={product.id}
+                    className="[content-visibility:auto] [contain-intrinsic-size:auto_320px]"
+                  >
+                    <ProductCard product={product} />
+                  </div>
+                ))}
+              </div>
+
+              {/* Seamless Infinite Scroll Buffer & Load More Action */}
+              {hasMore && (
+                <div
+                  ref={loadMoreObserverRef}
+                  className="mt-10 flex flex-col items-center justify-center gap-3.5 py-8 select-none"
+                >
+                  <div className="flex items-center gap-2.5 text-xs font-semibold text-gray-500 dark:text-emerald-400">
+                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-emerald-500/30 border-t-emerald-500" />
+                    <span>
+                      {isEs
+                        ? `Mostrando ${displayedProducts.length} de ${filteredProducts.length} productos`
+                        : `Showing ${displayedProducts.length} of ${filteredProducts.length} products`}
+                    </span>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setVisibleCount((prev) =>
+                        Math.min(prev + BATCH_SIZE * 2, filteredProducts.length),
+                      )
+                    }
+                    className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-6 py-2.5 text-xs font-bold text-gray-700 shadow-xs hover:bg-gray-50 hover:border-emerald-300 hover:text-emerald-700 active:scale-95 dark:border-emerald-950 dark:bg-gray-900 dark:text-gray-200 dark:hover:border-emerald-700 dark:hover:text-emerald-300 transition-all"
+                  >
+                    <span>↓</span>
+                    <span>
+                      {isEs ? "Cargar más productos" : "Load more products"}
+                    </span>
+                  </button>
                 </div>
-              ))}
-            </div>
+              )}
+            </>
           )}
         </AnimatePresence>
       </div>
@@ -298,7 +377,7 @@ export const GroceryCatalog: React.FC = () => {
         <TestimonialsSection />
       </div>
 
-      {/* Newsletter Subscription with Animated Gradient Border */}
+      {/* Newsletter Subscription */}
       <div className="min-h-[60px]">
         <NewsletterSection />
       </div>

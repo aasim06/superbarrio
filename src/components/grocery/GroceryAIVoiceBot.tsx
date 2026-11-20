@@ -15,47 +15,33 @@ interface Message {
   timestamp: string;
 }
 
-const URDU_SUGGESTIONS = [
-  "تازہ پھل اور سبزیوں کے ریٹ",
-  "خالص دودھ، مکھن اور ڈیری",
-  "تازہ ساورڈو بریڈ اور بیکری",
-  "تازہ مرغی اور گوشت کی قیمت",
-  "ڈیلیوری ٹائمنگ اور فری شپنگ",
-  "ڈسکاؤنٹ کوڈ اور بچت آفرز",
+// Single Fixed Voice: Elvira (Natural Spain Spanish - Microsoft Edge-TTS)
+const FIXED_VOICE = "es-ES-ElviraNeural";
+const FIXED_LANG = "es-ES";
+
+const SPANISH_SUGGESTIONS = [
+  "Plátanos de Canarias Ecológicos",
+  "Manzanas Royal Gala Crujientes",
+  "Zanahorias de Huerta Lavadas",
+  "Mandarinas Clemenules de Valencia",
+  "Plazos de Entrega Exprés y Envío Gratis",
+  "Cupón de Descuento FRESH20",
 ];
 
-const ENGLISH_SUGGESTIONS = [
-  "Fresh Fruits & Vegetables Prices",
-  "Fresh Milk, Butter & Dairy Items",
-  "Artisan Sourdough & Bakery",
-  "Fresh Boneless Chicken Breast",
-  "Delivery Time & Free Shipping",
-  "Discount Promo Code FRESH20",
-];
-
-const INITIAL_URDU_MESSAGE =
-  "السلام علیکم! سوپر بیریو گروسری میں خوش آمدید۔ میں آپ کا اے آئی وائس اسسٹنٹ ہوں۔ آپ مجھ سے کسی بھی پھل، سبزی، دودھ، بیکری، قیمتوں یا ڈیلیوری کے بارے میں لائیو پوچھ سکتے ہیں یا بول کر بات کر سکتے ہیں۔";
-
-const INITIAL_ENGLISH_MESSAGE =
-  "Welcome to SuperBarrio! I am your AI voice assistant. Feel free to ask about our fresh produce, dairy, bakery, daily prices, or express delivery.";
-
-const isUrduText = (str: string) => /[\u0600-\u06FF]/.test(str);
+const INITIAL_SPANISH_MESSAGE =
+  "¡Hola! Te damos la bienvenida a SuperBarrio, tu supermercado de frutas y verduras frescas de la huerta en España. Soy tu asistente virtual por voz. Puedes preguntarme precios, disponibilidad, ofertas activas o plazos de entrega a domicilio.";
 
 export default function GroceryAIVoiceBot() {
   const pathname = usePathname();
   const { totalItems } = useGroceryCart();
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedLang, setSelectedLang] = useState<"ur-PK" | "en-US">("ur-PK");
-  const [selectedVoice, setSelectedVoice] = useState<
-    "ur-PK-AsadNeural" | "ur-PK-UzmaNeural"
-  >("ur-PK-AsadNeural");
 
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "welcome-1",
       sender: "bot",
-      text: INITIAL_URDU_MESSAGE,
-      timestamp: "Just now",
+      text: INITIAL_SPANISH_MESSAGE,
+      timestamp: "Ahora",
     },
   ]);
   const [inputValue, setInputValue] = useState("");
@@ -64,6 +50,36 @@ export default function GroceryAIVoiceBot() {
   const [isListening, setIsListening] = useState(false);
   const [voiceEnabled, setVoiceEnabled] = useState(true);
   const [hasCookieConsent, setHasCookieConsent] = useState(true);
+
+  // Live product catalog — includes custom products from localStorage
+  const [liveProducts, setLiveProducts] =
+    useState<GroceryProduct[]>(GROCERY_PRODUCTS);
+
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const recognitionRef = useRef<any>(null);
+  const currentAudioRef = useRef<HTMLAudioElement | null>(null);
+  const audioUrlRef = useRef<string | null>(null);
+  const activeTtsAbortRef = useRef<AbortController | null>(null);
+  const autoSendTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const audioUnlockedRef = useRef<boolean>(false);
+
+  // Mobile Web Audio Unlocker (Primes mobile audio policy on first user gesture)
+  const unlockAudioContext = useCallback(() => {
+    if (audioUnlockedRef.current || typeof window === "undefined") return;
+    try {
+      const AudioCtx =
+        window.AudioContext || (window as any).webkitAudioContext;
+      if (AudioCtx) {
+        const ctx = new AudioCtx();
+        if (ctx.state === "suspended") {
+          ctx.resume();
+        }
+      }
+      audioUnlockedRef.current = true;
+    } catch {
+      // ignore
+    }
+  }, []);
 
   useEffect(() => {
     const checkConsent = () => {
@@ -76,63 +92,9 @@ export default function GroceryAIVoiceBot() {
     };
     checkConsent();
     window.addEventListener("sb_cookie_consent_updated", checkConsent);
-    return () => window.removeEventListener("sb_cookie_consent_updated", checkConsent);
+    return () =>
+      window.removeEventListener("sb_cookie_consent_updated", checkConsent);
   }, []);
-
-  // Live product catalog — includes custom products from localStorage
-  const [liveProducts, setLiveProducts] =
-    useState<GroceryProduct[]>(GROCERY_PRODUCTS);
-
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const recognitionRef = useRef<any>(null);
-  const currentAudioRef = useRef<HTMLAudioElement | null>(null);
-  const autoSendTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  // Preloaded audio elements for instant 0ms welcome playback
-  const preloadedWelcomeAudioRef = useRef<{ [key: string]: HTMLAudioElement }>({});
-
-  // Preload welcome audio assets on mount for immediate speech on click
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-
-    try {
-      const asad = new Audio("/audio/welcome-ur-asad.mp3");
-      asad.preload = "auto";
-
-      const uzma = new Audio("/audio/welcome-ur-uzma.mp3");
-      uzma.preload = "auto";
-
-      const aria = new Audio("/audio/welcome-en-aria.mp3");
-      aria.preload = "auto";
-
-      preloadedWelcomeAudioRef.current = {
-        "ur-PK-AsadNeural": asad,
-        "ur-PK-UzmaNeural": uzma,
-        "en-US-AriaNeural": aria,
-      };
-    } catch (e) {
-      console.warn("Failed to preload welcome audio:", e);
-    }
-  }, []);
-
-  // Keep initial welcome message text in sync with language switch if chat has not started
-  useEffect(() => {
-    setMessages((prev) => {
-      if (prev.length <= 1) {
-        return [
-          {
-            id: "welcome-1",
-            sender: "bot",
-            text:
-              selectedLang === "ur-PK"
-                ? INITIAL_URDU_MESSAGE
-                : INITIAL_ENGLISH_MESSAGE,
-            timestamp: "Just now",
-          },
-        ];
-      }
-      return prev;
-    });
-  }, [selectedLang]);
 
   // Load & keep the product catalog in sync (picks up localStorage custom products)
   useEffect(() => {
@@ -156,7 +118,6 @@ export default function GroceryAIVoiceBot() {
 
     loadProducts();
 
-    // Re-sync whenever admin adds/deletes a product
     window.addEventListener("grocery-products-updated", loadProducts);
     return () =>
       window.removeEventListener("grocery-products-updated", loadProducts);
@@ -173,7 +134,38 @@ export default function GroceryAIVoiceBot() {
     }
   }, [messages, isOpen]);
 
-  // Initialize Speech Recognition with live real-time input typing
+  // Clean and stop any active audio playback and pending TTS requests
+  const stopAllAudio = useCallback(() => {
+    if (activeTtsAbortRef.current) {
+      activeTtsAbortRef.current.abort();
+      activeTtsAbortRef.current = null;
+    }
+    if (currentAudioRef.current) {
+      currentAudioRef.current.pause();
+      currentAudioRef.current.src = "";
+      currentAudioRef.current = null;
+    }
+    if (audioUrlRef.current) {
+      URL.revokeObjectURL(audioUrlRef.current);
+      audioUrlRef.current = null;
+    }
+    if (typeof window !== "undefined" && "speechSynthesis" in window) {
+      window.speechSynthesis.cancel();
+    }
+    setIsSpeaking(false);
+  }, []);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      stopAllAudio();
+      if (autoSendTimeoutRef.current) {
+        clearTimeout(autoSendTimeoutRef.current);
+      }
+    };
+  }, [stopAllAudio]);
+
+  // Initialize Speech Recognition in Spanish (es-ES)
   useEffect(() => {
     if (typeof window !== "undefined") {
       const hasSpeechRec =
@@ -185,8 +177,8 @@ export default function GroceryAIVoiceBot() {
           (window as any).webkitSpeechRecognition;
         const rec = new SpeechRec();
         rec.continuous = false;
-        rec.interimResults = true; // Live typing into input in real-time!
-        rec.lang = selectedLang;
+        rec.interimResults = true;
+        rec.lang = FIXED_LANG;
 
         rec.onstart = () => {
           setIsListening(true);
@@ -213,14 +205,11 @@ export default function GroceryAIVoiceBot() {
           }
 
           if (liveTranscript) {
-            // Live-type the spoken words directly into the input field!
             setInputValue(liveTranscript);
           }
 
           if (isFinal && liveTranscript.trim()) {
             const finalQuery = liveTranscript.trim();
-            // Allow the user to see their words written inside the input box,
-            // then send it automatically after 750ms
             if (autoSendTimeoutRef.current) {
               clearTimeout(autoSendTimeoutRef.current);
             }
@@ -233,67 +222,73 @@ export default function GroceryAIVoiceBot() {
         recognitionRef.current = rec;
       }
     }
-  }, [selectedLang]);
+  }, []);
 
-  // Update speech recognition language on toggle
-  useEffect(() => {
-    if (recognitionRef.current) {
-      recognitionRef.current.lang = selectedLang;
-    }
-  }, [selectedLang]);
-
-  // Fallback to browser SpeechSynthesis
+  // Fallback to browser SpeechSynthesis (Client-side)
   const fallbackWebSpeech = useCallback(
     (text: string) => {
       if (
         !voiceEnabled ||
         typeof window === "undefined" ||
         !("speechSynthesis" in window)
-      )
+      ) {
+        setIsSpeaking(false);
         return;
+      }
       window.speechSynthesis.cancel();
       const clean = text
-        .replace(/[*_#`~>•€]/g, "")
+        .replace(/\*\*(.*?)\*\*/g, "$1")
+        .replace(/\*(.*?)\*/g, "$1")
+        .replace(/[_#`~>•]/g, "")
         .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, "")
+        .replace(/(\d+)[,.](\d{2})\s*€/g, "$1 euros con $2 céntimos")
+        .replace(/(\d+)\s*€/g, "$1 euros")
         .trim();
+
       const utterance = new SpeechSynthesisUtterance(clean);
-      utterance.lang = selectedLang;
+      utterance.lang = FIXED_LANG;
+      utterance.rate = 1.0;
       utterance.onstart = () => setIsSpeaking(true);
       utterance.onend = () => setIsSpeaking(false);
       utterance.onerror = () => setIsSpeaking(false);
       window.speechSynthesis.speak(utterance);
     },
-    [voiceEnabled, selectedLang],
+    [voiceEnabled],
   );
 
-  // High Quality Edge-TTS Audio Playback (Pakistani Voice: Asad / Uzma)
+  // High Quality Free Microsoft Edge-TTS Audio Playback (Single Natural Voice: Elvira)
   const speakText = useCallback(
     async (text: string) => {
       if (!voiceEnabled || typeof window === "undefined") {
         return;
       }
 
-      // Stop any existing playing audio
-      if (currentAudioRef.current) {
-        currentAudioRef.current.pause();
-        currentAudioRef.current.currentTime = 0;
-      }
-      if ("speechSynthesis" in window) {
-        window.speechSynthesis.cancel();
-      }
+      // 1. Instantly stop any previous speech & abort any in-flight TTS fetch
+      stopAllAudio();
+      unlockAudioContext();
+
+      const clean = text
+        .replace(/\*\*(.*?)\*\*/g, "$1")
+        .replace(/\*(.*?)\*/g, "$1")
+        .replace(/[_#`~>•]/g, "")
+        .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, "")
+        .replace(/(\d+)[,.](\d{2})\s*€/g, "$1 euros con $2 céntimos")
+        .replace(/(\d+)\s*€/g, "$1 euros")
+        .trim();
+
+      const abortController = new AbortController();
+      activeTtsAbortRef.current = abortController;
 
       try {
         setIsSpeaking(true);
         const res = await fetch("/api/tts", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
+          signal: abortController.signal,
           body: JSON.stringify({
-            text,
-            voice:
-              selectedLang === "ur-PK"
-                ? selectedVoice
-                : "en-US-AriaNeural",
-            lang: selectedLang,
+            text: clean,
+            voice: FIXED_VOICE,
+            lang: FIXED_LANG,
           }),
         });
 
@@ -302,106 +297,63 @@ export default function GroceryAIVoiceBot() {
         }
 
         const blob = await res.blob();
+
+        // Check if aborted while downloading
+        if (abortController.signal.aborted) {
+          return;
+        }
+
         const audioUrl = URL.createObjectURL(blob);
+        audioUrlRef.current = audioUrl;
+
         const audio = new Audio(audioUrl);
         currentAudioRef.current = audio;
 
         audio.onplay = () => setIsSpeaking(true);
         audio.onended = () => {
           setIsSpeaking(false);
-          URL.revokeObjectURL(audioUrl);
+          if (audioUrlRef.current) {
+            URL.revokeObjectURL(audioUrlRef.current);
+            audioUrlRef.current = null;
+          }
         };
         audio.onerror = () => {
           setIsSpeaking(false);
-          fallbackWebSpeech(text);
+          fallbackWebSpeech(clean);
         };
 
         await audio.play();
-      } catch (err) {
+      } catch (err: any) {
+        if (err.name === "AbortError") {
+          return; // Intentionally aborted for next message
+        }
         console.warn("[Edge-TTS audio playback error, falling back]:", err);
-        fallbackWebSpeech(text);
+        fallbackWebSpeech(clean);
       }
     },
-    [voiceEnabled, selectedVoice, selectedLang, fallbackWebSpeech],
+    [voiceEnabled, fallbackWebSpeech, stopAllAudio, unlockAudioContext],
   );
 
-  // Instant zero-delay welcome speech trigger (0ms latency using preloaded audio)
-  const playWelcomeSpeech = useCallback(
-    (langOverride?: "ur-PK" | "en-US", voiceOverride?: string) => {
-      if (!voiceEnabled || typeof window === "undefined") return;
-
-      // Stop any existing playing audio or web speech
-      if (currentAudioRef.current) {
-        currentAudioRef.current.pause();
-        currentAudioRef.current.currentTime = 0;
-      }
-      if ("speechSynthesis" in window) {
-        window.speechSynthesis.cancel();
-      }
-
-      const lang = langOverride || selectedLang;
-      const voice =
-        voiceOverride ||
-        (lang === "ur-PK" ? selectedVoice : "en-US-AriaNeural");
-
-      const audioSrc =
-        lang === "ur-PK"
-          ? voice === "ur-PK-UzmaNeural"
-            ? "/audio/welcome-ur-uzma.mp3"
-            : "/audio/welcome-ur-asad.mp3"
-          : "/audio/welcome-en-aria.mp3";
-
-      const preloaded = preloadedWelcomeAudioRef.current[voice];
-      const audio = preloaded || new Audio(audioSrc);
-      audio.currentTime = 0;
-      currentAudioRef.current = audio;
-
-      audio.onplay = () => setIsSpeaking(true);
-      audio.onended = () => setIsSpeaking(false);
-      audio.onerror = () => {
-        setIsSpeaking(false);
-        speakText(
-          lang === "ur-PK" ? INITIAL_URDU_MESSAGE : INITIAL_ENGLISH_MESSAGE,
-        );
-      };
-
-      const playPromise = audio.play();
-      if (playPromise !== undefined) {
-        playPromise
-          .then(() => {
-            setIsSpeaking(true);
-          })
-          .catch((err) => {
-            console.warn("Direct welcome audio play prevented, falling back:", err);
-            speakText(
-              lang === "ur-PK" ? INITIAL_URDU_MESSAGE : INITIAL_ENGLISH_MESSAGE,
-            );
-          });
-      }
-    },
-    [voiceEnabled, selectedLang, selectedVoice, speakText],
-  );
+  // Welcome speech trigger
+  const playWelcomeSpeech = useCallback(() => {
+    if (!voiceEnabled || typeof window === "undefined") return;
+    speakText(INITIAL_SPANISH_MESSAGE);
+  }, [voiceEnabled, speakText]);
 
   // Toggle voice mute
   const toggleVoice = () => {
     if (isSpeaking) {
-      if (currentAudioRef.current) {
-        currentAudioRef.current.pause();
-        currentAudioRef.current.currentTime = 0;
-      }
-      if ("speechSynthesis" in window) {
-        window.speechSynthesis.cancel();
-      }
-      setIsSpeaking(false);
+      stopAllAudio();
     }
     setVoiceEnabled(!voiceEnabled);
   };
 
   // Toggle speech recognition (mic)
   const toggleListening = () => {
+    unlockAudioContext();
     if (!recognitionRef.current) {
       alert(
-        "Speech recognition is not supported in this browser. Please use Google Chrome or Microsoft Edge.",
+        "El reconocimiento de voz está disponible en Google Chrome y Microsoft Edge.",
       );
       return;
     }
@@ -410,14 +362,7 @@ export default function GroceryAIVoiceBot() {
       recognitionRef.current.stop();
     } else {
       if (isSpeaking) {
-        if (currentAudioRef.current) {
-          currentAudioRef.current.pause();
-          currentAudioRef.current.currentTime = 0;
-        }
-        if ("speechSynthesis" in window) {
-          window.speechSynthesis.cancel();
-        }
-        setIsSpeaking(false);
+        stopAllAudio();
       }
       try {
         recognitionRef.current.start();
@@ -429,12 +374,16 @@ export default function GroceryAIVoiceBot() {
 
   // Send message to API
   const handleSendMessage = async (textToSend?: string) => {
+    unlockAudioContext();
     if (autoSendTimeoutRef.current) {
       clearTimeout(autoSendTimeoutRef.current);
       autoSendTimeoutRef.current = null;
     }
     const query = (textToSend || inputValue).trim();
     if (!query || isLoading) return;
+
+    // Immediately stop any previous audio or in-flight TTS
+    stopAllAudio();
 
     const userMsg: Message = {
       id: `user-${Date.now()}`,
@@ -453,7 +402,7 @@ export default function GroceryAIVoiceBot() {
     try {
       const historyContext = messages
         .filter((m) => m.id !== "welcome-1")
-        .slice(-10)
+        .slice(-8)
         .map((m) => ({
           role: m.sender === "user" ? "user" : "model",
           text: m.text,
@@ -465,8 +414,7 @@ export default function GroceryAIVoiceBot() {
         body: JSON.stringify({
           prompt: query,
           history: historyContext,
-          language: selectedLang,
-          // ✅ Pass the live product catalog so AI is grounded in real store data
+          language: FIXED_LANG,
           products: liveProducts.map((p) => ({
             id: p.id,
             name: p.name,
@@ -491,9 +439,7 @@ export default function GroceryAIVoiceBot() {
       const data = await response.json();
       const answer =
         data?.answer ||
-        (selectedLang === "ur-PK"
-          ? "جی بالکل، سوپر بیریو میں تمام تازہ گروسری آئٹمز دستیاب ہیں! کسی بھی آئٹم کی قیمت جاننے کے لیے پوچھ سکتے ہیں۔"
-          : "Yes, all fresh groceries are in stock at SuperBarrio! Feel free to ask about any price or product.");
+        "¡Por supuesto! En SuperBarrio disponemos de una excelente selección de frutas y verduras frescas de huerta con reparto rápido en 25 minutos. ¿Deseas consultar algún producto o precio en particular?";
 
       const botMsg: Message = {
         id: `bot-${Date.now()}`,
@@ -511,11 +457,8 @@ export default function GroceryAIVoiceBot() {
       const errorMsg: Message = {
         id: `bot-err-${Date.now()}`,
         sender: "bot",
-        text:
-          selectedLang === "ur-PK"
-            ? "معذرت، رابطہ نہیں ہو سکا۔ براہ کرم دوبارہ کوشش کیجیے۔"
-            : "Sorry, network error. Please try again.",
-        timestamp: "Now",
+        text: "Lo sentimos, no hemos podido conectar en este momento. Por favor, inténtalo de nuevo.",
+        timestamp: "Ahora",
       };
       setMessages((prev) => [...prev, errorMsg]);
     } finally {
@@ -528,17 +471,14 @@ export default function GroceryAIVoiceBot() {
     return null;
   }
 
-  const activeSuggestions =
-    selectedLang === "ur-PK" ? URDU_SUGGESTIONS : ENGLISH_SUGGESTIONS;
-
   return (
     <>
-      {/* ─── 1. FLOATING PILL BUTTON (Bottom-Left) ─── */}
+      {/* ─── 1. FLOATING CIRCULAR BUTTON (Bottom-Left Circle, matching WhatsApp on right) ─── */}
       {!isOpen && hasCookieConsent && (
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, scale: 0.8, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.8, y: 20 }}
           className={`fixed z-40 transition-all duration-300 ${
             totalItems > 0
               ? "bottom-[calc(62px+env(safe-area-inset-bottom,0px)+54px)]"
@@ -547,46 +487,35 @@ export default function GroceryAIVoiceBot() {
         >
           <button
             onClick={() => {
+              unlockAudioContext();
               setIsOpen(true);
               if (voiceEnabled) {
                 playWelcomeSpeech();
               }
             }}
-            className="group flex items-center gap-2 sm:gap-3 rounded-full bg-gray-950/95 p-1.5 sm:px-4 sm:py-3 shadow-[0_12px_32px_rgba(0,0,0,0.45)] border border-gray-800/80 backdrop-blur-md transition-all duration-300 hover:scale-105 hover:border-emerald-500/50 hover:shadow-[0_12px_36px_rgba(16,185,129,0.25)] select-none"
-            aria-label="Open SuperBarrio AI Voice Assistant"
+            className="group relative flex h-[52px] w-[52px] sm:h-14 sm:w-14 items-center justify-center rounded-full bg-gradient-to-br from-emerald-500 to-green-600 text-white shadow-[0_10px_25px_-5px_rgba(16,185,129,0.55)] border-2 border-emerald-300/40 backdrop-blur-md transition-all duration-300 hover:scale-110 hover:shadow-[0_14px_30px_-5px_rgba(16,185,129,0.75)] active:scale-95 select-none"
+            aria-label="Abrir Asistente por Voz de SuperBarrio"
+            title="SuperBarrio AI • Asistente por Voz"
           >
-            {/* Website Brand Logo Icon (Leaf with Emerald Green gradient) */}
-            <div className="relative flex h-8 w-8 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500 to-green-600 text-white shadow-md shadow-emerald-500/30">
-              <LeafIcon className="h-4.5 w-4.5 sm:h-5 sm:w-5" />
-              {/* Online pulsing dot */}
-              <span className="absolute -top-0.5 -end-0.5 flex h-2.5 w-2.5">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-                <span className="relative inline-flex h-2.5 w-2.5 rounded-full border border-gray-950 bg-emerald-400" />
-              </span>
-            </div>
+            {/* Pulsing online badge */}
+            <span className="absolute -top-1 -end-1 flex h-4 w-4">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-300 opacity-80" />
+              <span className="relative inline-flex h-4 w-4 rounded-full border-2 border-[#0d1612] bg-emerald-400" />
+            </span>
 
-            {/* Labels - Visible on mobile as compact pill, full on sm+ */}
-            <div className="text-start pe-2">
-              <div className="flex items-center gap-1 sm:gap-1.5">
-                <span className="font-outfit text-[11px] sm:text-xs font-black tracking-wider text-white uppercase">
-                  SuperBarrio AI
-                </span>
-                <span className="rounded bg-emerald-500/20 px-1.5 py-0.2 text-[8px] sm:text-[9px] font-bold text-emerald-400">
-                  <span className="inline sm:hidden">اردو</span>
-                  <span className="hidden sm:inline">اردو Voice</span>
-                </span>
-              </div>
-              <div className="flex items-center gap-1 text-[9px] sm:text-[11px] font-medium text-emerald-400">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                <span>Online</span>
-                <span className="hidden sm:inline">• Live Chat & Voice</span>
-              </div>
+            {/* Brand Logo Icon */}
+            <LeafIcon className="h-6 w-6 text-white drop-shadow-sm transition-transform duration-300 group-hover:rotate-12 group-hover:scale-110" />
+
+            {/* Tooltip on desktop hover */}
+            <div className="hidden sm:group-hover:flex absolute -top-10 start-0 whitespace-nowrap rounded-xl bg-gray-950/95 border border-emerald-500/30 px-3 py-1.5 text-[11px] font-bold text-white shadow-xl pointer-events-none items-center gap-1.5">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              <span>SuperBarrio AI • Asistente por Voz</span>
             </div>
           </button>
         </motion.div>
       )}
 
-      {/* ─── 2. FLOATING VOICE BOT WINDOW (Bottom-Left Drawer/Modal) ─── */}
+      {/* ─── 2. FLOATING VOICE BOT WINDOW (Clean & Professional) ─── */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -601,9 +530,9 @@ export default function GroceryAIVoiceBot() {
               <div className="h-1.5 w-12 rounded-full bg-emerald-800/60" />
             </div>
 
-            {/* ── Top Header ── */}
+            {/* ── Top Header (Clean, Zero Clutter) ── */}
             <div className="flex items-center justify-between border-b border-white/10 px-4 py-3.5 bg-gradient-to-r from-[#12221b] to-[#0c1813]">
-              <div className="flex items-center gap-2.5">
+              <div className="flex items-center gap-3">
                 {/* Logo / Bot Avatar */}
                 <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500 to-green-600 text-white shadow-md shadow-emerald-500/30">
                   <LeafIcon className="h-5 w-5" />
@@ -613,77 +542,37 @@ export default function GroceryAIVoiceBot() {
                     <h3 className="font-outfit text-xs font-black tracking-wider text-white uppercase">
                       SuperBarrio AI
                     </h3>
-                    <span className="flex items-center gap-1 text-[10px] font-semibold text-emerald-400">
+                    <span className="flex items-center gap-1 rounded-full bg-emerald-500/15 px-2 py-0.5 text-[9px] font-semibold text-emerald-400 border border-emerald-500/20">
                       <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
                       {isSpeaking
-                        ? "بول رہا ہے..."
+                        ? "Hablando..."
                         : isListening
-                        ? "سن رہا ہے..."
-                        : "آن لائن"}
+                        ? "Escuchando..."
+                        : "En línea"}
                     </span>
                   </div>
                   <p className="text-[10px] text-gray-400">
-                    گروسری وائس اور لائیو اسسٹنٹ
+                    Asistente inteligente por voz • Supermercado
                   </p>
                 </div>
               </div>
 
-              {/* Right Controls */}
-              <div className="flex items-center gap-1.5">
-                {/* Language Switcher Toggle */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    const nextLang =
-                      selectedLang === "ur-PK" ? "en-US" : "ur-PK";
-                    setSelectedLang(nextLang);
-                    if (voiceEnabled && messages.length <= 1) {
-                      playWelcomeSpeech(nextLang);
-                    }
-                  }}
-                  title="Switch Language"
-                  className="rounded-lg bg-emerald-500/15 border border-emerald-500/25 px-2 py-0.5 text-[10px] font-bold text-emerald-300 transition-all hover:bg-emerald-500/30"
-                >
-                  {selectedLang === "ur-PK" ? "UR اردو" : "EN English"}
-                </button>
-
-                {/* Voice Gender Toggle (Asad / Uzma) in Urdu mode */}
-                {selectedLang === "ur-PK" && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const nextVoice =
-                        selectedVoice === "ur-PK-AsadNeural"
-                          ? "ur-PK-UzmaNeural"
-                          : "ur-PK-AsadNeural";
-                      setSelectedVoice(nextVoice);
-                      if (voiceEnabled && messages.length <= 1) {
-                        playWelcomeSpeech("ur-PK", nextVoice);
-                      }
-                    }}
-                    title="Change Voice (Asad / Uzma)"
-                    className="rounded-lg bg-white/10 px-2 py-0.5 text-[10px] font-medium text-gray-300 transition-all hover:bg-white/20"
-                  >
-                    {selectedVoice === "ur-PK-AsadNeural"
-                      ? "اسد"
-                      : "عظمیٰ"}
-                  </button>
-                )}
-
+              {/* Right Controls: Only Sound & Close (Clean & Sleek) */}
+              <div className="flex items-center gap-2">
                 {/* Speaker Toggle */}
                 <button
                   type="button"
                   onClick={toggleVoice}
-                  title={voiceEnabled ? "Mute Voice" : "Enable Voice"}
-                  className={`flex h-7 w-7 items-center justify-center rounded-full transition-colors ${
+                  title={voiceEnabled ? "Silenciar voz" : "Activar voz"}
+                  className={`flex h-8 w-8 items-center justify-center rounded-full transition-all ${
                     voiceEnabled
-                      ? "bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30"
-                      : "bg-white/10 text-gray-400 hover:bg-white/20"
+                      ? "bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30 border border-emerald-500/30"
+                      : "bg-white/10 text-gray-400 hover:bg-white/20 border border-white/10"
                   }`}
                 >
                   {voiceEnabled ? (
                     <svg
-                      className="h-3.5 w-3.5"
+                      className="h-4 w-4"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -697,7 +586,7 @@ export default function GroceryAIVoiceBot() {
                     </svg>
                   ) : (
                     <svg
-                      className="h-3.5 w-3.5"
+                      className="h-4 w-4"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -716,20 +605,14 @@ export default function GroceryAIVoiceBot() {
                 <button
                   type="button"
                   onClick={() => {
-                    if (currentAudioRef.current) {
-                      currentAudioRef.current.pause();
-                      currentAudioRef.current.currentTime = 0;
-                    }
-                    if ("speechSynthesis" in window) {
-                      window.speechSynthesis.cancel();
-                    }
-                    setIsSpeaking(false);
+                    stopAllAudio();
                     if (isListening && recognitionRef.current) {
                       recognitionRef.current.stop();
                     }
                     setIsOpen(false);
                   }}
-                  className="flex h-7 w-7 items-center justify-center rounded-full bg-white/10 text-gray-300 transition-colors hover:bg-white/20 hover:text-white"
+                  className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-gray-300 transition-colors hover:bg-white/20 hover:text-white border border-white/10"
+                  title="Cerrar asistente"
                 >
                   ✕
                 </button>
@@ -742,12 +625,10 @@ export default function GroceryAIVoiceBot() {
                 <span className="flex h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
                 <span className="text-[11px]">
                   {isSpeaking
-                    ? "نیچرل اردو آواز میں بول رہا ہے..."
+                    ? "Hablando con voz natural de España..."
                     : isListening
-                    ? "آپ کی آواز سنی جا رہی ہے... بولتے رہیے"
-                    : selectedLang === "ur-PK"
-                    ? "مائیک دبا کر اردو میں بولیں یا لکھیں"
-                    : "Speak or type in English"}
+                    ? "Escuchando tu voz... Habla ahora"
+                    : "Pulsa el micro para hablar en español o escribe"}
                 </span>
               </div>
 
@@ -775,56 +656,46 @@ export default function GroceryAIVoiceBot() {
 
             {/* ── Chat Messages Body ── */}
             <div className="flex-1 overflow-y-auto no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden p-4 space-y-3.5 text-xs">
-              {messages.map((msg) => {
-                const isUrdu = isUrduText(msg.text);
-                return (
+              {messages.map((msg) => (
+                <div
+                  key={msg.id}
+                  className={`flex items-start gap-2.5 ${
+                    msg.sender === "user" ? "flex-row-reverse" : "flex-row"
+                  }`}
+                >
+                  {/* Bot Avatar */}
+                  {msg.sender === "bot" && (
+                    <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-500 to-green-600 text-white shadow-sm shadow-emerald-500/30">
+                      <LeafIcon className="h-4 w-4" />
+                    </div>
+                  )}
+
+                  {/* Message Bubble */}
                   <div
-                    key={msg.id}
-                    className={`flex items-start gap-2.5 ${
+                    className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 leading-relaxed shadow-sm text-left ${
                       msg.sender === "user"
-                        ? "flex-row-reverse"
-                        : "flex-row"
+                        ? "bg-gradient-to-r from-emerald-600 to-green-600 text-white rounded-tr-xs"
+                        : "bg-white/10 text-gray-100 rounded-tl-xs border border-white/5 backdrop-blur-sm"
                     }`}
                   >
-                    {/* Bot Avatar */}
-                    {msg.sender === "bot" && (
-                      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-500 to-green-600 text-white shadow-sm shadow-emerald-500/30">
-                        <LeafIcon className="h-4 w-4" />
-                      </div>
-                    )}
-
-                    {/* Message Bubble */}
-                    <div
-                      dir={isUrdu ? "rtl" : "ltr"}
-                      className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 leading-relaxed shadow-sm ${
-                        isUrdu ? "text-right font-sans" : "text-left"
-                      } ${
-                        msg.sender === "user"
-                          ? "bg-gradient-to-r from-emerald-600 to-green-600 text-white rounded-tr-xs"
-                          : "bg-white/10 text-gray-100 rounded-tl-xs border border-white/5 backdrop-blur-sm"
-                      }`}
-                    >
-                      <p className="whitespace-pre-wrap text-[13px] leading-relaxed">
-                        {msg.text}
-                      </p>
-                      <span className="mt-1 block text-[9px] opacity-60 text-end">
-                        {msg.timestamp}
-                      </span>
-                    </div>
+                    <p className="whitespace-pre-wrap text-[13px] leading-relaxed">
+                      {msg.text}
+                    </p>
+                    <span className="mt-1 block text-[9px] opacity-60 text-end">
+                      {msg.timestamp}
+                    </span>
                   </div>
-                );
-              })}
+                </div>
+              ))}
 
-              {/* Quick Action Suggestion Chips (Shown on initial state) */}
+              {/* Quick Action Suggestion Chips (Grounded in real catalog) */}
               {messages.length <= 2 && (
                 <div className="pt-2">
                   <p className="mb-2 text-[10px] font-bold uppercase tracking-wider text-emerald-300/80">
-                    {selectedLang === "ur-PK"
-                      ? "فوری سوالات (تجویز کردہ)"
-                      : "Quick Suggestions"}
+                    Sugerencias Rápidas
                   </p>
-                  <div className="flex flex-wrap gap-1.5" dir={selectedLang === "ur-PK" ? "rtl" : "ltr"}>
-                    {activeSuggestions.map((suggestion, idx) => (
+                  <div className="flex flex-wrap gap-1.5">
+                    {SPANISH_SUGGESTIONS.map((suggestion, idx) => (
                       <button
                         key={idx}
                         onClick={() => handleSendMessage(suggestion)}
@@ -869,13 +740,13 @@ export default function GroceryAIVoiceBot() {
                   onClick={toggleListening}
                   title={
                     isListening
-                      ? "Listening... Click to stop"
-                      : "Click to speak in Urdu (مائیک دبائیں)"
+                      ? "Escuchando... Haz clic para detener"
+                      : "Hablar por micrófono en español"
                   }
                   className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl transition-all ${
                     isListening
                       ? "bg-red-500 text-white animate-pulse shadow-lg shadow-red-500/50"
-                      : "bg-white/10 text-gray-300 hover:bg-emerald-500/20 hover:text-emerald-400"
+                      : "bg-white/10 text-gray-300 hover:bg-emerald-500/20 hover:text-emerald-400 border border-white/10"
                   }`}
                 >
                   <svg
@@ -892,7 +763,6 @@ export default function GroceryAIVoiceBot() {
                 <input
                   type="text"
                   value={inputValue}
-                  dir={selectedLang === "ur-PK" ? "rtl" : "ltr"}
                   onChange={(e) => {
                     if (autoSendTimeoutRef.current) {
                       clearTimeout(autoSendTimeoutRef.current);
@@ -902,12 +772,8 @@ export default function GroceryAIVoiceBot() {
                   }}
                   placeholder={
                     isListening
-                      ? selectedLang === "ur-PK"
-                        ? "بولتے رہیے، آواز یہاں لکھی جا رہی ہے..."
-                        : "Listening... Speaking is being typed..."
-                      : selectedLang === "ur-PK"
-                      ? "پھل، دودھ، قیمت یا ڈیلیوری کے بارے میں پوچھیں..."
-                      : "Ask about fruits, milk, prices, delivery..."
+                      ? "Escuchando... Tu voz se transcribe aquí..."
+                      : "Pregunta por frutas, verduras, precios, ofertas..."
                   }
                   className={`flex-1 rounded-2xl bg-white/10 px-3.5 py-2 text-xs text-white placeholder-gray-400 border transition-all ${
                     isListening
@@ -921,7 +787,7 @@ export default function GroceryAIVoiceBot() {
                   type="submit"
                   disabled={!inputValue.trim() || isLoading}
                   className="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-r from-emerald-500 to-green-600 text-white shadow-md shadow-emerald-600/30 transition-all hover:scale-105 active:scale-95 disabled:opacity-40"
-                  title="Send message"
+                  title="Enviar consulta"
                 >
                   <svg
                     className="h-4 w-4 rotate-45 -mt-0.5 -ms-0.5"
@@ -933,11 +799,9 @@ export default function GroceryAIVoiceBot() {
                 </button>
               </form>
 
-              {/* Subtitle / Disclaimer */}
+              {/* Subtitle / Attribution */}
               <p className="mt-2 text-center text-[10px] text-gray-400/80">
-                {selectedLang === "ur-PK"
-                  ? "سوپر بیریو اے آئی وائس اسسٹنٹ • قدرتی پاکستانی آواز میں جواب"
-                  : "SuperBarrio AI Voice Assistant • Natural voice responses"}
+                SuperBarrio AI Voice Assistant • Voz oficial en español
               </p>
             </div>
           </motion.div>

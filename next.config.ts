@@ -48,6 +48,7 @@ const nextConfig: NextConfig = {
     return config;
   },
   images: {
+    unoptimized: true,
     // Modern formats: AVIF first (best compression), WebP fallback
     formats: ["image/avif", "image/webp"],
     // 1-year client/edge cache for optimized images
@@ -59,6 +60,9 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       // Unsplash CDN (product images and banners)
       { protocol: "https", hostname: "images.unsplash.com" },
+      // Your Spanish Corner CDN
+      { protocol: "https", hostname: "www.yourspanishcorner.com" },
+      { protocol: "https", hostname: "yourspanishcorner.com" },
       // Common CDN patterns for future-proofing
       { protocol: "https", hostname: "**.cloudinary.com" },
       { protocol: "https", hostname: "**.imgix.net" },

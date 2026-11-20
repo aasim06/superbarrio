@@ -105,9 +105,30 @@ const operationsNavItems: NavItem[] = [
   {
     icon: <DocsIcon />,
     key: "khata",
-    label: "B2B Credit & Khata",
-    path: "/khata",
+    label: "B2B Credit & Accounts",
     new: true,
+    subItems: [
+      {
+        key: "khata-overview",
+        label: "Clients Directory",
+        path: "/khata",
+      },
+      {
+        key: "khata-challans",
+        label: "Delivery Notes & Slips",
+        path: "/khata/challans",
+      },
+      {
+        key: "khata-invoices",
+        label: "Monthly Invoices",
+        path: "/khata/invoices",
+      },
+      {
+        key: "khata-payments",
+        label: "Payments & Collections",
+        path: "/khata/payments",
+      },
+    ],
   },
   {
     icon: <UserCircleIcon />,
@@ -128,6 +149,8 @@ const AppSidebar: React.FC = () => {
   const pathname = usePathname();
   const t = useTranslations("sidebar");
 
+  const [openSubmenu, setOpenSubmenu] = useState<string | null>("khata");
+
   const normalizePath = useCallback((p?: string | null) => {
     if (!p) return "";
     const clean = p.split("?")[0].split("#")[0];
@@ -145,40 +168,129 @@ const AppSidebar: React.FC = () => {
     [pathname, normalizePath],
   );
 
+  useEffect(() => {
+    if (pathname && normalizePath(pathname).includes("/khata")) {
+      setOpenSubmenu("khata");
+    }
+  }, [pathname, normalizePath]);
+
   const renderMenuItems = (items: NavItem[]) => (
     <ul className="flex flex-col gap-1">
-      {items.map((nav) => (
-        <li key={nav.key}>
-          <Link
-            href={nav.path!}
-            prefetch={true}
-            className={cn(
-              "menu-item group cursor-pointer",
-              isActive(nav.path) ? "menu-item-active" : "menu-item-inactive",
-              !isExpanded && !isHovered ? "lg:justify-center" : "lg:justify-start",
-            )}
-          >
-            <span
-              suppressHydrationWarning
-              className={cn(
-                isActive(nav.path) ? "menu-item-icon-active" : "menu-item-icon-inactive",
-              )}
-            >
-              {nav.icon}
-            </span>
-            {(isExpanded || isHovered || isMobileOpen) && (
-              <span className="menu-item-text flex items-center justify-between w-full">
-                <span>{nav.label}</span>
-                {nav.new && (
-                  <span className="ml-2 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-bold text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400">
-                    NEW
+      {items.map((nav) => {
+        const hasSub = nav.subItems && nav.subItems.length > 0;
+        const isSubOpen = openSubmenu === nav.key;
+        const isAnySubActive = hasSub && nav.subItems!.some((sub) => isActive(sub.path));
+        const itemActive = isActive(nav.path) || isAnySubActive;
+
+        if (hasSub) {
+          return (
+            <li key={nav.key} className="flex flex-col">
+              <button
+                type="button"
+                onClick={() => {
+                  setOpenSubmenu((prev) => (prev === nav.key ? null : nav.key));
+                }}
+                className={cn(
+                  "menu-item group cursor-pointer w-full text-start",
+                  itemActive ? "menu-item-active" : "menu-item-inactive",
+                  !isExpanded && !isHovered ? "lg:justify-center" : "lg:justify-start",
+                )}
+              >
+                <span
+                  suppressHydrationWarning
+                  className={cn(
+                    itemActive ? "menu-item-icon-active" : "menu-item-icon-inactive",
+                  )}
+                >
+                  {nav.icon}
+                </span>
+                {(isExpanded || isHovered || isMobileOpen) && (
+                  <span className="menu-item-text flex items-center justify-between w-full">
+                    <span className="flex items-center gap-1.5">
+                      <span>{nav.label}</span>
+                      {nav.new && (
+                        <span className="rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-bold text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400">
+                          NEW
+                        </span>
+                      )}
+                    </span>
+                    <ChevronDownIcon
+                      className={cn(
+                        "h-4 w-4 shrink-0 text-gray-400 transition-transform duration-200",
+                        isSubOpen && "rotate-180 text-emerald-600",
+                      )}
+                    />
                   </span>
                 )}
+              </button>
+
+              {/* Collapsible Submenu */}
+              {isSubOpen && (isExpanded || isHovered || isMobileOpen) && (
+                <ul className="mt-1 space-y-1 pl-8 pr-1 py-1 border-l-2 border-emerald-500/30 ms-5 mb-1">
+                  {nav.subItems!.map((sub) => {
+                    const subActive = isActive(sub.path);
+                    return (
+                      <li key={sub.key}>
+                        <Link
+                          href={sub.path}
+                          prefetch={true}
+                          className={cn(
+                            "flex items-center gap-2 rounded-xl px-2.5 py-1.5 text-xs font-semibold transition-all",
+                            subActive
+                              ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/70 dark:text-emerald-300 font-bold"
+                              : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white",
+                          )}
+                        >
+                          <span
+                            className={cn(
+                              "h-1.5 w-1.5 rounded-full shrink-0",
+                              subActive ? "bg-emerald-500" : "bg-gray-300 dark:bg-gray-600",
+                            )}
+                          />
+                          <span className="truncate">{sub.label}</span>
+                        </Link>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </li>
+          );
+        }
+
+        return (
+          <li key={nav.key}>
+            <Link
+              href={nav.path!}
+              prefetch={true}
+              className={cn(
+                "menu-item group cursor-pointer",
+                isActive(nav.path) ? "menu-item-active" : "menu-item-inactive",
+                !isExpanded && !isHovered ? "lg:justify-center" : "lg:justify-start",
+              )}
+            >
+              <span
+                suppressHydrationWarning
+                className={cn(
+                  isActive(nav.path) ? "menu-item-icon-active" : "menu-item-icon-inactive",
+                )}
+              >
+                {nav.icon}
               </span>
-            )}
-          </Link>
-        </li>
-      ))}
+              {(isExpanded || isHovered || isMobileOpen) && (
+                <span className="menu-item-text flex items-center justify-between w-full">
+                  <span>{nav.label}</span>
+                  {nav.new && (
+                    <span className="ml-2 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-bold text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400">
+                      NEW
+                    </span>
+                  )}
+                </span>
+              )}
+            </Link>
+          </li>
+        );
+      })}
     </ul>
   );
 

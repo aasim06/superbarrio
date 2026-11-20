@@ -450,6 +450,86 @@ export function getKhataCustomerById(id: string): KhataCustomer | undefined {
   return customers.find((c) => c.id === id);
 }
 
+// Add new B2B customer (Hotel / Club / Restaurant)
+export function addKhataCustomer(data: {
+  commercialName: string;
+  legalName?: string;
+  cifNif?: string;
+  contactPerson: string;
+  phone: string;
+  email?: string;
+  address: string;
+  postalCode?: string;
+  city?: string;
+  province?: string;
+  businessType?: "hotel" | "bar" | "restaurante" | "cafeteria" | "particular";
+  creditDays?: 15 | 30 | 0;
+  creditLimit: number;
+  initialBalance?: number;
+  notes?: string;
+}): KhataCustomer {
+  const customers = getKhataCustomers();
+  const id = `khata-client-${Date.now()}`;
+  const newCust: KhataCustomer = {
+    id,
+    commercialName: data.commercialName,
+    legalName: data.legalName || data.commercialName,
+    cifNif: data.cifNif || `B-${Math.floor(10000000 + Math.random() * 90000000)}`,
+    contactPerson: data.contactPerson,
+    phone: data.phone,
+    email: data.email || "",
+    address: data.address,
+    postalCode: data.postalCode || "46001",
+    city: data.city || "Valencia",
+    province: data.province || "Valencia",
+    businessType: data.businessType || "hotel",
+    creditDays: data.creditDays !== undefined ? data.creditDays : 30,
+    creditLimit: Number(data.creditLimit) || 1000,
+    currentBalance: Number(data.initialBalance) || 0,
+    joinedDate: new Date().toISOString().split("T")[0],
+    status: "active",
+    notes: data.notes || "",
+  };
+
+  customers.unshift(newCust);
+  saveKhataCustomers(customers);
+
+  // If initial balance is greater than 0, create an opening balance entry
+  if (data.initialBalance && Number(data.initialBalance) > 0) {
+    const entries = getKhataEntries();
+    entries.push({
+      id: `entry-init-${Date.now()}`,
+      customerId: id,
+      customerName: newCust.commercialName,
+      cifNif: newCust.cifNif,
+      date: new Date().toISOString(),
+      type: "purchase",
+      description: "Opening Balance / Ledger Transfer",
+      debit: Number(data.initialBalance),
+      credit: 0,
+      balance: Number(data.initialBalance),
+      notes: "Transferred from previous manual register",
+    });
+    saveKhataEntries(entries);
+  }
+
+  return newCust;
+}
+
+// Update existing customer
+export function updateKhataCustomer(
+  id: string,
+  updates: Partial<KhataCustomer>,
+): KhataCustomer | null {
+  const customers = getKhataCustomers();
+  const idx = customers.findIndex((c) => c.id === id);
+  if (idx === -1) return null;
+
+  customers[idx] = { ...customers[idx], ...updates };
+  saveKhataCustomers(customers);
+  return customers[idx];
+}
+
 // Get all entries for a specific customer
 export function getCustomerKhataLedger(customerId: string): KhataEntry[] {
   const all = getKhataEntries();
